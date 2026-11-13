@@ -1,4 +1,4 @@
-import { useMemo, useRef } from 'react';
+import { Suspense, useMemo, useRef } from 'react';
 import * as THREE from 'three';
 import { useFrame, useThree } from '@react-three/fiber';
 import { Environment, Lightformer, Stars } from '@react-three/drei';
@@ -341,12 +341,19 @@ export function MenuScene() {
         <Lightformer form="rect" intensity={1.5} color="#3b7bff" position={[3, -4, 2]} scale={[8, 3, 1]} />
         <Lightformer form="ring" intensity={0.6} color="#ffd9a0" position={[0, 5, -5]} scale={3} />
       </Environment>
-      <group position={[5.2 * s, -8.6, -10]} rotation={[-0.75, rtl ? -1.92 : -2.62, 0]}>
-        <Earth radius={8} spin={0.006} />
-      </group>
-      <FloatingAstronaut />
+      {/* Separate boundaries: stars and the spacecraft show at once; heavier assets pop in as they arrive */}
+      <Suspense fallback={null}>
+        <group position={[5.2 * s, -8.6, -10]} rotation={[-0.75, rtl ? -1.92 : -2.62, 0]}>
+          <Earth radius={8} spin={0.006} />
+        </group>
+      </Suspense>
+      <Suspense fallback={null}>
+        <FloatingAstronaut />
+      </Suspense>
       <DriftingCraft />
-      <HoloDeck />
+      <Suspense fallback={null}>
+        <HoloDeck />
+      </Suspense>
       <MenuCamera />
     </>
   );

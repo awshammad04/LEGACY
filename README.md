@@ -25,7 +25,7 @@ LEGACY is a 3D browser game in which students (ages 13–18) become mission comm
 
 The Mission 2 loop:
 
-1. **Mission Control HQ** — four mission cards and a preview of the 3-question check.
+1. **Cinematic intro and main menu** — a skippable intro (shown once), then PLAY / CONTINUE / SETTINGS / CREDITS over a 3D scene. PLAY flies the camera to a holographic deck of the four missions.
 2. **Baseline quiz** — exactly 3 questions, shuffled options, "I'm not sure" accepted.
 3. **Briefing** — choose a science question before any instruments, with NASA fact cards.
 4. **Build workshop** — Basic/Balanced/Advanced parts. Live budget with a protected reserve, plus mass, landing, power, battery, data and thermal limits. The rover model changes with every choice.
@@ -105,7 +105,7 @@ The full plan, requirements matrix and roadmap are in [`docs/ARCHITECTURE_AND_RO
 
 ## Demo script (≈4 minutes)
 
-1. **Home** — four mission cards and the 3-question check. Toggle **العربية** to show the full right-to-left layout, then switch back.
+1. **Main menu** — the intro plays once (add `?intro=1` to replay it). Toggle **العربية** to show the mirrored right-to-left layout, then switch back. Press **PLAY** and use ← → to browse the holographic mission deck.
 2. **Start Mission 02** — answer 3 quick questions, then pick a science priority.
 3. **Workshop** — add the robotic arm, the abrasion drill and the X-ray spectrometer, then run the review. It is blocked: *Rover exceeds the landing system limit by 19 kg*. Fix it with the sky-crane landing system, larger solar arrays and the high-gain antenna, then **LAUNCH**.
 4. **Orbit** — select a satellite, then head to Mars and land at **Delta Front**.
@@ -129,9 +129,11 @@ The **Sources & credits** screen in the game lists every fact source and image. 
 | Mars global map (Viking mosaic) | NASA/JPL/USGS |
 | Jezero, Cheyava Falls, Sapphire Canyon and PIXL images, Perseverance selfie | NASA/JPL-Caltech/MSSS/ASU/JHU-APL, as listed per image |
 
+3D model: **Rigged Astronaut** by J-Toastie, [CC-BY 3.0](https://poly.pizza/m/0oBRDJ9Zl9) via Poly Pizza. Materials were retuned, and its poses (float, walk, interact, drive) are animated in code.
+
 Everything else is original or synthesized in code:
-- The rover, launchers and terrain are procedural.
-- Sound effects are generated with Web Audio.
+- The rover, launchers, spacecraft, rocks and terrain are procedural.
+- Sound effects and the menu ambience are generated with Web Audio.
 - Narration uses the browser's synthetic voice, labeled as a fictional narrator.
 
 Fonts are Space Grotesk, Inter and IBM Plex Sans Arabic (SIL OFL). No NASA insignia is used.
