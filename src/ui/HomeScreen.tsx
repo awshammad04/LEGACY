@@ -84,18 +84,14 @@ export function HomeScreen() {
                   <h3 id={`mc-${m.id}`}>{t(m.title)}</h3>
                   <span className="small muted">{t(m.subtitle)}</span>
                 </div>
-                <dl className="kv">
-                  <dt>{t('Destination')}</dt>
-                  <dd>{t(m.destination)}</dd>
-                  <dt>{t('Objective')}</dt>
-                  <dd>{t(m.objective)}</dd>
-                  <dt>{t('Game budget')}</dt>
-                  <dd>
-                    <span className="mono">{budgetLabel(m)}</span> <ProvenanceBadge p="fictional" />
-                  </dd>
-                  <dt>{t('Progress')}</dt>
-                  <dd>{stage ? t(STAGE_NAME[stage] ?? stage) : done ? t('Completed — replay any time') : !m.playable ? t('Earth stage playable · operations in development') : t('Not started')}</dd>
-                </dl>
+                <p className="small">{t(m.objective)}</p>
+                <div className="row-wrap tiny">
+                  <span className="pill">📍 {t(m.destination)}</span>
+                  <span className="pill" title={t('Fictional game budget')}>
+                    💰 <span className="mono">{budgetLabel(m)}</span>
+                  </span>
+                </div>
+                <span className="tiny dim">{stage ? `▶ ${t(STAGE_NAME[stage] ?? stage)}` : done ? `✓ ${t('Completed — replay any time')}` : t('Not started')}</span>
                 <div className="actions">
                   {isStartable(m) ? (
                     stage ? (

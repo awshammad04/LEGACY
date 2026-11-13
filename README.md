@@ -19,9 +19,9 @@ LEGACY is a 3D browser game in which students (ages 13–18) become mission comm
 | Mission | Status |
 |---|---|
 | **02 — The Martian Mystery** (robotic, Jezero Crater, Cheyava Falls / Sapphire Canyon) | Fully playable: free-roaming open-world Mars, in English and Arabic |
-| 01 — Echoes of Apollo (crewed, Moon) | Earth stage playable (quiz, briefing, workshop, review, launch). Operations in development. |
-| 03 — The Lost Rover: Opportunity (robotic, Mars) | Earth stage playable (quiz, briefing, workshop, review, launch). Operations in development. |
-| 04 — The Cosmic Photographer (telescope) | Earth stage playable (quiz, briefing, workshop, review, launch). Operations in development. |
+| **01 — Echoes of Apollo** (crewed, Moon) | Playable: life aboard with live crew health, then a moonwalk with suit oxygen, a protected Apollo 15 site, fatigue and solar-storm decisions |
+| **03 — The Lost Rover: Opportunity** (robotic, Mars) | Playable: find and document Opportunity without entering its protected zone; dust storm |
+| **04 — The Cosmic Photographer** (telescope) | Playable: observe a supernova over 3 nights — filters, exposure, light curve, spectrum |
 
 The Mission 2 loop:
 
