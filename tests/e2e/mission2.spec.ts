@@ -40,11 +40,8 @@ test('Mission 2 can be played end to end with real recomputed results', async ({
   await btn(page, /LAUNCH MISSION/).click();
 
   // Orbit + puzzle hint
-  await expect(page.getByRole('heading', { name: 'Orbit Explorer' })).toBeVisible();
+  await expect(page.getByText('In orbit around Earth')).toBeVisible();
   await expect(page.getByText(/Starlink satellites are operated by SpaceX, not NASA/)).toBeVisible();
-  await btn(page, 'Perseverance Valley').click();
-  await btn(page, /Perseverance \(2021/).click();
-  await expect(page.getByText(/Not quite — hint/)).toBeVisible();
   await btn(page, /Continue to Mars/).click();
 
   // Landing site (best reachable site is preselected)
@@ -126,20 +123,57 @@ test('home and quiz screens have no serious accessibility violations', async ({ 
   expect(quiz.violations.filter((v) => v.impact === 'serious' || v.impact === 'critical').map((v) => v.id)).toEqual([]);
 });
 
-test('Mission 04 Earth stage: build, pass review, launch, honest next-steps screen', async ({ page }) => {
+test('Mission 04: build a telescope, launch, observe the supernova over 3 nights, report', async ({ page }) => {
   await page.goto('/?test=1');
   await page.locator('article', { hasText: 'The Cosmic Photographer' }).getByRole('button', { name: 'Start Mission' }).click();
   await answerQuiz(page, [/Check whether the complete design/, /Review the hazard plan/, /It deserves follow-up/]);
   await page.getByRole('radio', { name: /What is it made of/ }).click();
   await expect(page.getByRole('heading', { name: 'Build your observatory' })).toBeVisible();
-  await btn(page, /Infrared camera with cryocooler/).click();
-  await btn(page, 'Run Pre-Launch Readiness Review').click();
-  await expect(btn(page, 'LAUNCH MISSION')).toBeDisabled();
-  await btn(page, /Return to Workshop/).click();
-  await btn(page, /Large solar wings/).click();
-  await btn(page, /Radiation-hardened electronics/).click();
+  await page.locator('.pkg-card', { hasText: 'UV Hunter' }).click();
   await expect(page.getByText('Ready to launch ✓')).toBeVisible();
   await btn(page, /LAUNCH MISSION/).click();
-  await expect(page.getByRole('heading', { name: 'Your observatory has reached orbit' })).toBeVisible();
-  await expect(page.getByText(/operations stage is still in development/)).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Catch the supernova' })).toBeVisible();
+  await btn(page, /Point at the Pinwheel Galaxy/).click();
+  await btn(page, /3. Take image/).click();
+  await btn(page, /Next night/).click();
+  const safe = page.locator('.event-card', { hasText: 'Solar storm warning' });
+  if (await safe.isVisible()) await page.keyboard.press('1');
+  await btn(page, /Point at the Pinwheel Galaxy/).click();
+  await btn(page, /3. Take image/).click();
+  await btn(page, /Next night/).click();
+  await btn(page, /Point at the Pinwheel Galaxy/).click();
+  await btn(page, /3. Take image/).click();
+  await btn(page, /Send results/).click();
+  await btn(page, /brightness changed over the nights/).click();
+  await expect(page.locator('.eyebrow', { hasText: 'Mission debrief' })).toBeVisible();
+});
+
+test('Mission 01: life aboard with crew health, then a safe moonwalk', async ({ page }) => {
+  await page.goto('/?test=1');
+  await page.locator('article', { hasText: 'Echoes of Apollo' }).getByRole('button', { name: 'Start Mission' }).click();
+  await answerQuiz(page, [/Check whether the complete design/, /Review the hazard plan/, /Document it from a safe distance/]);
+  await page.getByRole('radio', { name: /Document Apollo 15 heritage/ }).click();
+  await page.locator('.pkg-card', { hasText: 'Apollo-style Rover Team' }).click();
+  await btn(page, /LAUNCH MISSION/).click();
+  await btn(page, /Continue to the Moon/).click();
+  // Life aboard: five quick choices with live crew health
+  await expect(page.getByRole('heading', { name: 'A day in space' })).toBeVisible();
+  await expect(page.getByText('Crew health').first()).toBeVisible();
+  for (let i = 0; i < 5; i++) {
+    await page.keyboard.press('1');
+    await page.waitForTimeout(1900);
+  }
+  await btn(page, /Land on the Moon/).click();
+  await btn(page, "Let's go!").click();
+  await expect(page.getByText('Suit oxygen')).toBeVisible();
+  // Test hook: drive to the boundary of the Apollo 15 site
+  await page.evaluate(() => (window as any).__legacy.useGame.getState().dispatch({ type: 'DRIVE', dist: 200, slopeAvg: 3, boostFrac: 0, bumps: 0, pos: [-161, 45], heading: 0 }));
+  await expect(page.locator('.prompt', { hasText: 'Apollo 15 Site' })).toBeVisible();
+  await page.keyboard.press('e');
+  await page.keyboard.press('1');
+  await expect.poll(() => page.evaluate(() => (window as any).__legacy.useGame.getState().state.evidence.observations.length)).toBeGreaterThan(0);
+  await page.keyboard.press('Escape');
+  await page.keyboard.press('f');
+  await btn(page, /Send summary to Earth/).click();
+  await expect(page.getByText('Heritage Protector')).toBeVisible();
 });

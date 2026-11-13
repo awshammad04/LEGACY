@@ -2,7 +2,7 @@ import type { Action, DecisionEntry, LText, MissionDefinition, MissionId, Missio
 import { baselineDesign, computeMetrics, evaluateRules, blockingFailures, isLaunchReady, optionById, MODEL } from './evaluate';
 import { scoreQuiz } from './quizEngine';
 import { predictRoute, simulateActivity, SPEED, ARRIVAL_RADIUS, MAX_WAYPOINTS } from './ops';
-import { observationAvailability, observationDataMb, observationPowerW, observationQuality, downlinkCapacityMb } from './science';
+import { observationAvailability, observationDataMb, observationPowerW, observationQuality, downlinkCapacityMb, statementSupported } from './science';
 import { computeOutcome } from './outcome';
 import { PUZZLE_CLUES } from '../content/puzzle';
 import { round } from './rng';
@@ -18,12 +18,59 @@ import { OBS_VALUE } from './science';
 const ALLOWED: Partial<Record<StageId, StageId[]>> = {
   briefing: ['workshop'],
   review: ['workshop'],
-  launch: ['orbit', 'opsPreview'],
-  orbit: ['landingSite'],
+  launch: ['orbit', 'opsPreview', 'observe'],
+  orbit: ['landingSite', 'cruise', 'surface'],
+  cruise: ['surface'],
   surface: ['evidence'],
   evidence: ['report'],
   debrief: ['quizPost'],
 };
+
+const clamp01 = (v: number) => Math.max(0, Math.min(100, v));
+const landerSite = (mission: MissionDefinition) => mission.sites?.find((x) => x.kind === 'lander');
+const mainSite = (mission: MissionDefinition) => mission.sites?.find((x) => x.kind === 'rock' || x.kind === 'heritage');
+function evaLimit(mission: MissionDefinition, s: MissionState) {
+  const base = mission.world?.evaHours ?? 7;
+  const fatigue = s.crew?.vitals.fatigue ?? 0;
+  return Math.max(2.5, base * (1 - fatigue / 220));
+}
+function startSurface(mission: MissionDefinition, s: MissionState) {
+  const start = mission.world?.start ?? [0, 0];
+  s.ops.pos = [start[0], start[1]];
+  s.ops.path = [[start[0], start[1]]];
+  s.ops.sol = Math.max(1, s.ops.sol);
+  if (mission.type === 'crewed') {
+    s.ops.evaMaxH = evaLimit(mission, s);
+    s.ops.oxygenH = s.ops.evaMaxH;
+  }
+}
+function endEva(mission: MissionDefinition, s: MissionState, restore = 25) {
+  const l = landerSite(mission);
+  if (l) s.ops.pos = [l.pos[0] + 6, l.pos[1] + 6];
+  s.ops.sol = Math.floor(s.ops.sol) + 1;
+  s.ops.rests++;
+  if (s.crew) {
+    const v = s.crew.vitals;
+    v.fatigue = Math.max(5, v.fatigue - restore);
+    v.hydration = clamp01(v.hydration + 15);
+    v.sleepDebtH = 0;
+  }
+  s.ops.evaMaxH = evaLimit(mission, s);
+  s.ops.oxygenH = s.ops.evaMaxH;
+}
+function spendEva(mission: MissionDefinition, s: MissionState, idx: number, hours: number) {
+  s.ops.oxygenH -= hours;
+  s.ops.evaUsedH += hours;
+  if (s.crew) {
+    s.crew.vitals.fatigue = clamp01(s.crew.vitals.fatigue + hours * 3);
+    s.crew.vitals.hydration = clamp01(s.crew.vitals.hydration - hours * 2);
+  }
+  if (s.ops.oxygenH <= 0) {
+    if (!s.flags.unsafeChoices.includes('eva-limit')) s.flags.unsafeChoices.push('eva-limit');
+    log(s, idx, { kind: 'safety', title: t('EVA limit exceeded'), detail: t('Suit consumables ran out far from the lander. The crew was ordered straight back — a safety violation.') });
+    endEva(mission, s, 10);
+  }
+}
 
 export function initialState(mission: MissionDefinition, seed: number): MissionState {
   return {
@@ -58,6 +105,11 @@ export function initialState(mission: MissionDefinition, seed: number): MissionS
       sitesFound: [],
       solarFactor: 1,
       dustUntil: 0,
+      oxygenH: 0,
+      evaMaxH: 0,
+      evaUsedH: 0,
+      inKeepOut: false,
+      keepOutViolations: 0,
     },
     events: {},
     evidence: { observations: [], alertShown: false, downlinked: [] },
@@ -79,6 +131,25 @@ function unlock(s: MissionState, id: string) {
 
 function triggerNextEvent(mission: MissionDefinition, s: MissionState) {
   if (s.pendingEvent) return;
+  if (mission.eventTriggers) {
+    for (const ev of mission.events) {
+      if (s.events[ev.id]) continue;
+      const tr = mission.eventTriggers[ev.id];
+      if (!tr) continue;
+      const ok =
+        (tr.sol === undefined || s.ops.sol >= tr.sol) &&
+        (tr.distance === undefined || s.ops.distanceU >= tr.distance) &&
+        (!tr.arrive || s.ops.arrived) &&
+        (tr.evaUsed === undefined || s.ops.evaUsedH >= tr.evaUsed) &&
+        (tr.observations === undefined || s.evidence.observations.length >= tr.observations);
+      if (ok) {
+        s.pendingEvent = ev.id;
+        s.events[ev.id] = {};
+        return;
+      }
+    }
+    return;
+  }
   const open = !!mission.sites;
   if (open && s.ops.sol >= 4 && !s.events['ev-dust'] && mission.events.some((e) => e.id === 'ev-dust')) {
     s.pendingEvent = 'ev-dust';
@@ -127,6 +198,12 @@ export function step(mission: MissionDefinition, prev: MissionState, action: Act
       if (s.stage === 'briefing' && !s.sciencePriority) return prev;
       if (s.stage === 'surface' && (!s.ops.arrived || s.pendingEvent)) return prev;
       if (s.stage === 'evidence' && (s.evidence.observations.length === 0 || (s.evidence.alertShown && !s.evidence.alertChoice))) return prev;
+      if (s.stage === 'cruise' && s.crew && s.crew.step < (mission.cruise?.length ?? 0)) return prev;
+      if (action.to === 'surface' && (s.stage === 'orbit' || s.stage === 'cruise')) startSurface(mission, s);
+      if (action.to === 'observe') {
+        s.scope = { night: 1, hoursLeft: mission.telescope?.hoursPerNight ?? 6, pointed: false, images: [] };
+        s.ops.sol = 1;
+      }
       if (s.stage === 'briefing') {
         const h = mission.hypotheses.find((x) => x.id === s.sciencePriority);
         log(s, idx, { kind: 'science', title: t('Science priority chosen'), detail: t('Main question: {h}', { h: h?.name ?? '' }) });
@@ -164,6 +241,7 @@ export function step(mission: MissionDefinition, prev: MissionState, action: Act
       if (s.stage !== 'review') return prev;
       if (!isLaunchReady(evaluateRules(mission, s.design, s.sciencePriority))) return prev;
       s.launched = true;
+      if (mission.crew) s.crew = { vitals: { fatigue: 20, hydration: 80, fitness: 80, stress: 25, doseMSv: 0, sleepDebtH: 1 }, step: 0, choices: {}, scienceBonus: 0 };
       s.ops.batteryCapWh = metrics.batteryWh;
       s.ops.batteryWh = metrics.batteryWh;
       s.ops.opsReserveM = metrics.reserveRemainingM;
@@ -283,6 +361,39 @@ export function step(mission: MissionDefinition, prev: MissionState, action: Act
           s.ops.batteryCapWh *= 0.8;
         }
         s.ops.batteryWh = Math.min(s.ops.batteryWh, s.ops.batteryCapWh);
+      } else if (ev.id === 'ev-fatigue') {
+        const v = s.crew?.vitals;
+        if (choice === 'end') endEva(mission, s, 30);
+        else if (choice === 'reorganize') {
+          s.ops.oxygenH = Math.max(0.5, s.ops.oxygenH - 1);
+          if (v) v.fatigue = clamp01(v.fatigue - 5);
+        } else {
+          if (v) v.fatigue = clamp01(v.fatigue + 15);
+          if ((v?.fatigue ?? 0) >= 55) s.flags.unsafeChoices.push('ev-fatigue');
+        }
+      } else if (ev.id === 'ev-solar-crew') {
+        const v = s.crew?.vitals;
+        const exposure = 1 - metrics.radiationHardness;
+        if (choice === 'shelter') {
+          const l = landerSite(mission);
+          if (l) s.ops.pos = [l.pos[0] + 6, l.pos[1] + 6];
+          s.ops.sol += 0.5;
+          if (v) v.doseMSv += 1;
+        } else if (choice === 'postpone') {
+          s.ops.oxygenH = Math.max(0.5, s.ops.oxygenH - 1.5);
+          if (v) v.doseMSv += 4 * exposure + 1;
+        } else {
+          if (v) v.doseMSv += 40 * exposure + 5;
+          s.flags.unsafeChoices.push('ev-solar-crew');
+        }
+      } else if (ev.id === 'ev-solar-scope') {
+        const exposure = 1 - metrics.radiationHardness;
+        if (choice === 'safe') {
+          if (s.scope) s.scope.hoursLeft = Math.max(0, s.scope.hoursLeft - 2);
+        } else {
+          s.ops.electronicsHealth = Math.max(0, s.ops.electronicsHealth - exposure * 60);
+          s.flags.unsafeChoices.push('ev-solar-scope');
+        }
       } else if (ev.id === 'ev-dust') {
         if (choice === 'wait') {
           s.ops.sol += 2;
@@ -381,6 +492,16 @@ export function step(mission: MissionDefinition, prev: MissionState, action: Act
       const dist = Math.max(0, Math.min(action.dist, 400));
       const cost = driveCost(metrics, dist, action.slopeAvg, action.boostFrac);
       const floor = batteryFloor(s.ops);
+      if (mission.type === 'crewed') {
+        s.ops.distanceU += dist;
+        s.ops.pos = [action.pos[0], action.pos[1]];
+        s.ops.heading = action.heading;
+        s.ops.sol += cost.hours / 24;
+        const wk = 1.2 - metrics.wheelDurability;
+        s.ops.wheelHealth = Math.max(0, s.ops.wheelHealth - dist * 0.01 * wk - action.bumps * 2 * wk);
+        s.ops.bumps += action.bumps;
+        spendEva(mission, s, idx, cost.hours);
+      } else {
       s.ops.sol += cost.hours / SOL_HOURS;
       s.ops.batteryWh = Math.min(s.ops.batteryCapWh, s.ops.batteryWh - cost.energyWh + (netPerSol(metrics, s.ops) * cost.hours) / SOL_HOURS);
       let forced = 0;
@@ -401,22 +522,42 @@ export function step(mission: MissionDefinition, prev: MissionState, action: Act
       s.ops.distanceU += dist;
       s.ops.pos = [action.pos[0], action.pos[1]];
       s.ops.heading = action.heading;
+      }
+      const ko = mission.world?.keepOut;
+      if (ko) {
+        const site = mission.sites?.find((x) => x.id === ko.siteId);
+        const inside = !!site && siteDistance(site, s.ops.pos) < ko.radius;
+        if (inside && !s.ops.inKeepOut) {
+          s.ops.keepOutViolations++;
+          if (!s.flags.unsafeChoices.includes('keep-out')) s.flags.unsafeChoices.push('keep-out');
+          log(s, idx, { kind: 'safety', title: t('Entered the protected heritage zone'), detail: t('Historic hardware and tracks can be damaged. Document from outside the boundary.') });
+        }
+        s.ops.inKeepOut = inside;
+      }
       for (const site of mission.sites ?? []) {
         if (!s.ops.sitesFound.includes(site.id) && siteDistance(site, s.ops.pos) <= DISCOVER_RADIUS) {
           s.ops.sitesFound.push(site.id);
           log(s, idx, { kind: 'operation', title: t('Discovered: {site}', { site: site.name }), detail: site.hint });
         }
       }
-      const rock = mission.sites?.find((x) => x.kind === 'rock');
+      const rock = mainSite(mission);
       if (rock && !s.ops.arrived && siteDistance(rock, s.ops.pos) <= rock.radius + 6) {
         s.ops.arrived = true;
-        unlock(s, 'arch-cheyava');
+        if (rock.kind === 'rock') unlock(s, 'arch-cheyava');
       }
       triggerNextEvent(mission, s);
       return s;
     }
     case 'REST': {
       if (s.stage !== 'surface' || s.pendingEvent) return prev;
+      if (mission.type === 'crewed') {
+        const l = landerSite(mission);
+        if (!l || siteDistance(l, s.ops.pos) > l.radius + 8) return prev;
+        endEva(mission, s);
+        log(s, idx, { kind: 'operation', title: t('EVA ended at the lander'), detail: t('The crew rested, ate and slept. Suits refilled.') });
+        triggerNextEvent(mission, s);
+        return s;
+      }
       s.ops.sol = Math.floor(s.ops.sol) + 1;
       s.ops.rests++;
       s.ops.batteryWh = Math.min(s.ops.batteryCapWh, Math.max(batteryFloor(s.ops), s.ops.batteryWh) + Math.max(0, netPerSol(metrics, s.ops)));
@@ -432,6 +573,15 @@ export function step(mission: MissionDefinition, prev: MissionState, action: Act
       if (siteDistance(site, s.ops.pos) > site.radius + 6) return prev;
       if (!observationAvailability(mission, s, metrics, obs).ok) return prev;
       if (obs.id === 'obs-depot' && !s.evidence.observations.some((o) => o.id === 'obs-cache')) return prev;
+      if (mission.type === 'crewed') {
+        const quality = observationQuality(mission, s, obs);
+        s.evidence.observations.push({ id: obs.id, quality, sol: s.ops.sol, site: site.id });
+        s.ops.dataStoredMb += observationDataMb(mission, s.design, obs);
+        log(s, idx, { kind: 'science', title: obs.name, detail: t('{site} · quality: {q}', { site: site.name, q: quality }) });
+        spendEva(mission, s, idx, obs.hours);
+        triggerNextEvent(mission, s);
+        return s;
+      }
       const act = simulateActivity(s.ops, metrics, obs.hours, observationPowerW(mission, s.design, obs), MODEL.scienceHoursPerSol);
       if (!act.completed) {
         s.flags.notes.push(t('Not enough energy to complete {o}.', { o: obs.name }));
@@ -452,8 +602,84 @@ export function step(mission: MissionDefinition, prev: MissionState, action: Act
       triggerNextEvent(mission, s);
       return s;
     }
+    case 'CREW_CHOICE': {
+      if (s.stage !== 'cruise' || !s.crew || !mission.cruise) return prev;
+      const stepDef = mission.cruise[s.crew.step];
+      if (!stepDef || stepDef.id !== action.stepId) return prev;
+      const opt = stepDef.options.find((o) => o.id === action.optionId);
+      if (!opt) return prev;
+      const v = s.crew.vitals;
+      const e = opt.effects;
+      if (e.fatigue) v.fatigue = clamp01(v.fatigue + e.fatigue);
+      if (e.hydration) v.hydration = clamp01(v.hydration + e.hydration);
+      if (e.fitness) v.fitness = clamp01(v.fitness + e.fitness);
+      if (e.stress) v.stress = clamp01(v.stress + e.stress);
+      if (e.doseMSv) v.doseMSv = Math.max(0, v.doseMSv + e.doseMSv * (1 - metrics.radiationHardness * 0.6));
+      if (e.sleepDebtH) v.sleepDebtH = Math.max(0, v.sleepDebtH + e.sleepDebtH);
+      if (e.science) s.crew.scienceBonus += e.science;
+      if (opt.unsafe) s.flags.unsafeChoices.push('cruise-' + stepDef.id);
+      s.crew.choices[stepDef.id] = opt.id;
+      s.crew.step++;
+      log(s, idx, { kind: opt.unsafe ? 'safety' : 'operation', title: stepDef.title, detail: opt.label });
+      return s;
+    }
+    case 'SCOPE_POINT': {
+      if (s.stage !== 'observe' || !s.scope || s.scope.pointed || s.pendingEvent) return prev;
+      const h = metrics.capabilities.includes('fast-slew') ? 0.3 : 1.2;
+      if (s.scope.hoursLeft < h) return prev;
+      s.scope.hoursLeft -= h;
+      s.scope.pointed = true;
+      s.ops.arrived = true;
+      return s;
+    }
+    case 'SCOPE_IMAGE': {
+      if (s.stage !== 'observe' || !s.scope || !s.scope.pointed || s.pendingEvent) return prev;
+      const need = action.filter === 'visible' ? 'visible' : action.filter === 'uv' ? 'uv' : 'infrared';
+      if (!metrics.capabilities.includes(need) || s.scope.hoursLeft < action.exposure) return prev;
+      const tel = mission.telescope!;
+      const optics = optionById(mission, s.design.selections.optics)?.tier ?? 'basic';
+      const ap = optics === 'advanced' ? 2.33 : optics === 'balanced' ? 1.67 : 1;
+      const bright = tel.brightness[Math.min(tel.brightness.length - 1, s.scope.night - 1)];
+      let snr = 10 * ap * Math.sqrt(action.exposure / 0.5) * Math.sqrt(bright) * (s.ops.electronicsHealth < 60 ? 0.6 : 1);
+      const bus = optionById(mission, s.design.selections.platform)?.tier ?? 'basic';
+      if (action.exposure >= 1 && bus === 'basic') snr *= 0.6;
+      const quality = snr < 8 ? 'low' : snr < 16 ? 'good' : 'high';
+      s.scope.hoursLeft -= action.exposure;
+      s.scope.images.push({ night: s.scope.night, filter: action.filter, exposure: action.exposure, snr, quality });
+      const addObs = (id: string) => {
+        if (!s.evidence.observations.some((o) => o.id === id)) s.evidence.observations.push({ id, quality, sol: s.ops.sol });
+      };
+      addObs('obs-n' + s.scope.night);
+      if (action.filter === 'uv') addObs('obs-uv');
+      if (action.filter === 'infrared') addObs('obs-ir');
+      log(s, idx, { kind: 'science', title: t('Night {n}: {f} image', { n: s.scope.night, f: action.filter }), detail: t('Signal-to-noise {snr} · quality: {q}', { snr: Math.round(snr), q: quality }) });
+      triggerNextEvent(mission, s);
+      return s;
+    }
+    case 'SCOPE_SPECTRUM': {
+      if (s.stage !== 'observe' || !s.scope || !s.scope.pointed || s.pendingEvent || s.scope.spectrum) return prev;
+      if (!metrics.capabilities.includes('spectrum') || s.scope.hoursLeft < 1.5) return prev;
+      const optics = optionById(mission, s.design.selections.optics)?.tier ?? 'basic';
+      const quality = optics === 'basic' ? 'low' : optics === 'balanced' ? 'good' : 'high';
+      s.scope.hoursLeft -= 1.5;
+      s.scope.spectrum = quality;
+      s.evidence.observations.push({ id: 'obs-spectrum', quality, sol: s.ops.sol });
+      log(s, idx, { kind: 'science', title: t('Spectrum taken'), detail: t('quality: {q}', { q: quality }) });
+      return s;
+    }
+    case 'SCOPE_NEXT_NIGHT': {
+      if (s.stage !== 'observe' || !s.scope || s.pendingEvent) return prev;
+      const tel = mission.telescope!;
+      if (s.scope.night >= tel.nights) return prev;
+      s.scope.night++;
+      s.scope.hoursLeft = tel.hoursPerNight;
+      s.scope.pointed = false;
+      s.ops.sol += 1;
+      triggerNextEvent(mission, s);
+      return s;
+    }
     case 'SEND_REPORT': {
-      if (s.stage !== 'surface' || s.pendingEvent || s.evidence.observations.length === 0) return prev;
+      if ((s.stage !== 'surface' && s.stage !== 'observe') || s.pendingEvent || s.evidence.observations.length === 0) return prev;
       if (s.evidence.alertShown && !s.evidence.alertChoice) return prev;
       // Automatic downlink: most valuable data first, within the capacity your antenna allows.
       const cap = downlinkCapacityMb(mission, s, metrics);
@@ -471,6 +697,20 @@ export function step(mission: MissionDefinition, prev: MissionState, action: Act
       s.evidence.downlinked = sent;
       const did = (id: string) => s.evidence.observations.some((o) => o.id === id);
       const statements: string[] = [];
+      if (action.conclusion === 'summary' || mission.reportStyle === 'summary' || mission.telescope) {
+        for (const st of mission.statements) {
+          if (st.kind === 'caution') statements.push(st.id);
+          else if (st.kind === 'supported-claim' && statementSupported(st, sent)) statements.push(st.id);
+        }
+        if (action.conclusion === 'proven') statements.push(...mission.statements.filter((x) => x.kind === 'overclaim').map((x) => x.id));
+        if (action.conclusion === 'nothing') statements.splice(0, statements.length, ...mission.statements.filter((x) => x.kind === 'dismissive').map((x) => x.id));
+        if (action.conclusion === 'proven') s.flags.overclaimed = true;
+        s.evidence.report = statements;
+        s.outcome = computeOutcome(mission, s);
+        log(s, idx, { kind: 'science', checkpoint: true, title: t('Mission summary sent to Earth'), detail: t('{d} of {n} data products fit in the downlink.', { d: sent.length, n: s.evidence.observations.length }) });
+        s.stage = 'debrief';
+        return s;
+      }
       if (action.conclusion === 'proven') statements.push('st-proven');
       else if (action.conclusion === 'nothing') statements.push('st-unimportant');
       else {

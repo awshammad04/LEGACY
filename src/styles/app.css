@@ -347,3 +347,18 @@ details summary { cursor: pointer; }
 .sub-close:hover { color: var(--text); }
 :root.exploring .subtitles { bottom: 16px; }
 @media (pointer: coarse) { :root.exploring .subtitles { bottom: 210px; } }
+
+/* ---------- Crew health ---------- */
+.crew-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
+@media (max-width: 1000px) { .crew-grid { grid-template-columns: 1fr; } }
+.crew-card { padding: 7px 9px; border-radius: 9px; border: 1px solid var(--line); background: rgba(255, 255, 255, 0.03); display: flex; flex-direction: column; gap: 2px; }
+.crew-bar { display: grid; grid-template-columns: 96px 1fr 56px; align-items: center; gap: 8px; }
+.crew-bar .mono { text-align: end; }
+.status-normal { color: #7fe3a5; border-color: rgba(74, 222, 128, 0.45); background: rgba(74, 222, 128, 0.08); }
+.status-attention { color: #ffcf85; border-color: rgba(255, 181, 71, 0.5); background: rgba(255, 181, 71, 0.08); }
+.status-action { color: #ff8a8a; border-color: rgba(255, 107, 107, 0.5); background: rgba(255, 107, 107, 0.1); }
+.cruise-step { display: flex; gap: 10px; align-items: center; padding: 7px 10px; border-radius: 9px; color: var(--text-3); font-size: 13.5px; }
+.cruise-step.current { color: var(--text); background: rgba(90, 209, 255, 0.1); border: 1px solid rgba(90, 209, 255, 0.35); }
+.cruise-step.done { color: var(--green); }
+.cruise-step .t { font-family: var(--font-mono); font-size: 12px; width: 44px; flex: none; }
+.scope-canvas { width: 100%; height: auto; border-radius: 12px; border: 1px solid var(--line-strong); background: #02030a; display: block; }

@@ -404,3 +404,111 @@ function Smoke() {
     </group>
   );
 }
+
+/* ------------------------------------------------------------------ */
+/* Journey to the Moon — the view from the crew cabin window            */
+/* ------------------------------------------------------------------ */
+
+function ProceduralMoon({ radius = 1 }: { radius?: number }) {
+  const geo = useMemo(() => {
+    const g = new THREE.SphereGeometry(radius, 96, 96);
+    const pos = g.attributes.position as THREE.BufferAttribute;
+    const colors = new Float32Array(pos.count * 3);
+    const c = new THREE.Color();
+    for (let i = 0; i < pos.count; i++) {
+      const x = pos.getX(i);
+      const y = pos.getY(i);
+      const z = pos.getZ(i);
+      const n = Math.sin(x * 7.1 + y * 3.3) * Math.cos(z * 5.7 - x * 2.1) + Math.sin(y * 11 + z * 9) * 0.4;
+      const mare = Math.sin(x * 2.2 + 1) * Math.cos(y * 1.7 - z) > 0.35 ? 0.55 : 0.8;
+      c.setScalar(mare + n * 0.06);
+      colors.set([c.r, c.g, c.b], i * 3);
+    }
+    g.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+    return g;
+  }, [radius]);
+  return (
+    <mesh geometry={geo}>
+      <meshStandardMaterial vertexColors roughness={1} />
+    </mesh>
+  );
+}
+
+export function CruiseScene() {
+  const step = useGame((s) => s.state?.crew?.step ?? 0);
+  const total = useGame((s) => (s.missionId ? getMission(s.missionId).cruise?.length ?? 5 : 5));
+  const moon = useRef<THREE.Group>(null);
+  const drift = useRef<THREE.Mesh>(null);
+  useFrame(({ clock }, dt) => {
+    const k = Math.min(1, step / total);
+    if (moon.current) {
+      const target = 0.6 + k * 1.6;
+      const sc = THREE.MathUtils.lerp(moon.current.scale.x, target, Math.min(1, dt * 1.5));
+      moon.current.scale.setScalar(sc);
+      moon.current.rotation.y += dt * 0.02;
+    }
+    if (drift.current) {
+      drift.current.position.set(Math.sin(clock.elapsedTime * 0.4) * 0.6, 0.4 + Math.sin(clock.elapsedTime * 0.7) * 0.25, 4.2);
+      drift.current.rotation.x += dt * 0.6;
+    }
+  });
+  return (
+    <>
+      <SpaceBackdrop count={5000} />
+      <ambientLight intensity={0.12} />
+      <directionalLight position={[6, 2, 6]} intensity={2.6} color="#fff6e8" />
+      <group ref={moon} position={[0.8, 0.2, -6]}>
+        <ProceduralMoon radius={1.4} />
+      </group>
+      <group position={[-7, -2.5, -14]} scale={0.7}>
+        <Earth radius={1.2} spin={0.03} />
+      </group>
+      {/* Cabin window frame */}
+      <mesh position={[0, 0, 3]}>
+        <ringGeometry args={[2.3, 6, 64]} />
+        <meshStandardMaterial color="#1a2030" roughness={0.8} metalness={0.3} side={THREE.DoubleSide} />
+      </mesh>
+      <mesh position={[0, 0, 3.02]}>
+        <torusGeometry args={[2.3, 0.12, 12, 64]} />
+        <meshStandardMaterial color="#8a93a3" metalness={0.8} roughness={0.3} />
+      </mesh>
+      {/* A floating water drop: microgravity */}
+      <mesh ref={drift}>
+        <sphereGeometry args={[0.09, 20, 20]} />
+        <meshStandardMaterial color="#9fd8ff" transparent opacity={0.8} roughness={0.05} metalness={0.1} />
+      </mesh>
+      <CameraRig position={[0, 0, 6]} target={[0, 0, 0]} lerp={1} />
+    </>
+  );
+}
+
+/* ------------------------------------------------------------------ */
+/* Observatory in orbit (Mission 04)                                    */
+/* ------------------------------------------------------------------ */
+
+export function ObserveScene() {
+  const state = useGame((s) => s.state);
+  const missionId = useGame((s) => s.missionId);
+  const g = useRef<THREE.Group>(null);
+  useFrame(({ clock }) => {
+    if (g.current) {
+      g.current.rotation.y = Math.sin(clock.elapsedTime * 0.15) * 0.3;
+      g.current.position.y = 0.6 + Math.sin(clock.elapsedTime * 0.5) * 0.05;
+    }
+  });
+  if (!state || !missionId) return null;
+  return (
+    <>
+      <SpaceBackdrop />
+      <ambientLight intensity={0.15} />
+      <directionalLight position={[-6, 4, 8]} intensity={3} color="#fff6e8" />
+      <group position={[2.5, -5.5, -6]}>
+        <Earth radius={4.5} spin={0.01} />
+      </group>
+      <group ref={g} position={[0, 0.6, 0]} rotation={[0.35, 0, 0]}>
+        <TelescopeModel mission={getMission(missionId)} design={state.design} />
+      </group>
+      <CameraRig position={[0, 1.6, 6.5]} target={[0, 1, 0]} lerp={1} />
+    </>
+  );
+}

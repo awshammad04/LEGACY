@@ -77,7 +77,8 @@ function WhatIfMachine() {
   const [changes, setChanges] = useState<Record<string, string>>({});
   const [addons, setAddons] = useState<string[]>(state.design.addons);
   const [result, setResult] = useState<WhatIfResult | null>(null);
-  const instruments = mission.slots.find((s) => s.id === 'instruments')!;
+  const instruments = mission.slots.find((s) => s.id === 'instruments') ?? { options: [] as typeof mission.slots[number]['options'] };
+  const whatIfSlots = WHATIF_SLOTS.filter((id) => mission.slots.some((s) => s.id === id)).concat(mission.slots.filter((s) => !s.multi && !WHATIF_SLOTS.includes(s.id) && s.id !== 'launcher' && s.id !== 'storage').map((s) => s.id)).slice(0, 6);
 
   const run = () => {
     const acts: Action[] = Object.entries(changes)
@@ -96,7 +97,7 @@ function WhatIfMachine() {
     <div className="stack">
       <p className="small muted">{t('Change your Earth design and re-run the same rules. Every later decision you made is replayed; decisions that no longer make sense are skipped. Nothing here is prewritten — the outcome is recomputed.')}</p>
       <div className="addon-grid">
-        {WHATIF_SLOTS.map((slotId) => {
+        {whatIfSlots.map((slotId) => {
           const slot = mission.slots.find((s) => s.id === slotId)!;
           const cur = changes[slotId] ?? state.design.selections[slotId];
           return (

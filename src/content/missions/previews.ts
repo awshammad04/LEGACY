@@ -98,7 +98,7 @@ export const M1: MissionDefinition = {
       { id: 'm1-lander-advanced', tier: 'advanced', name: L('Precision crew lander'), description: L('Carries up to 2,800 kg and lands with hazard avoidance.'), costM: 1000, massKg: 0, powerW: 0, thermal: 0, edlSystemMassKg: 14000, landingCapacityKg: 2800, ellipseKm: 0.3 },
     ]),
     slot('chassis', 'vehicle', L('Surface mobility'), L('Apollo 15 was the first mission to carry a Lunar Roving Vehicle. A rover extends how far the crew can explore — but adds mass and power.'), [
-      { id: 'm1-rover-basic', tier: 'basic', name: L('Foot traverses only'), description: L('No rover. The crew can only explore close to the lander.'), costM: 0, massKg: 0, powerW: 0, thermal: 0, drivePowerW: 0, maxSpeedMPerH: 0, slopeLimitDeg: 15, wheelDurability: 1 },
+      { id: 'm1-rover-basic', tier: 'basic', name: L('Foot traverses only'), description: L('No rover. The crew can only explore close to the lander.'), costM: 0, massKg: 0, powerW: 0, thermal: 0, drivePowerW: 0, maxSpeedMPerH: 3000, slopeLimitDeg: 15, wheelDurability: 1 },
       { id: 'm1-rover-balanced', tier: 'balanced', name: L('Unpressurized lunar rover'), description: L('Two-seat rover inspired by the Apollo Lunar Roving Vehicle.'), costM: 180, massKg: 220, powerW: 0, thermal: 10, drivePowerW: 250, maxSpeedMPerH: 10000, slopeLimitDeg: 20, wheelDurability: 0.8, inspiredBy: { name: 'Apollo Lunar Roving Vehicle', sourceId: 'nasa-apollo15' } },
       { id: 'm1-rover-advanced', tier: 'advanced', name: L('Long-range lunar rover'), description: L('Bigger batteries and tougher wheels for longer traverses.'), costM: 300, massKg: 300, powerW: 0, thermal: 15, drivePowerW: 350, maxSpeedMPerH: 12000, slopeLimitDeg: 25, wheelDurability: 1 },
     ]),

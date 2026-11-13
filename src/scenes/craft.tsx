@@ -136,3 +136,131 @@ export function LanderModel({ mission, design }: { mission: MissionDefinition; d
     </group>
   );
 }
+
+/* ------------------------------------------------------------------ */
+/* Open-world vehicles and heritage props (procedural reconstructions)  */
+/* ------------------------------------------------------------------ */
+
+/** Lunar Roving Vehicle–style rover with two seated astronauts (reconstruction). */
+export function LrvModel() {
+  return (
+    <group scale={1.3}>
+      <mesh position={[0, 0.75, 0]} castShadow>
+        <boxGeometry args={[2.6, 0.12, 1.5]} />
+        <meshStandardMaterial color={GREY} metalness={0.6} roughness={0.4} />
+      </mesh>
+      {[-1, 1].map((x) =>
+        [-1, 1].map((z) => (
+          <mesh key={`${x}${z}`} position={[x * 1.05, 0.42, z * 0.85]} rotation={[Math.PI / 2, 0, 0]} castShadow>
+            <cylinderGeometry args={[0.42, 0.42, 0.24, 18]} />
+            <meshStandardMaterial color="#9a8f78" roughness={0.9} />
+          </mesh>
+        )),
+      )}
+      <mesh position={[1.1, 1.35, 0]}>
+        <cylinderGeometry args={[0.38, 0.02, 0.18, 20]} />
+        <meshStandardMaterial color={WHITE} />
+      </mesh>
+      {[-0.35, 0.35].map((z) => (
+        <group key={z} position={[-0.25, 0.85, z]}>
+          <mesh position={[0, 0.45, 0]} castShadow>
+            <capsuleGeometry args={[0.2, 0.45, 6, 12]} />
+            <meshStandardMaterial color="#f3f4f6" roughness={0.6} />
+          </mesh>
+          <mesh position={[0, 0.98, 0]}>
+            <sphereGeometry args={[0.17, 16, 16]} />
+            <meshStandardMaterial color={GOLD} metalness={0.9} roughness={0.15} />
+          </mesh>
+        </group>
+      ))}
+    </group>
+  );
+}
+
+/** A walking astronaut (used when the crew has no rover). */
+export function AstronautModel() {
+  return (
+    <group scale={1.4}>
+      <mesh position={[0, 0.9, 0]} castShadow>
+        <capsuleGeometry args={[0.32, 0.7, 6, 14]} />
+        <meshStandardMaterial color="#f3f4f6" roughness={0.6} />
+      </mesh>
+      <mesh position={[0, 1.65, 0]} castShadow>
+        <sphereGeometry args={[0.28, 18, 18]} />
+        <meshStandardMaterial color="#f3f4f6" />
+      </mesh>
+      <mesh position={[0.18, 1.66, 0]}>
+        <sphereGeometry args={[0.2, 16, 16]} />
+        <meshStandardMaterial color={GOLD} metalness={0.9} roughness={0.15} />
+      </mesh>
+      <mesh position={[-0.36, 1.0, 0]} castShadow>
+        <boxGeometry args={[0.3, 0.6, 0.5]} />
+        <meshStandardMaterial color="#d6d9de" />
+      </mesh>
+    </group>
+  );
+}
+
+/** Apollo lunar module descent stage left on the Moon (reconstruction). */
+export function DescentStageModel() {
+  return (
+    <group scale={1.6}>
+      {[0, 1, 2, 3].map((i) => {
+        const a = (i / 4) * Math.PI * 2 + Math.PI / 4;
+        return (
+          <group key={i}>
+            <mesh position={[Math.cos(a) * 1.05, 0.55, Math.sin(a) * 1.05]} rotation={[Math.sin(a) * 0.5, 0, -Math.cos(a) * 0.5]}>
+              <cylinderGeometry args={[0.05, 0.05, 1.3, 8]} />
+              <meshStandardMaterial color={GREY} metalness={0.7} roughness={0.3} />
+            </mesh>
+            <mesh position={[Math.cos(a) * 1.35, 0.03, Math.sin(a) * 1.35]}>
+              <cylinderGeometry args={[0.2, 0.22, 0.05, 16]} />
+              <meshStandardMaterial color={GREY} />
+            </mesh>
+          </group>
+        );
+      })}
+      <mesh position={[0, 1.15, 0]} castShadow>
+        <cylinderGeometry args={[0.95, 1.05, 0.8, 8]} />
+        <meshStandardMaterial color={GOLD} metalness={0.85} roughness={0.3} />
+      </mesh>
+      <mesh position={[0.5, 1.7, 0.4]} rotation={[0, 0, 0.1]}>
+        <cylinderGeometry args={[0.02, 0.02, 1.1, 6]} />
+        <meshStandardMaterial color={WHITE} />
+      </mesh>
+    </group>
+  );
+}
+
+/** Mars Exploration Rover–style rover (Opportunity), dusty (reconstruction). */
+export function MerModel() {
+  const dust = '#b07a52';
+  return (
+    <group scale={1.3}>
+      {[-1, 1].map((side) =>
+        [-0.8, 0, 0.8].map((x) => (
+          <mesh key={`${side}${x}`} position={[x, 0.25, side * 0.75]} rotation={[Math.PI / 2, 0, 0]} castShadow>
+            <cylinderGeometry args={[0.25, 0.25, 0.18, 14]} />
+            <meshStandardMaterial color="#5b4636" roughness={0.9} />
+          </mesh>
+        )),
+      )}
+      <mesh position={[0, 0.65, 0]} castShadow>
+        <boxGeometry args={[1.4, 0.35, 1.0]} />
+        <meshStandardMaterial color={dust} roughness={0.9} />
+      </mesh>
+      <mesh position={[0, 0.86, 0]}>
+        <boxGeometry args={[2.2, 0.04, 1.9]} />
+        <meshStandardMaterial color="#7a5a44" roughness={0.85} />
+      </mesh>
+      <mesh position={[0.55, 1.35, 0.3]}>
+        <cylinderGeometry args={[0.04, 0.05, 1.0, 8]} />
+        <meshStandardMaterial color={dust} />
+      </mesh>
+      <mesh position={[0.6, 1.88, 0.3]}>
+        <boxGeometry args={[0.2, 0.14, 0.38]} />
+        <meshStandardMaterial color={dust} />
+      </mesh>
+    </group>
+  );
+}

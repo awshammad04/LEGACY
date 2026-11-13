@@ -13,6 +13,29 @@ import { Modal, openLearnCard } from '../common';
 import { Figure } from '../Figure';
 import { EvidenceBoard } from './EvidenceScreens';
 import { EquipmentPanel } from './SurfaceScreen';
+import { CrewPanel, StatusChip } from '../CrewPanel';
+import type { MissionState, MissionDefinition as MDef, Objective as Obj } from '../../core/types';
+
+function objectiveDone(o: Obj, state: MissionState, mission: MDef) {
+  const did = (id: string) => state.evidence.observations.some((x) => x.id === id);
+  if (o.done.arrive) {
+    const site = mission.sites?.find((x) => x.id === o.done.arrive);
+    const main = site && (site.kind === 'rock' || site.kind === 'heritage');
+    return state.ops.sitesFound.includes(o.done.arrive) && (!main || state.ops.arrived);
+  }
+  if (o.done.anyObs) return o.done.anyObs.some(did);
+  if (o.done.allObs) return o.done.allObs.every(did);
+  return false;
+}
+
+function useKeepOut() {
+  const { mission } = useMissionBits();
+  const pos = useLive((s) => s.pos);
+  const ko = mission.world?.keepOut;
+  if (!ko) return false;
+  const site = mission.sites?.find((x) => x.id === ko.siteId);
+  return !!site && Math.hypot(site.pos[0] - pos[0], site.pos[1] - pos[1]) < ko.radius;
+}
 
 const OBS_IMAGE: Record<string, string> = {
   'obs-context': 'assets/img/cheyava-falls.jpg',
@@ -39,13 +62,21 @@ function Objective() {
   const battPct = (state.ops.batteryWh - pending) / Math.max(1, state.ops.batteryCapWh);
   const tests = ['obs-context', 'obs-xrf', 'obs-raman'].filter(did).length;
   const tested = did('obs-xrf') || did('obs-raman');
-  const steps = [
-    { done: state.ops.arrived, label: t('Find the leopard-spot rock'), hint: rockFound ? t('Drive into the glowing ring.') : t('Follow the yellow beacon into the old river valley.') },
-    { done: tested, label: t('Test the rock'), hint: state.ops.arrived ? t('Press E — photograph it, then test its chemistry.') : '' },
-    { done: false, label: t('Report to Earth'), hint: tested ? t('Press F when you are ready.') : '' },
-  ];
+  const custom = mission.objectives;
+  const steps = custom
+    ? [
+        ...custom.map((o) => ({ done: objectiveDone(o, state, mission), label: t(o.label), hint: t(o.hint) })),
+        { done: false, label: t('Report to Earth'), hint: t('Press F when you are ready.') },
+      ].slice(0, 3)
+    : [
+        { done: state.ops.arrived, label: t('Find the leopard-spot rock'), hint: rockFound ? t('Drive into the glowing ring.') : t('Follow the yellow beacon into the old river valley.') },
+        { done: tested, label: t('Test the rock'), hint: state.ops.arrived ? t('Press E — photograph it, then test its chemistry.') : '' },
+        { done: false, label: t('Report to Earth'), hint: tested ? t('Press F when you are ready.') : '' },
+      ];
+  const inKeepOut = useKeepOut();
+  const crewed = mission.type === 'crewed';
   const current = steps.findIndex((s) => !s.done);
-  const late = state.ops.sol >= mission.conjunctionSol;
+  const late = mission.conjunctionSol > 0 && state.ops.sol >= mission.conjunctionSol;
   const sites = mission.sites?.length ?? 0;
   return (
     <div className="hud-card fade-in" role="status" aria-live="polite">
@@ -68,11 +99,14 @@ function Objective() {
           ⭐ <strong className="mono">{sciencePoints(state)}</strong> {t('science')}
         </span>
         <span className="muted">
-          🗺 {state.ops.sitesFound.length}/{sites} {t('sites')} · 🧪 {tests}/3
+          🗺 {state.ops.sitesFound.length}/{sites} {t('sites')}
+          {mission.id === 'm2-martian-mystery' ? ` · 🧪 ${tests}/3` : ` · 📷 ${state.evidence.observations.length}`}
         </span>
       </div>
-      {battPct < 0.32 && <span className="small warn">⚡ {t('Battery low — press R to rest and recharge.')}</span>}
-      {late && <span className="small bad">📡 {t('Solar conjunction has begun — send your report now. It will arrive late.')}</span>}
+      {!crewed && battPct < 0.32 && <span className="small warn">⚡ {t('Battery low — press R to rest and recharge.')}</span>}
+      {crewed && state.ops.oxygenH < 1.5 && <span className="small bad">🫁 {t('Suit oxygen low — head back to the lander!')}</span>}
+      {inKeepOut && <span className="small bad">⛔ {t('You are inside the protected zone — back out now!')}</span>}
+      {late && <span className="small bad">📡 {crewed ? t('Your stay is over — send your summary and return to orbit.') : t('Solar conjunction has begun — send your report now. It will arrive late.')}</span>}
     </div>
   );
 }
@@ -118,9 +152,50 @@ function PowerCard() {
   );
 }
 
+function OxygenCard() {
+  const t = useT();
+  const { state, mission } = useMissionBits();
+  const lang = useGame((s) => s.settings.lang);
+  const dispatch = useGame((s) => s.dispatch);
+  const pos = useLive((s) => s.pos);
+  const setLive = useLive((s) => s.set);
+  const pct = Math.max(0, state.ops.oxygenH) / Math.max(1, state.ops.evaMaxH);
+  const lander = mission.sites?.find((x) => x.kind === 'lander');
+  const atLander = !!lander && Math.hypot(lander.pos[0] - pos[0], lander.pos[1] - pos[1]) <= lander.radius + 8;
+  const left = Math.max(0, Math.ceil(mission.conjunctionSol - state.ops.sol));
+  return (
+    <div className="hud-card power-card">
+      <div className="row between">
+        <span className="eyebrow">🫁 {t('Suit oxygen')}</span>
+        <span className="mono small">
+          {fmtNum(Math.max(0, state.ops.oxygenH), lang, 1)} h
+        </span>
+      </div>
+      <div className="meter-track" style={{ height: 10 }} aria-label={t('Suit oxygen')}>
+        <div className={`meter-fill ${pct < 0.25 ? 'bad' : pct < 0.5 ? 'warn' : 'good'}`} style={{ width: `${pct * 100}%` }} />
+      </div>
+      <div className="row between small">
+        <span>
+          {t('Day')} <span className="mono">{fmtNum(Math.max(1, Math.floor(state.ops.sol)), lang)}</span>
+        </span>
+        <span className={left <= 1 ? 'bad' : 'muted'}>{t('{n} days left on the Moon', { n: left })}</span>
+      </div>
+      {state.crew && (
+        <button className="btn btn-sm btn-ghost" style={{ justifyContent: 'space-between' }} onClick={() => setLive({ panel: 'journal' })}>
+          <span>🩺 {t('Crew')}</span>
+          <StatusChip v={state.crew.vitals} />
+        </button>
+      )}
+      <button className="btn btn-sm" onClick={() => (sfx('click'), dispatch({ type: 'REST' }))} disabled={!atLander || !!state.pendingEvent} title={t('Only at the lander: end the moonwalk, rest and refill suits. Costs 1 day.')}>
+        🛖 {atLander ? t('End moonwalk & rest') : t('Rest only at the lander')} <span className="dim">(R)</span>
+      </button>
+    </div>
+  );
+}
+
 /* ---------------- Minimap ---------------- */
 
-function useTerrainImage() {
+function useTerrainImage(moon = false) {
   return useMemo(() => {
     if (typeof document === 'undefined') return '';
     const N = 96;
@@ -135,14 +210,18 @@ function useTerrainImage() {
         const h = heightAt(x, z);
         const k = Math.max(0, Math.min(1, (h + 6) / 26));
         const o = (j * N + i) * 4;
-        img.data[o] = 90 + k * 120;
-        img.data[o + 1] = 45 + k * 80;
-        img.data[o + 2] = 30 + k * 50;
+        if (moon) {
+          img.data[o] = img.data[o + 1] = img.data[o + 2] = 70 + k * 120;
+        } else {
+          img.data[o] = 90 + k * 120;
+          img.data[o + 1] = 45 + k * 80;
+          img.data[o + 2] = 30 + k * 50;
+        }
         img.data[o + 3] = 255;
       }
     ctx.putImageData(img, 0, 0);
     return c.toDataURL();
-  }, []);
+  }, [moon]);
 }
 
 function Minimap() {
@@ -150,7 +229,7 @@ function Minimap() {
   const { state, mission } = useMissionBits();
   const pos = useLive((s) => s.pos);
   const heading = useLive((s) => s.heading);
-  const bg = useTerrainImage();
+  const bg = useTerrainImage(mission.world?.theme === 'moon');
   const S = 168;
   const toMap = (x: number, z: number) => [((x / TERRAIN_SIZE) + 0.5) * S, ((z / TERRAIN_SIZE) + 0.5) * S];
   const [rx, rz] = toMap(pos[0], pos[1]);
@@ -301,7 +380,7 @@ function FindingToast() {
 
 /* ---------------- Events & alerts (compact, in-world) ---------------- */
 
-function EventCard() {
+export function EventCard() {
   const t = useT();
   const { state, mission } = useMissionBits();
   const dispatch = useGame((s) => s.dispatch);
@@ -421,6 +500,25 @@ function ReportCard({ onClose }: { onClose: () => void }) {
     { id: 'untested', label: 'An intriguing rock, but we could not test it properly — more evidence is needed.' },
     { id: 'nothing', label: 'Nothing important here.' },
   ];
+  if (mission.reportStyle === 'summary') {
+    const docs = state.evidence.observations.map((r) => t(mission.observations.find((o) => o.id === r.id)?.name ?? r.id));
+    return (
+      <Modal onClose={onClose} labelledBy="rep-t">
+        <div className="stack">
+          <span className="eyebrow">{t('Report to Earth')}</span>
+          <h2 id="rep-t">{t('Send your mission summary?')}</h2>
+          <p className="small muted">{t('You documented:')} {docs.join(' · ')}</p>
+          <p className="tiny dim">{t('Your antenna can send about {cap} MB. The most valuable data goes first.', { cap: fmtNum(cap, lang) })}</p>
+          <button className="btn btn-primary" onClick={() => (sfx('success'), dispatch({ type: 'SEND_REPORT', conclusion: 'summary' }))}>
+            📡 {t('Send summary to Earth')}
+          </button>
+          <button className="btn btn-ghost btn-sm" onClick={onClose} style={{ alignSelf: 'flex-start' }}>
+            {t('Keep exploring')}
+          </button>
+        </div>
+      </Modal>
+    );
+  }
   const send = (c: (typeof options)[number]['id']) => {
     sfx('success');
     dispatch({ type: 'SEND_REPORT', conclusion: c });
@@ -474,9 +572,10 @@ function Journal({ onClose, onReport }: { onClose: () => void; onReport: () => v
       </div>
       <div className="home-lower" style={{ gridTemplateColumns: '1fr 1fr', marginTop: 12 }}>
         <div className="stack">
-          <EvidenceBoard />
+          {state.crew && mission.crew && <CrewPanel crew={mission.crew.filter((c) => c.id !== 'sam')} vitals={state.crew.vitals} compact />}
+          {mission.id === 'm2-martian-mystery' && <EvidenceBoard />}
           <div className="divider" />
-          <EquipmentPanel />
+          {mission.type !== 'crewed' && <EquipmentPanel />}
           <div className="divider" />
           <h4>{t('Controls')}</h4>
           <p className="small muted">{t('W A S D or arrow keys: drive · Shift: faster (more wear and energy) · Space: brake · Drag: look around · Scroll: zoom · E: investigate · R: rest · F: report · J: journal')}</p>
@@ -561,17 +660,33 @@ function MissionIntro({ onGo }: { onGo: () => void }) {
   const t = useT();
   const { mission } = useMissionBits();
   useEffect(() => {
-    say({ en: 'Your mission: find the leopard-spot rock, test it, and tell Earth the truth.' });
+    say(mission.id === 'm1-apollo' ? { en: 'Welcome to the Moon. Reach the Apollo 15 site, photograph it from outside the protected zone, and keep your crew safe.' } : mission.id === 'm3-lost-rover' ? { en: 'Welcome to Endeavour Crater. Find Opportunity and document it — without touching it.' } : { en: 'Your mission: find the leopard-spot rock, test it, and tell Earth the truth.' });
     const onKey = (e: KeyboardEvent) => {
       if (['Enter', ' ', 'w', 'W', 'ArrowUp'].includes(e.key)) onGo();
     };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [onGo]);
   return (
     <div className="intro-wrap">
       <div className="hud-card intro-card fade-in" role="dialog" aria-labelledby="intro-t">
         <span className="eyebrow">🎯 {t('Your mission')}</span>
+        {mission.objectives ? (
+          <>
+            <h2 id="intro-t">{mission.id === 'm1-apollo' ? t('Explore the Moon safely — and protect Apollo 15\'s history.') : t('Find Opportunity and document it — without touching it.')}</h2>
+            <ol className="intro-steps">
+              {mission.objectives.map((o, i) => (
+                <li key={i}>
+                  <span>{['🔭', '📷', '📡'][i]}</span> {t(o.label)}
+                </li>
+              ))}
+            </ol>
+            {mission.type === 'crewed' && <p className="small warn">🫁 {t('Watch your suit oxygen. Return to the lander to rest before it runs out.')}</p>}
+            {mission.world?.keepOut && <p className="small muted">⛔ {t('Never drive inside the red circle around historic hardware.')}</p>}
+          </>
+        ) : (
+          <>
         <h2 id="intro-t">{t('Is there a sign of ancient life in this rock?')}</h2>
         <ol className="intro-steps">
           <li>
@@ -585,6 +700,8 @@ function MissionIntro({ onGo }: { onGo: () => void }) {
           </li>
         </ol>
         <p className="small muted">⭐ {t('Bonus: explore all 4 sites and earn more science points.')}</p>
+          </>
+        )}
         <div className="row-wrap small">
           <span>
             <kbd>W</kbd>
@@ -663,7 +780,7 @@ export function ExploreHud() {
         <Objective />
       </div>
       <div className="hud-tr">
-        <PowerCard />
+        {mission.type === 'crewed' ? <OxygenCard /> : <PowerCard />}
         <div className="row-wrap" style={{ justifyContent: 'flex-end' }}>
           <button className="btn btn-sm" onClick={() => setLive({ panel: 'journal' })}>
             📓 {t('Journal')} <span className="dim">(J)</span>

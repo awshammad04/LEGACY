@@ -2,7 +2,7 @@ import { Component, Suspense, useEffect, type ReactNode } from 'react';
 import { Canvas } from '@react-three/fiber';
 import { Bloom, EffectComposer, Vignette } from '@react-three/postprocessing';
 import { useGame } from './game/store';
-import { HQScene, LaunchScene, MarsOrbitScene, OrbitScene, WorkshopScene } from './scenes/scenes';
+import { CruiseScene, HQScene, LaunchScene, MarsOrbitScene, ObserveScene, OrbitScene, WorkshopScene } from './scenes/scenes';
 import { SurfaceScene } from './scenes/surface';
 import { ExploreScene } from './scenes/explore';
 import { getMission } from './content/missions';
@@ -56,6 +56,10 @@ function SceneRouter() {
     case 'evidence':
     case 'report':
       return <SurfaceScene focusRock />;
+    case 'cruise':
+      return <CruiseScene />;
+    case 'observe':
+      return <ObserveScene />;
     case 'opsPreview':
       return missionId === 'm3-lost-rover' ? <MarsOrbitScene /> : missionId === 'm4-cosmic-photographer' ? <OrbitScene /> : <HQScene />;
     default:

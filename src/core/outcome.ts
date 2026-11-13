@@ -6,13 +6,15 @@ export const ACHIEVEMENTS = {
   'careful-investigator': { en: 'Careful Investigator', desc: 'Interpreted a possible Martian biosignature without claiming certainty.' },
   'scientific-pioneer': { en: 'Scientific Pioneer', desc: 'Completed valuable scientific observations with a sound, safe plan.' },
   'redesign-required': { en: 'Mission Redesign Required', desc: 'Found a critical design weakness on Earth and corrected it before launch.' },
+  'crew-guardian': { en: 'Crew Guardian', desc: 'Protected the crew and adjusted the mission responsibly.' },
+  'heritage-protector': { en: 'Heritage Protector', desc: 'Documented a historic site without disturbing it.' },
 } as const;
 export type AchievementId = keyof typeof ACHIEVEMENTS;
 
 /** Outcome is always recomputed from state — never a prewritten ending. Unsafe choices never earn an advantage. */
 export function computeOutcome(mission: MissionDefinition, state: MissionState): Outcome {
   const grade = gradeReport(mission, state.evidence.report ?? [], state.evidence.downlinked);
-  const sci = scienceScore(state);
+  const sci = scienceScore(state, mission);
   const safetyIssues = state.flags.unsafeChoices.length + state.ops.incidents;
   const metrics = computeMetrics(mission, state.design);
   const beforeConjunction = state.ops.sol < mission.conjunctionSol;
@@ -31,6 +33,9 @@ export function computeOutcome(mission: MissionDefinition, state: MissionState):
   if (reportSubmitted && !overclaimed && !dismissive && grade.hasCaution && state.evidence.alertChoice !== 'announce') achievements.push('careful-investigator');
   if (reportSubmitted && sci >= 65 && safetyIssues === 0 && !overclaimed) achievements.push('scientific-pioneer');
   if (state.failedReviews >= 1 && state.launched) achievements.push('redesign-required');
+  if (mission.type === 'crewed' && reportSubmitted && state.flags.unsafeChoices.length === 0 && (state.crew?.vitals.fatigue ?? 0) < 75) achievements.push('crew-guardian');
+  const ko = mission.world?.keepOut;
+  if (ko && reportSubmitted && state.ops.keepOutViolations === 0 && state.evidence.observations.some((o) => o.site === ko.siteId)) achievements.push('heritage-protector');
 
   return {
     scienceScore: sci,
@@ -65,13 +70,22 @@ export function consequences(mission: MissionDefinition, state: MissionState): C
         : { kind: 'warn', text: { en: 'Only {s} of {n} measurements fit in your downlink — a stronger antenna would have sent more.', vars: { s: sent, n: total } } },
     );
   }
-  if (!did('obs-xrf') && !did('obs-raman')) {
+  if (mission.id === 'm2-martian-mystery' && !did('obs-xrf') && !did('obs-raman')) {
     const can = m.capabilities.includes('elemental-chemistry') || m.capabilities.includes('organics');
     out.push({ kind: 'bad', text: can ? { en: 'You never ran the chemistry or organics tests, so the rock’s key question stayed open.' } : { en: 'Without chemistry or organics instruments, your rover could not test the rock’s key question.' } });
-  } else if (did('obs-abrasion')) {
+  } else if (mission.id === 'm2-martian-mystery' && did('obs-abrasion')) {
     out.push({ kind: 'good', text: { en: 'Abrading the rock first gave your contact instruments clean, high-quality data.' } });
   }
-  if (state.ops.rests > 0) {
+  if (mission.type === 'crewed' && state.crew) {
+    const v = state.crew.vitals;
+    out.push(v.fatigue < 50 ? { kind: 'good', text: { en: 'Good sleep, food and exercise kept the crew rested (fatigue {n}%).', vars: { n: Math.round(v.fatigue) } } } : { kind: 'warn', text: { en: 'The crew ended the mission tired (fatigue {n}%) — less sleep and skipped meals add up.', vars: { n: Math.round(v.fatigue) } } });
+    out.push(v.doseMSv < 10 ? { kind: 'good', text: { en: 'Smart sheltering kept radiation exposure low ({n} mSv, simulated).', vars: { n: Math.round(v.doseMSv) } } } : { kind: 'bad', text: { en: 'The crew received a high radiation dose ({n} mSv, simulated) — shelter during solar storms.', vars: { n: Math.round(v.doseMSv) } } });
+    if (state.flags.unsafeChoices.includes('eva-limit')) out.push({ kind: 'bad', text: { en: 'A moonwalk ran out of suit consumables far from the lander.' } });
+  }
+  if (mission.world?.keepOut) {
+    out.push(state.ops.keepOutViolations === 0 ? { kind: 'good', text: { en: 'You never entered the protected heritage zone.' } } : { kind: 'bad', text: { en: 'You drove into the protected heritage zone {n} times — historic tracks can be destroyed.', vars: { n: state.ops.keepOutViolations } } });
+  }
+  if (state.ops.rests > 0 && mission.type !== 'crewed') {
     out.push({ kind: state.ops.rests >= 4 ? 'warn' : 'good', text: { en: 'You stopped to recharge {n} times — battery size and power output decide how far you can go each sol.', vars: { n: state.ops.rests } } });
   }
   if (state.events['ev-dust']?.choice === 'continue' && m.powerSource === 'solar') out.push({ kind: 'warn', text: { en: 'Driving through the dust storm cut your solar power to about a third for 3 sols.' } });
@@ -79,9 +93,9 @@ export function consequences(mission: MissionDefinition, state: MissionState): C
   if (state.flags.unsafeChoices.includes('ev-solar')) out.push({ kind: 'bad', text: { en: 'Ignoring the radiation warning exposed your electronics — a safety violation.' } });
   if (state.ops.wheelHealth < 70) out.push({ kind: 'warn', text: { en: 'Rough or fast driving wore your wheels down to {n}%.', vars: { n: Math.round(state.ops.wheelHealth) } } });
   if (state.flags.overclaimed) out.push({ kind: 'bad', text: { en: 'Claiming life went beyond what the evidence could show.' } });
-  else if (state.evidence.report?.includes('st-potential')) out.push({ kind: 'good', text: { en: 'You reported a potential biosignature and kept other explanations open — evidence before certainty.' } });
+  else if (mission.id === 'm2-martian-mystery' && state.evidence.report?.includes('st-potential')) out.push({ kind: 'good', text: { en: 'You reported a potential biosignature and kept other explanations open — evidence before certainty.' } });
   const sites = mission.sites?.length ?? 0;
   if (sites) out.push({ kind: state.ops.sitesFound.length === sites ? 'good' : 'warn', text: { en: 'You discovered {n} of {t} sites.', vars: { n: state.ops.sitesFound.length, t: sites } } });
-  if (state.ops.sol >= mission.conjunctionSol) out.push({ kind: 'bad', text: { en: 'Your report reached Earth after solar conjunction began — late.' } });
+  if (mission.conjunctionSol > 0 && state.ops.sol >= mission.conjunctionSol) out.push({ kind: 'bad', text: { en: 'Your report reached Earth after solar conjunction began — late.' } });
   return out;
 }

@@ -193,7 +193,9 @@ export type StageId =
   | 'debrief'
   | 'quizPost'
   | 'results'
-  | 'opsPreview';
+  | 'opsPreview'
+  | 'cruise'
+  | 'observe';
 
 export interface LandingSite {
   id: string;
@@ -307,8 +309,21 @@ export interface MissionDefinition {
   priorityHelp?: LText;
   /** Honest end screen for missions whose operations stage is still in development. */
   opsPreview?: { title: LText; intro: LText; next: LText[] };
-  /** Open-world exploration sites (Mission 02). */
+  /** Open-world exploration sites. */
   sites?: ExploreSite[];
+  /** Open-world settings: look, vehicle, start, protected zone, crew EVA. */
+  world?: WorldConfig;
+  /** Mission checklist shown in the HUD. */
+  objectives?: Objective[];
+  /** 'conclusion' = pick an interpretation (Mission 02); 'summary' = send what you documented. */
+  reportStyle?: 'conclusion' | 'summary';
+  /** When each event appears (open world). */
+  eventTriggers?: Record<string, { sol?: number; distance?: number; arrive?: boolean; evaUsed?: number; observations?: number }>;
+  /** Crewed missions: the crew and the short "life aboard" schedule. */
+  crew?: CrewMember[];
+  cruise?: CruiseStep[];
+  /** Telescope missions: the observing game. */
+  telescope?: TelescopeConfig;
   /** Which 3D model the workshop shows. */
   model?: 'rover' | 'telescope' | 'lunar';
 }
@@ -377,6 +392,12 @@ export interface OpsState {
   solarFactor: number;
   /** A dust storm reduces solar output until this sol. */
   dustUntil: number;
+  /** Crewed: suit oxygen left in this EVA (hours) and the EVA limit. */
+  oxygenH: number;
+  evaMaxH: number;
+  evaUsedH: number;
+  inKeepOut: boolean;
+  keepOutViolations: number;
 }
 
 export interface ObservationResult {
@@ -425,6 +446,8 @@ export interface MissionState {
   flags: { unsafeChoices: string[]; overclaimed: boolean; notes: LText[] };
   archiveUnlocked: string[];
   outcome?: Outcome;
+  crew?: { vitals: CrewVitals; step: number; choices: Record<string, string>; scienceBonus: number };
+  scope?: { night: number; hoursLeft: number; pointed: boolean; images: TelescopeImage[]; spectrum?: 'low' | 'good' | 'high' };
 }
 
 export type Action =
@@ -450,13 +473,76 @@ export type Action =
   | { type: 'REST' }
   | { type: 'DISCOVER'; siteId: string }
   | { type: 'INVESTIGATE'; siteId: string; observationId: string }
-  | { type: 'SEND_REPORT'; conclusion: 'proven' | 'potential' | 'untested' | 'nothing' };
+  | { type: 'SEND_REPORT'; conclusion: 'proven' | 'potential' | 'untested' | 'nothing' | 'summary' }
+  | { type: 'CREW_CHOICE'; stepId: string; optionId: string }
+  | { type: 'SCOPE_POINT' }
+  | { type: 'SCOPE_IMAGE'; filter: 'visible' | 'uv' | 'infrared'; exposure: number }
+  | { type: 'SCOPE_SPECTRUM' }
+  | { type: 'SCOPE_NEXT_NIGHT' };
 
 export type SpeedMode = 'cautious' | 'standard' | 'fast';
 
+export interface WorldConfig {
+  theme: 'mars' | 'moon';
+  vehicle: 'rover' | 'lrv';
+  start?: [number, number];
+  keepOut?: { siteId: string; radius: number };
+  /** Crewed: suit oxygen hours per EVA before fatigue. */
+  evaHours?: number;
+}
+
+export interface Objective {
+  label: LText;
+  hint: LText;
+  done: { arrive?: string; anyObs?: string[]; allObs?: string[] };
+}
+
+export interface CrewMember {
+  id: string;
+  name: string;
+  role: LText;
+}
+export interface CrewVitals {
+  fatigue: number;
+  hydration: number;
+  fitness: number;
+  stress: number;
+  doseMSv: number;
+  sleepDebtH: number;
+}
+export interface CruiseOption {
+  id: string;
+  label: LText;
+  result: LText;
+  effects: Partial<CrewVitals> & { science?: number };
+  unsafe?: boolean;
+}
+export interface CruiseStep {
+  id: string;
+  time: LText;
+  title: LText;
+  prompt: LText;
+  learn: LText;
+  options: CruiseOption[];
+}
+
+export interface TelescopeConfig {
+  nights: number;
+  hoursPerNight: number;
+  /** Supernova brightness on each night (relative). */
+  brightness: number[];
+}
+export interface TelescopeImage {
+  night: number;
+  filter: 'visible' | 'uv' | 'infrared';
+  exposure: number;
+  snr: number;
+  quality: 'low' | 'good' | 'high';
+}
+
 export interface ExploreSite {
   id: string;
-  kind: 'rock' | 'layers' | 'weather' | 'depot';
+  kind: 'rock' | 'layers' | 'weather' | 'depot' | 'heritage' | 'lander' | 'rille' | 'crater' | 'viewpoint' | 'ripples';
   name: LText;
   hint: LText;
   pos: [number, number];

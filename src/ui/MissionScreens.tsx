@@ -8,6 +8,8 @@ import { EvidenceScreen, ReportScreen } from './screens/EvidenceScreens';
 import { DebriefScreen, ResultsScreen } from './screens/DebriefScreens';
 import { OpsPreviewScreen } from './screens/OpsPreviewScreen';
 import { ExploreHud } from './screens/ExploreHud';
+import { CruiseScreen } from './screens/CruiseScreen';
+import { ObserveScreen } from './screens/ObserveScreen';
 import { getMission } from '../content/missions';
 
 export function MissionScreens() {
@@ -42,6 +44,10 @@ export function MissionScreens() {
       return <ResultsScreen />;
     case 'opsPreview':
       return <OpsPreviewScreen />;
+    case 'cruise':
+      return <CruiseScreen />;
+    case 'observe':
+      return <ObserveScreen />;
     default:
       return null;
   }

@@ -12,7 +12,10 @@ import { useGame, useT, useUi } from '../game/store';
 import { useLive } from '../game/live';
 import { sfx } from '../game/audio';
 import { MarsSky, Terrain, TargetRock } from './surface';
-import { RoverModel } from './models';
+import { Earth, RoverModel } from './models';
+import { AstronautModel, DescentStageModel, LanderModel, LrvModel, MerModel } from './craft';
+import { Stars } from '@react-three/drei';
+import { tierOf } from '../core/evaluate';
 
 /* ------------------------------------------------------------------ */
 /* Keyboard input                                                      */
@@ -45,7 +48,7 @@ function useKeyboard() {
 /* Rocks (instanced, shared with collision)                            */
 /* ------------------------------------------------------------------ */
 
-function RockField({ rocks }: { rocks: Rock[] }) {
+function RockField({ rocks, color = '#8a5236' }: { rocks: Rock[]; color?: string }) {
   const ref = useRef<THREE.InstancedMesh>(null);
   useEffect(() => {
     const m = ref.current;
@@ -63,7 +66,7 @@ function RockField({ rocks }: { rocks: Rock[] }) {
   return (
     <instancedMesh ref={ref} args={[undefined, undefined, rocks.length]} castShadow receiveShadow>
       <dodecahedronGeometry args={[1, 0]} />
-      <meshStandardMaterial color="#8a5236" roughness={0.92} flatShading />
+      <meshStandardMaterial color={color} roughness={0.92} flatShading />
     </instancedMesh>
   );
 }
@@ -148,6 +151,81 @@ function DepotProp({ site, placed }: { site: ExploreSite; placed: boolean }) {
         </mesh>
       )}
     </group>
+  );
+}
+
+function HeritageProp({ site, mission }: { site: ExploreSite; mission: MissionDefinition }) {
+  const y = heightAt(site.pos[0], site.pos[1]);
+  const ko = mission.world?.keepOut?.radius ?? 15;
+  const moon = mission.world?.theme === 'moon';
+  return (
+    <group position={[site.pos[0], y, site.pos[1]]}>
+      {moon ? (
+        <>
+          <DescentStageModel />
+          <group position={[7, 0, 4]} rotation={[0, 0.8, 0]}>
+            <LrvModel />
+          </group>
+        </>
+      ) : (
+        <group rotation={[0, 0.6, 0]}>
+          <MerModel />
+        </group>
+      )}
+      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.3, 0]}>
+        <ringGeometry args={[ko - 0.7, ko, 72]} />
+        <meshBasicMaterial color="#ff5d5d" transparent opacity={0.75} side={THREE.DoubleSide} />
+      </mesh>
+      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.25, 0]}>
+        <circleGeometry args={[ko - 0.7, 72]} />
+        <meshBasicMaterial color="#ff5d5d" transparent opacity={0.07} side={THREE.DoubleSide} />
+      </mesh>
+    </group>
+  );
+}
+
+function LanderProp({ site, mission }: { site: ExploreSite; mission: MissionDefinition }) {
+  const state = useGame((s) => s.state)!;
+  const design = { ...state.design, selections: { ...state.design.selections, chassis: mission.slots.find((x) => x.id === 'chassis')?.options[0].id ?? '' } };
+  return (
+    <group position={[site.pos[0], heightAt(site.pos[0], site.pos[1]), site.pos[1]]} scale={1.6}>
+      <LanderModel mission={mission} design={design} />
+    </group>
+  );
+}
+
+function CraterProp({ site }: { site: ExploreSite }) {
+  return (
+    <mesh position={[site.pos[0], heightAt(site.pos[0], site.pos[1]) + 0.3, site.pos[1]]} rotation={[-Math.PI / 2, 0, 0]}>
+      <torusGeometry args={[9, 1.6, 8, 40]} />
+      <meshStandardMaterial color="#8d8e92" roughness={1} />
+    </mesh>
+  );
+}
+
+function RipplesProp({ site }: { site: ExploreSite }) {
+  return (
+    <group position={[site.pos[0], heightAt(site.pos[0], site.pos[1]) + 0.1, site.pos[1]]} rotation={[0, 0.5, 0]}>
+      {Array.from({ length: 9 }).map((_, i) => (
+        <mesh key={i} position={[(i - 4) * 3.2, 0.25, 0]} rotation={[0, 0, Math.PI / 2]}>
+          <cylinderGeometry args={[0.45, 0.45, 26, 8, 1, false, 0, Math.PI]} />
+          <meshStandardMaterial color="#c9935f" roughness={1} />
+        </mesh>
+      ))}
+    </group>
+  );
+}
+
+function MoonSky() {
+  const earthPos = useMemo(() => new THREE.Vector3(-420, 260, -620), []);
+  return (
+    <>
+      <color attach="background" args={['#000000']} />
+      <Stars radius={900} depth={200} count={6000} factor={6} saturation={0} fade={false} />
+      <group position={earthPos} scale={34}>
+        <Earth radius={1} spin={0.01} clouds />
+      </group>
+    </>
   );
 }
 
@@ -282,7 +360,7 @@ function DrivableRover({ mission, rocks }: { mission: MissionDefinition; rocks: 
 
     // Battery check (reducer battery minus energy not yet committed)
     const pendingWh = driveCost(m, s.pending.dist, s.pending.dist ? s.pending.slope / s.pending.dist : 0, s.pending.dist ? s.pending.boost / s.pending.dist : 0).energyWh;
-    const empty = st.ops.batteryWh - pendingWh <= batteryFloor(st.ops) + 1;
+    const empty = mission.type !== 'crewed' && st.ops.batteryWh - pendingWh <= batteryFloor(st.ops) + 1;
 
     const top = roverTopSpeed(m, st.ops.wheelHealth) * (boost ? 1.5 : 1);
     const throttle = empty ? 0 : (fwd ? 1 : 0) - (back ? 0.6 : 0);
@@ -392,10 +470,10 @@ function DrivableRover({ mission, rocks }: { mission: MissionDefinition; rocks: 
   // Commit anything pending when leaving the stage
   useEffect(() => () => commit(), []); // eslint-disable-line react-hooks/exhaustive-deps
 
+  const lrv = mission.world?.vehicle === 'lrv';
+  const walking = lrv && tierOf(mission, state.design, 'chassis') === 'basic';
   return (
-    <group ref={g}>
-      <RoverModel mission={mission} design={state.design} scale={1.4} />
-    </group>
+    <group ref={g}>{lrv ? walking ? <AstronautModel /> : <LrvModel /> : <RoverModel mission={mission} design={state.design} scale={1.4} />}</group>
   );
 }
 
@@ -411,6 +489,7 @@ export function ExploreScene() {
   const rocks = useMemo(() => rockField(mission), [mission]);
   const sun = useMemo(() => new THREE.Vector3(-0.6, 0.55, -0.4), []);
   const storm = state.ops.sol < state.ops.dustUntil;
+  const moon = mission.world?.theme === 'moon';
   const shadowTarget = useRef<THREE.Object3D>(new THREE.Object3D());
   const light = useRef<THREE.DirectionalLight>(null);
   useFrame(() => {
@@ -425,13 +504,13 @@ export function ExploreScene() {
   const done = (site: ExploreSite) => site.observations.every((id) => state.evidence.observations.some((o) => o.id === id));
   return (
     <>
-      <MarsSky sun={sun} />
-      <fog attach="fog" args={[storm ? '#9a6a48' : '#c9946b', storm ? 40 : 140, storm ? 260 : 700]} />
-      <hemisphereLight args={['#f0c9a0', '#3a2015', storm ? 0.35 : 0.55]} />
+      {moon ? <MoonSky /> : <MarsSky sun={sun} />}
+      {moon ? <fog attach="fog" args={['#000000', 500, 1400]} /> : <fog attach="fog" args={[storm ? '#9a6a48' : '#c9946b', storm ? 40 : 140, storm ? 260 : 700]} />}
+      <hemisphereLight args={moon ? ['#cfd6e6', '#111111', 0.18] : ['#f0c9a0', '#3a2015', storm ? 0.35 : 0.55]} />
       <directionalLight
         ref={light}
-        intensity={storm ? 0.9 : 2.1}
-        color="#fff0dc"
+        intensity={moon ? 3.2 : storm ? 0.9 : 2.1}
+        color={moon ? '#ffffff' : '#fff0dc'}
         castShadow={quality === 'high'}
         shadow-mapSize={[2048, 2048]}
         shadow-camera-left={-70}
@@ -441,8 +520,8 @@ export function ExploreScene() {
         shadow-camera-far={600}
       />
       <primitive object={shadowTarget.current} />
-      <Terrain onPick={() => undefined} />
-      <RockField rocks={rocks} />
+      <Terrain onPick={() => undefined} theme={moon ? 'moon' : 'mars'} />
+      <RockField rocks={rocks} color={moon ? '#77787d' : '#8a5236'} />
       {(mission.sites ?? []).map((site) => (
         <group key={site.id}>
           <Beacon site={site} found={state.ops.sitesFound.includes(site.id)} done={done(site)} />
@@ -450,6 +529,10 @@ export function ExploreScene() {
           {site.kind === 'layers' && <LayersProp site={site} />}
           {site.kind === 'weather' && <DustDevil site={site} />}
           {site.kind === 'depot' && <DepotProp site={site} placed={state.evidence.observations.some((o) => o.id === 'obs-depot')} />}
+          {site.kind === 'heritage' && <HeritageProp site={site} mission={mission} />}
+          {site.kind === 'lander' && <LanderProp site={site} mission={mission} />}
+          {site.kind === 'crater' && <CraterProp site={site} />}
+          {site.kind === 'ripples' && <RipplesProp site={site} />}
         </group>
       ))}
       <ScanBeam mission={mission} />

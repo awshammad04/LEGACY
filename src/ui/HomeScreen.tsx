@@ -10,7 +10,7 @@ import { SHARED_PRE_QUIZ } from '../content/quiz';
 const TYPE_LABEL = { crewed: 'Crewed', robotic: 'Robotic', telescope: 'Telescope' } as const;
 const STAGE_NAME: Record<string, string> = {
   quizPre: 'Knowledge check', briefing: 'Briefing', workshop: 'Build workshop', review: 'Readiness review', launch: 'Launch', orbit: 'In orbit',
-  landingSite: 'Landing site', surface: 'Mars surface', evidence: 'Evidence', report: 'Science report', debrief: 'Debrief', quizPost: 'Final check', results: 'Complete', opsPreview: 'Launched — operations in development',
+  landingSite: 'Landing site', surface: 'Mars surface', evidence: 'Evidence', report: 'Science report', debrief: 'Debrief', quizPost: 'Final check', results: 'Complete', opsPreview: 'Launched — operations in development', cruise: 'Journey to the Moon', observe: 'Observing',
 };
 
 function budgetLabel(m: MissionDefinition) {

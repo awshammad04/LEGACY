@@ -135,6 +135,12 @@ export function gradeReport(mission: MissionDefinition, statementIds: string[], 
 /** Science value of the data that actually reached Earth. */
 export const OBS_VALUE: Record<string, number> = {
   'obs-context': 10, 'obs-zoom': 10, 'obs-abrasion': 7, 'obs-xrf': 25, 'obs-raman': 25, 'obs-radar': 8, 'obs-weather': 2, 'obs-cache': 15, 'obs-delta-pano': 8, 'obs-dust-devil': 3, 'obs-depot': 10,
+  // Mission 01 (Moon)
+  'obs-heritage-photo': 20, 'obs-heritage-tracks': 12, 'obs-rille-photo': 8, 'obs-rille-samples': 20, 'obs-crater-core': 12, 'obs-seismo': 10, 'obs-retro': 8, 'obs-earthrise': 4,
+  // Mission 03 (Opportunity)
+  'obs-opp-photo': 20, 'obs-opp-zoom': 15, 'obs-opp-3d': 15, 'obs-tracks-pano': 10, 'obs-rim-pano': 8, 'obs-ripple': 8,
+  // Mission 04 (telescope)
+  'obs-n1': 15, 'obs-n2': 15, 'obs-n3': 15, 'obs-uv': 12, 'obs-ir': 12, 'obs-spectrum': 25,
 };
 
 /** Live "science points" for the HUD: value of everything collected so far (before downlink limits). */
@@ -146,8 +152,9 @@ export function pointsFor(id: string, quality: ObservationResult['quality']): nu
   return Math.round((OBS_VALUE[id] ?? 0) * QUALITY_FACTOR[quality]);
 }
 
-export function scienceScore(state: MissionState): number {
-  const total = Object.values(OBS_VALUE).reduce((a, b) => a + b, 0);
+export function scienceScore(state: MissionState, mission?: MissionDefinition): number {
+  const ids = mission ? mission.observations.map((o) => o.id) : Object.keys(OBS_VALUE);
+  const total = Math.max(1, ids.reduce((a, id) => a + (OBS_VALUE[id] ?? 0), 0));
   let v = 0;
   for (const r of state.evidence.observations) {
     if (!state.evidence.downlinked.includes(r.id)) continue;

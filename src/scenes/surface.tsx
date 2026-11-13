@@ -76,16 +76,22 @@ export function spotsTexture() {
   return tex;
 }
 
-export function Terrain({ onPick }: { onPick: (p: [number, number]) => void }) {
+const PALETTES = {
+  mars: ['#6a341d', '#c98c5a', '#47261a', '#d9a273'],
+  moon: ['#55575c', '#a7a8ac', '#3a3b3f', '#c4c5c8'],
+} as const;
+
+export function Terrain({ onPick, theme = 'mars' }: { onPick: (p: [number, number]) => void; theme?: 'mars' | 'moon' }) {
   const geo = useMemo(() => {
     const g = new THREE.PlaneGeometry(TERRAIN_SIZE, TERRAIN_SIZE, SEG, SEG);
     g.rotateX(-Math.PI / 2);
     const pos = g.attributes.position as THREE.BufferAttribute;
     const colors = new Float32Array(pos.count * 3);
-    const low = new THREE.Color('#6a341d');
-    const high = new THREE.Color('#c98c5a');
-    const dark = new THREE.Color('#47261a');
-    const pale = new THREE.Color('#d9a273');
+    const [cl, ch, cd, cp] = PALETTES[theme];
+    const low = new THREE.Color(cl);
+    const high = new THREE.Color(ch);
+    const dark = new THREE.Color(cd);
+    const pale = new THREE.Color(cp);
     const c = new THREE.Color();
     const rnd = mulberry32(3);
     for (let i = 0; i < pos.count; i++) {
@@ -112,7 +118,7 @@ export function Terrain({ onPick }: { onPick: (p: [number, number]) => void }) {
     }
     g.setAttribute('color', new THREE.BufferAttribute(colors, 3));
     return g;
-  }, []);
+  }, [theme]);
   const tex = useMemo(() => noiseTexture(), []);
   const click = (e: ThreeEvent<MouseEvent>) => {
     if (e.delta > 6) return;

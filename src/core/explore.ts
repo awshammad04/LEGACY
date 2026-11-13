@@ -17,7 +17,11 @@ export const WORLD_LIMIT = TERRAIN_SIZE / 2 - 70;
 
 /** Real-time top speed in world units per second (gameplay feel; fictional). */
 export function roverTopSpeed(m: DesignMetrics, wheelHealth: number) {
-  const base = m.maxSpeedMPerH >= 110 ? 17 : m.maxSpeedMPerH >= 80 ? 14 : 11;
+  // Crewed Moon: walking astronauts or a Lunar Roving Vehicle; robotic rovers use their chassis tier.
+  const base =
+    m.maxSpeedMPerH >= 2000
+      ? m.maxSpeedMPerH >= 12000 ? 16 : m.maxSpeedMPerH >= 10000 ? 13 : 6
+      : m.maxSpeedMPerH >= 110 ? 17 : m.maxSpeedMPerH >= 80 ? 14 : 11;
   return base * (wheelHealth < 40 ? 0.6 : 1);
 }
 
