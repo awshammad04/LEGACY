@@ -1129,5 +1129,9 @@
  "reserve": "الاحتياطي",
  "sol": "يوم مريخي",
  "Next steps": "الخطوات التالية",
- "Launched — operations in development": "تم الإطلاق — العمليات قيد التطوير"
+ "Launched — operations in development": "تم الإطلاق — العمليات قيد التطوير",
+ "Optional: Mission Parts & Orbit Puzzle": "اختياري: لغز أجزاء المهمة والمدار",
+ "You are in a low parking orbit. Drag to look around and select anything to learn about it — or head straight to Mars.": "أنت في مدار انتظار منخفض. اسحب للنظر حولك واختر أي جسم لتتعرّف عليه — أو توجّه مباشرة إلى المريخ.",
+ "Pick one option per system. Every part changes several limits at once. All values are fictional game values.": "اختر خيارًا واحدًا لكل نظام. كل قطعة تغيّر عدة حدود في آن واحد. جميع القيم افتراضية خاصة باللعبة.",
+ "On Mars: W A S D or arrow keys to drive, Shift for speed, E to investigate, R to rest, J for the journal, F to report. Drag to look around and scroll to zoom. Touch screens get on-screen driving buttons. Menus: Tab moves between controls, Enter activates, Escape closes.": "على المريخ: W A S D أو مفاتيح الأسهم للقيادة، وShift للسرعة، وE للفحص، وR للراحة، وJ لدفتر المهمة، وF لإرسال التقرير. اسحب للنظر حولك ومرّر للتكبير. تظهر أزرار قيادة على الشاشات اللمسية. في القوائم: Tab للتنقل، وEnter للتفعيل، وEscape للإغلاق."
 }

@@ -96,7 +96,7 @@ export function OrbitScreen() {
       <section className="side panel panel-pad stack scroll fade-in" aria-labelledby="orbit-title">
         <span className="eyebrow">{t('In orbit — the space highway')}</span>
         <h2 id="orbit-title">{t('Orbit Explorer')}</h2>
-        <p className="small muted">{t('Your spacecraft is in a low parking orbit. Next, a transfer burn sends it on a months-long path to Mars, where it is captured into Mars orbit. Drag to rotate the view; select an object to learn about it.')}</p>
+        <p className="small muted">{t('You are in a low parking orbit. Drag to look around and select anything to learn about it — or head straight to Mars.')}</p>
         <div className="feed-item small">{t('Illustrative animation — not live tracking data. Starlink satellites are operated by SpaceX, not NASA.')}</div>
         <div className="stack-sm">
           {ORBIT_LEARN_CARDS.map((c) => (
@@ -111,7 +111,7 @@ export function OrbitScreen() {
       </section>
       <section className="center-col" />
       <section className="side panel panel-pad stack scroll fade-in" aria-labelledby="puzzle-title">
-        <span className="eyebrow">{t('Mission Parts & Orbit Puzzle')}</span>
+        <span className="eyebrow">{t('Optional: Mission Parts & Orbit Puzzle')}</span>
         <h3 id="puzzle-title">{t('Match each archive fragment to its mission')}</h3>
         <p className="tiny dim">{t('These are virtual archive fragments — not real hardware drifting in orbit. Pick a fragment, then the mission it belongs to.')}</p>
         <div className="row-wrap" role="group" aria-label={t('Fragments')}>

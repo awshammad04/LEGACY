@@ -52,7 +52,7 @@ export function SettingsModal() {
           </div>
           <div className="stack-sm" style={{ marginTop: 14 }}>
             <h4>{t('Controls')}</h4>
-            <p className="small muted">{t('Mouse or touch: drag to rotate the view, scroll or pinch to zoom, click or tap to select. Keyboard: Tab moves between controls, Enter or Space activates, Escape closes windows. Every 3D object you can inspect also has a button.')}</p>
+            <p className="small muted">{t('On Mars: W A S D or arrow keys to drive, Shift for speed, E to investigate, R to rest, J for the journal, F to report. Drag to look around and scroll to zoom. Touch screens get on-screen driving buttons. Menus: Tab moves between controls, Enter activates, Escape closes.')}</p>
           </div>
         </div>
         <div className="stack" id="how-numbers-work">

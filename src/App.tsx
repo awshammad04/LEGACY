@@ -1,4 +1,4 @@
-import { Suspense, useEffect } from 'react';
+import { Component, Suspense, useEffect, type ReactNode } from 'react';
 import { Canvas } from '@react-three/fiber';
 import { Bloom, EffectComposer, Vignette } from '@react-three/postprocessing';
 import { useGame } from './game/store';
@@ -14,6 +14,23 @@ import { HomeScreen, MissionPreviewModal } from './ui/HomeScreen';
 import { MissionScreens } from './ui/MissionScreens';
 import { ArchiveScreen, ArchiveMemoryModal } from './ui/ArchiveScreen';
 import { CreditsScreen } from './ui/CreditsScreen';
+
+/** Keeps a 3D scene error from taking down the whole game; resets when the stage changes. */
+class SceneBoundary extends Component<{ children: ReactNode; resetKey: string }, { failed: boolean }> {
+  state = { failed: false };
+  static getDerivedStateFromError() {
+    return { failed: true };
+  }
+  componentDidCatch(err: unknown) {
+    console.warn('[LEGACY] scene error recovered', err);
+  }
+  componentDidUpdate(prev: { resetKey: string }) {
+    if (prev.resetKey !== this.props.resetKey && this.state.failed) this.setState({ failed: false });
+  }
+  render() {
+    return this.state.failed ? null : this.props.children;
+  }
+}
 
 function SceneRouter() {
   const view = useGame((s) => s.view);
@@ -50,6 +67,7 @@ export function App() {
   const view = useGame((s) => s.view);
   const quality = useGame((s) => s.settings.quality);
   const reduced = useGame((s) => s.settings.reducedMotion);
+  const sceneKey = useGame((s) => `${s.view}:${s.missionId ?? ''}:${s.state?.stage ?? ''}`);
   useEffect(() => {
     document.documentElement.classList.toggle('reduce-motion', reduced);
   }, [reduced]);
@@ -63,9 +81,11 @@ export function App() {
           camera={{ fov: 45, near: 0.1, far: 4000, position: [0, 0.3, 8.5] }}
           gl={{ antialias: quality === 'high', powerPreference: 'high-performance' }}
         >
-          <Suspense fallback={null}>
-            <SceneRouter />
-          </Suspense>
+          <SceneBoundary resetKey={sceneKey}>
+            <Suspense fallback={null}>
+              <SceneRouter />
+            </Suspense>
+          </SceneBoundary>
           {quality === 'high' && (
             <EffectComposer multisampling={4}>
               <Bloom intensity={0.55} luminanceThreshold={0.82} luminanceSmoothing={0.2} mipmapBlur />

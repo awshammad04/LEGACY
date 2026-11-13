@@ -25,7 +25,7 @@ function Stats({ o }: { o: ComponentOption }) {
   if (o.dataMb) bits.push(t('{n} MB/use', { n: o.dataMb }));
   return (
     <span className="tstats">
-      {bits.map((b) => (
+      {bits.slice(0, 2).map((b) => (
         <span key={b}>{b}</span>
       ))}
     </span>
@@ -76,17 +76,17 @@ export function WorkshopScreen() {
           </div>
           <ProvenanceBadge p="fictional" />
         </div>
-        <p className="small muted">{t('All prices, masses and capacities are fictional game values, not NASA procurement figures. Every part changes several limits at once.')}</p>
+        <p className="small muted">{t('Pick one option per system. Every part changes several limits at once. All values are fictional game values.')}</p>
         {mission.slots.map((slot) => (
           <div key={slot.id} className="slot" role="group" aria-labelledby={`slot-${slot.id}`}>
             <div className="slot-head">
-              <h4 id={`slot-${slot.id}`}>
-                {t(slot.name)} {slot.mandatory && <span className="tiny dim">· {t('required')}</span>}
+              <h4 id={`slot-${slot.id}`} title={t(slot.help)}>
+                {t(slot.name)} {slot.mandatory && <span className="tiny dim">· {t('required')}</span>}{' '}
+                <span className="dim" aria-label={t(slot.help)} style={{ cursor: 'help' }}>
+                  ⓘ
+                </span>
               </h4>
             </div>
-            <p className="tiny dim" style={{ marginBottom: 8 }}>
-              {t(slot.help)}
-            </p>
             <div className={slot.multi ? 'addon-grid' : 'tier-grid'}>
               {slot.options.map((o) => {
                 const selected = slot.multi ? state.design.addons.includes(o.id) : state.design.selections[slot.id] === o.id;
@@ -106,9 +106,7 @@ export function WorkshopScreen() {
                       {o.tier && <span className="badge badge-tier">{t(TIER_LABEL[o.tier])}</span>}
                       {slot.multi && <span aria-hidden>{selected ? '☑' : '☐'}</span>}
                     </span>
-                    <span className="tiny muted">{t(o.description)}</span>
                     <Stats o={o} />
-                    {o.inspiredBy && <span className="tiny dim">{t('Inspired by {name}', { name: o.inspiredBy.name })}</span>}
                   </button>
                 );
               })}

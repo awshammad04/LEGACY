@@ -308,3 +308,16 @@ Checkpoint commits happen after each milestone (`git init` in M0). Each **⛔ cu
 - Stretch done: Look Around illustrative sky; bloom/vignette post-processing (High quality only); launch smoke.
 - Tests: 25 Vitest unit tests (rules, quiz, mobility, golden scripts, What-If, integrity); 3 Playwright E2E tests (full run + reload, RTL, axe on home/quiz).
 - Known limits: Missions 1/3/4 operations not built; terrain is analytic/illustrative, not a DEM; Arabic not yet reviewed by a native speaker.
+
+## Gameplay direction change (Nov 13, 2026, evening)
+
+Playtesting showed Mission 2 felt like a dashboard simulator. Mission 2's surface stage was redesigned as a **free-roaming open world**:
+
+- **Kept:** the deterministic core (design evaluator, readiness rules, energy/power model, events, evidence grading, outcome, What-If), quizzes, workshop, review, launch, orbit, landing choice, saves, Arabic/RTL.
+- **Replaced:** waypoint planning + separate Evidence/Report screens → real-time WASD rover (`src/scenes/explore.tsx`) with terrain/slope/rock collision, a free follow camera, 4 sites explorable in any order, press-E interactions, compact in-world event cards, and a 4-option report.
+- **Bridge:** the scene commits `DRIVE` segments (distance, slope, boost, bumps, position) to the reducer, which converts them into energy/time/wear using the player's design — so saves, "Replay from here" and the What-If machine still recompute honestly.
+- **New core actions:** `DRIVE`, `REST`, `INVESTIGATE`, `SEND_REPORT` (`src/core/reducer.ts`, `src/core/explore.ts`).
+- **New gameplay:** battery management with rests (time pressure from solar conjunction at sol 14), wheel wear from rough/fast driving, a dust storm that only hurts solar power, a dust devil that can clean solar panels, and a sample depot.
+- **UI:** minimal HUD (objective, battery/sols, prompt, minimap) + optional journal; the debrief leads with "What your choices changed".
+- **Integrity label:** direct driving is labeled as a gameplay simplification (real rovers can't be joysticked live from Earth).
+- Rollback point: git tag `pre-open-world`.

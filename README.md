@@ -18,10 +18,10 @@ LEGACY is a 3D browser game in which students (ages 13–18) become mission comm
 
 | Mission | Status |
 |---|---|
-| **02 — The Martian Mystery** (robotic, Jezero Crater, Cheyava Falls / Sapphire Canyon) | Fully playable end to end, in English and Arabic |
-| 01 — Echoes of Apollo (crewed, Moon) | Briefing preview. The operations stage is in development and will reuse the same systems. |
-| 03 — The Lost Rover: Opportunity (robotic, Mars) | Briefing preview. The operations stage is in development and will reuse the same systems. |
-| 04 — The Cosmic Photographer (telescope) | Briefing preview. The operations stage is in development and will reuse the same systems. |
+| **02 — The Martian Mystery** (robotic, Jezero Crater, Cheyava Falls / Sapphire Canyon) | Fully playable: free-roaming open-world Mars, in English and Arabic |
+| 01 — Echoes of Apollo (crewed, Moon) | Earth stage playable (quiz, briefing, workshop, review, launch). Operations in development. |
+| 03 — The Lost Rover: Opportunity (robotic, Mars) | Earth stage playable (quiz, briefing, workshop, review, launch). Operations in development. |
+| 04 — The Cosmic Photographer (telescope) | Earth stage playable (quiz, briefing, workshop, review, launch). Operations in development. |
 
 The Mission 2 loop:
 
@@ -105,17 +105,19 @@ The full plan, requirements matrix and roadmap are in [`docs/ARCHITECTURE_AND_RO
 
 ## Demo script (≈4 minutes)
 
-1. **Home** — show the four missions and the 3-question panel. Toggle **العربية** to show the full right-to-left layout, then toggle back.
-2. **Start Mission 02** — answer the baseline quiz.
-3. **Briefing** — pick "Ancient microbial activity". Open *How we chose this budget*.
-4. **Workshop** — add the robotic arm, the abrasion drill and the X-ray spectrometer, then run the review. It is blocked: "Rover exceeds the landing system limit by 19 kg".
-5. **Fix the design** — choose the sky-crane landing, the rocker-bogie chassis, large solar arrays and the high-gain antenna. Run the review: *Mission authorization granted*, then **LAUNCH**.
-6. **Orbit** — click a satellite, try one puzzle match, then perform the transfer burn and land at **Delta Front**.
-7. **Surface** — add *Target rock*, then **Uplink**. Handle the power anomaly, then choose **safe mode** for the solar event.
-8. **Evidence** — run context imaging, abrasion and the X-ray map. At the alert, choose *Gather independent measurements*. Then run the Raman scan and cache a sample.
-9. **Report** — downlink the key data. Pick careful statements, then **Send**.
-10. **Debrief** — open the **What-If machine** and switch to the low-gain antenna. Re-run: fewer data products reach Earth and the science score drops. This is a real recomputation.
-11. **Final check** — show the before/after results and the Legacy Archive.
+1. **Home** — four mission cards and the 3-question check. Toggle **العربية** to show the full right-to-left layout, then switch back.
+2. **Start Mission 02** — answer 3 quick questions, then pick a science priority.
+3. **Workshop** — add the robotic arm, the abrasion drill and the X-ray spectrometer, then run the review. It is blocked: *Rover exceeds the landing system limit by 19 kg*. Fix it with the sky-crane landing system, larger solar arrays and the high-gain antenna, then **LAUNCH**.
+4. **Orbit** — select a satellite, then head to Mars and land at **Delta Front**.
+5. **Explore Mars** — drive freely and follow the beacons to the Leopard-Spot Rock.
+   - **W A S D / arrow keys**: drive. **Shift**: faster. **Drag**: look around. **Scroll**: zoom.
+   - Near a site, press **E** and pick an action. Try context imaging, then abrasion, then the X-ray map.
+   - At the *Possible biosignature?* card, choose to gather more evidence.
+   - Handle Mission Control's power anomaly, solar particle event and dust storm cards.
+   - Press **R** to rest and recharge, and **J** for the journal.
+6. **Report (F)** — choose the cautious *potential biosignature* conclusion. Your antenna decides how much data reaches Earth.
+7. **Debrief** — *What your choices changed* explains the consequences. Open the **What-If machine**, switch to the low-gain antenna and re-run: fewer data products arrive and the science score falls. This is a real recomputation.
+8. **Final check** — before/after scores built only from your real answers.
 
 ## Credits
 

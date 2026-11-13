@@ -1,7 +1,8 @@
 import { useEffect, useMemo, useRef } from 'react';
 import * as THREE from 'three';
 import { useFrame, useThree } from '@react-three/fiber';
-import { Html, OrbitControls } from '@react-three/drei';
+import { OrbitControls } from '@react-three/drei';
+import { TextSprite } from './TextSprite';
 import { getMission } from '../content/missions';
 import { computeMetrics } from '../core/evaluate';
 import { batteryFloor, driveCost, isObstacle, rockField, roverTopSpeed, siteDistance, WORLD_LIMIT, type Rock } from '../core/explore';
@@ -89,11 +90,7 @@ function Beacon({ site, found, done }: { site: ExploreSite; found: boolean; done
         <ringGeometry args={[site.radius - 0.6, site.radius, 64]} />
         <meshBasicMaterial color={color} transparent opacity={0.35} side={THREE.DoubleSide} />
       </mesh>
-      <Html position={[0, 9, 0]} center distanceFactor={90} zIndexRange={[5, 0]}>
-        <div className="poi-label" style={{ transform: 'none', cursor: 'default', borderColor: color }}>
-          {found ? `${done ? '✓ ' : ''}${t(site.name)}` : '?'}
-        </div>
-      </Html>
+      <TextSprite position={[0, 9, 0]} height={found ? 3.2 : 2.6} border={color} text={found ? `${done ? '✓ ' : ''}${t(site.name)}` : '?'} />
     </group>
   );
 }
