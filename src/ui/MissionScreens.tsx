@@ -7,9 +7,12 @@ import { SurfaceScreen } from './screens/SurfaceScreen';
 import { EvidenceScreen, ReportScreen } from './screens/EvidenceScreens';
 import { DebriefScreen, ResultsScreen } from './screens/DebriefScreens';
 import { OpsPreviewScreen } from './screens/OpsPreviewScreen';
+import { ExploreHud } from './screens/ExploreHud';
+import { getMission } from '../content/missions';
 
 export function MissionScreens() {
   const stage = useGame((s) => s.state?.stage);
+  const missionId = useGame((s) => s.missionId);
   switch (stage) {
     case 'quizPre':
       return <QuizScreen key="pre" mode="pre" />;
@@ -26,7 +29,7 @@ export function MissionScreens() {
     case 'landingSite':
       return <LandingSiteScreen />;
     case 'surface':
-      return <SurfaceScreen />;
+      return missionId && getMission(missionId).sites ? <ExploreHud /> : <SurfaceScreen />;
     case 'evidence':
       return <EvidenceScreen />;
     case 'report':

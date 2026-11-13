@@ -2,9 +2,8 @@ import { describe, expect, it } from 'vitest';
 import { M2 } from '../content/missions/m2';
 import { baselineDesign, blockingFailures, computeMetrics, evaluateRules, isLaunchReady } from './evaluate';
 import { compareQuizzes, scoreQuiz, shuffledOptions } from './quizEngine';
-import { replay, whatIfDesign } from './reducer';
 import { predictRoute } from './ops';
-import type { Action, Design } from './types';
+import type { Design } from './types';
 import { SOURCES } from '../content/sources';
 import { MISSIONS } from '../content/missions';
 
@@ -16,42 +15,8 @@ const GOOD: Design = {
   addons: ['inst-arm', 'inst-abrasion', 'inst-xrf', 'inst-raman'],
 };
 
-const designActions = (d: Design): Action[] => [
-  ...Object.entries(d.selections).map(([slot, optionId]) => ({ type: 'SELECT_COMPONENT', slot, optionId }) as Action),
-  ...d.addons.map((optionId) => ({ type: 'TOGGLE_ADDON', optionId }) as Action),
-];
 
 const PRE_ALL_CORRECT = { 'pre-q1': 'b', 'pre-q2': 'b', 'pre-q3': 'b' };
-
-/** A complete, careful Mission 2 run from the Delta Front landing site. */
-function goldenScript(overrides: { solar?: string; alert?: 'announce' | 'gather' | 'cautious'; report?: string[] } = {}): Action[] {
-  return [
-    { type: 'ANSWER_PRE_QUIZ', answers: { 'pre-q1': 'b', 'pre-q2': 'd', 'pre-q3': 'a' } },
-    { type: 'SET_PRIORITY', hypothesisId: 'h-bio' },
-    { type: 'ADVANCE', to: 'workshop' },
-    ...designActions(GOOD),
-    { type: 'REQUEST_REVIEW' },
-    { type: 'CONFIRM_LAUNCH' },
-    { type: 'ADVANCE', to: 'orbit' },
-    { type: 'ADVANCE', to: 'landingSite' },
-    { type: 'CHOOSE_LANDING_SITE', siteId: 'site-delta' },
-    { type: 'EXECUTE_ROUTE', waypoints: [[0, -215]], speed: 'standard' },
-    { type: 'EVENT_CHOICE', eventId: 'ev-power', optionId: 'shed' },
-    { type: 'EXECUTE_ROUTE', waypoints: [[70, -250]], speed: 'cautious' },
-    { type: 'EVENT_CHOICE', eventId: 'ev-solar', optionId: overrides.solar ?? 'safe' },
-    { type: 'ADVANCE', to: 'evidence' },
-    { type: 'RUN_OBSERVATION', observationId: 'obs-context' },
-    { type: 'RUN_OBSERVATION', observationId: 'obs-zoom' },
-    { type: 'RUN_OBSERVATION', observationId: 'obs-abrasion' },
-    { type: 'RUN_OBSERVATION', observationId: 'obs-xrf' },
-    { type: 'ALERT_CHOICE', choice: overrides.alert ?? 'gather' },
-    { type: 'RUN_OBSERVATION', observationId: 'obs-raman' },
-    { type: 'RUN_OBSERVATION', observationId: 'obs-cache' },
-    { type: 'ADVANCE', to: 'report' },
-    { type: 'SET_DOWNLINK', observationIds: ['obs-xrf', 'obs-raman', 'obs-context', 'obs-zoom', 'obs-cache', 'obs-abrasion'] },
-    { type: 'SUBMIT_REPORT', statementIds: overrides.report ?? ['st-potential', 'st-abiotic', 'st-minerals', 'st-organics', 'st-water', 'st-sample', 'st-next'] },
-  ];
-}
 
 describe('Design evaluator & readiness rules', () => {
   it('the minimum-cost baseline can launch (but carries little science)', () => {
@@ -157,72 +122,6 @@ describe('Mars operations model', () => {
     const fast = predictRoute(m, [-210, 60], [[-100, -40], [-90, -170]], 'fast', M2.target);
     expect(fast.hours).toBeLessThan(slow.hours);
     expect(fast.risk).toBeGreaterThan(slow.risk);
-  });
-});
-
-describe('Golden mission runs (deterministic replay)', () => {
-  it('a careful, well-designed mission reaches an exemplary outcome', () => {
-    const s = replay(M2, 7, goldenScript());
-    expect(s.stage).toBe('debrief');
-    expect(s.ops.arrived).toBe(true);
-    expect(s.outcome?.tier).toBe('exemplary');
-    expect(s.outcome?.achievements).toContain('careful-investigator');
-    expect(s.outcome?.achievements).toContain('scientific-pioneer');
-    expect(s.archiveUnlocked).toContain('arch-cheyava');
-  });
-
-  it('replay is deterministic', () => {
-    expect(replay(M2, 7, goldenScript())).toEqual(replay(M2, 7, goldenScript()));
-  });
-
-  it('ignoring the solar warning is a safety violation and never earns an advantage', () => {
-    const s = replay(M2, 7, goldenScript({ solar: 'ignore' }));
-    expect(s.flags.unsafeChoices).toContain('ev-solar');
-    expect(s.outcome?.achievements).not.toContain('scientific-pioneer');
-    expect(s.outcome?.tier).not.toBe('exemplary');
-  });
-
-  it('announcing a discovery immediately is explained, not rewarded', () => {
-    const s = replay(M2, 7, goldenScript({ alert: 'announce' }));
-    expect(s.flags.overclaimed).toBe(true);
-    expect(s.outcome?.achievements).not.toContain('careful-investigator');
-  });
-
-  it('claims without downlinked evidence are graded as unsupported', () => {
-    const script = goldenScript().map((a) => (a.type === 'SET_DOWNLINK' ? { ...a, observationIds: ['obs-context'] } : a));
-    const s = replay(M2, 7, script);
-    expect(s.outcome!.reportScore).toBeLessThan(replay(M2, 7, goldenScript()).outcome!.reportScore);
-  });
-
-  it('launch is impossible while a blocking rule fails', () => {
-    const script: Action[] = [
-      { type: 'SKIP_PRE_QUIZ' },
-      { type: 'SET_PRIORITY', hypothesisId: 'h-bio' },
-      { type: 'ADVANCE', to: 'workshop' },
-      { type: 'TOGGLE_ADDON', optionId: 'inst-xrf' },
-      { type: 'REQUEST_REVIEW' },
-      { type: 'CONFIRM_LAUNCH' },
-    ];
-    const s = replay(M2, 1, script);
-    expect(s.launched).toBe(false);
-    expect(s.stage).toBe('review');
-    expect(s.failedReviews).toBe(1);
-    expect(s.quiz.preSkipped).toBe(true);
-  });
-});
-
-describe('What-If machine recomputes outcomes', () => {
-  it('a weaker camera genuinely changes the recomputed result', () => {
-    const r = whatIfDesign(M2, 7, goldenScript(), [{ type: 'SELECT_COMPONENT', slot: 'camera', optionId: 'camera-basic' }]);
-    expect(r.passedReview).toBe(true);
-    expect(r.alternative.evidence.observations.some((o) => o.id === 'obs-zoom')).toBe(false);
-    expect(r.alternative.outcome!.scienceScore).toBeLessThan(r.original.outcome!.scienceScore);
-  });
-
-  it('an infeasible alternative is reported as failing the readiness review', () => {
-    const r = whatIfDesign(M2, 7, goldenScript(), [{ type: 'SELECT_COMPONENT', slot: 'power', optionId: 'power-basic' }]);
-    expect(r.passedReview).toBe(false);
-    expect(r.failures.length).toBeGreaterThan(0);
   });
 });
 

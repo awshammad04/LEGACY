@@ -4,6 +4,8 @@ import { Bloom, EffectComposer, Vignette } from '@react-three/postprocessing';
 import { useGame } from './game/store';
 import { HQScene, LaunchScene, MarsOrbitScene, OrbitScene, WorkshopScene } from './scenes/scenes';
 import { SurfaceScene } from './scenes/surface';
+import { ExploreScene } from './scenes/explore';
+import { getMission } from './content/missions';
 import { TopBar } from './ui/TopBar';
 import { Subtitles } from './ui/Subtitles';
 import { LearnCardModal } from './ui/common';
@@ -33,7 +35,7 @@ function SceneRouter() {
     case 'landingSite':
       return <MarsOrbitScene />;
     case 'surface':
-      return <SurfaceScene />;
+      return missionId && getMission(missionId).sites ? <ExploreScene /> : <SurfaceScene />;
     case 'evidence':
     case 'report':
       return <SurfaceScene focusRock />;

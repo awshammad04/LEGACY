@@ -6,6 +6,8 @@ import { observationAvailability, observationDataMb, observationPowerW, observat
 import { computeOutcome } from './outcome';
 import { PUZZLE_CLUES } from '../content/puzzle';
 import { round } from './rng';
+import { DISCOVER_RADIUS, SOL_HOURS, batteryFloor, driveCost, netPerSol, siteDistance } from './explore';
+import { OBS_VALUE } from './science';
 
 /**
  * GameState = reduce(initialState, actions). Pure and deterministic:
@@ -49,6 +51,13 @@ export function initialState(mission: MissionDefinition, seed: number): MissionS
       energyUsedWh: 0,
       incidents: 0,
       dataStoredMb: 0,
+      heading: 0,
+      distanceU: 0,
+      rests: 0,
+      bumps: 0,
+      sitesFound: [],
+      solarFactor: 1,
+      dustUntil: 0,
     },
     events: {},
     evidence: { observations: [], alertShown: false, downlinked: [] },
@@ -70,7 +79,13 @@ function unlock(s: MissionState, id: string) {
 
 function triggerNextEvent(mission: MissionDefinition, s: MissionState) {
   if (s.pendingEvent) return;
-  if (s.ops.drives >= 1 && !s.events['ev-power'] && mission.events.some((e) => e.id === 'ev-power')) {
+  const open = !!mission.sites;
+  if (open && s.ops.sol >= 4 && !s.events['ev-dust'] && mission.events.some((e) => e.id === 'ev-dust')) {
+    s.pendingEvent = 'ev-dust';
+    s.events['ev-dust'] = {};
+    return;
+  }
+  if ((open ? s.ops.distanceU >= 120 : s.ops.drives >= 1) && !s.events['ev-power'] && mission.events.some((e) => e.id === 'ev-power')) {
     s.pendingEvent = 'ev-power';
     s.events['ev-power'] = {};
     return;
@@ -268,6 +283,14 @@ export function step(mission: MissionDefinition, prev: MissionState, action: Act
           s.ops.batteryCapWh *= 0.8;
         }
         s.ops.batteryWh = Math.min(s.ops.batteryWh, s.ops.batteryCapWh);
+      } else if (ev.id === 'ev-dust') {
+        if (choice === 'wait') {
+          s.ops.sol += 2;
+          s.ops.dustUntil = s.ops.sol;
+          if (metrics.powerSource !== 'solar') s.ops.batteryWh = s.ops.batteryCapWh;
+        } else {
+          s.ops.dustUntil = s.ops.sol + 3;
+        }
       } else if (ev.id === 'ev-solar') {
         const exposure = 1 - metrics.radiationHardness;
         if (choice === 'safe') s.ops.sol += 1;
@@ -311,7 +334,7 @@ export function step(mission: MissionDefinition, prev: MissionState, action: Act
       return s;
     }
     case 'ALERT_CHOICE': {
-      if (s.stage !== 'evidence' || !s.evidence.alertShown || s.evidence.alertChoice) return prev;
+      if ((s.stage !== 'evidence' && s.stage !== 'surface') || !s.evidence.alertShown || s.evidence.alertChoice) return prev;
       s.evidence.alertChoice = action.choice;
       if (action.choice === 'announce') s.flags.overclaimed = true;
       const titles = {
@@ -350,6 +373,122 @@ export function step(mission: MissionDefinition, prev: MissionState, action: Act
       unlock(s, 'arch-instruments');
       s.outcome = computeOutcome(mission, s);
       log(s, idx, { kind: 'science', checkpoint: true, title: t('Science report sent to Earth'), detail: t('{n} statements, {d} data products downlinked.', { n: s.evidence.report.length, d: s.evidence.downlinked.length }) });
+      s.stage = 'debrief';
+      return s;
+    }
+    case 'DRIVE': {
+      if (s.stage !== 'surface' || s.pendingEvent) return prev;
+      const dist = Math.max(0, Math.min(action.dist, 400));
+      const cost = driveCost(metrics, dist, action.slopeAvg, action.boostFrac);
+      const floor = batteryFloor(s.ops);
+      s.ops.sol += cost.hours / SOL_HOURS;
+      s.ops.batteryWh = Math.min(s.ops.batteryCapWh, s.ops.batteryWh - cost.energyWh + (netPerSol(metrics, s.ops) * cost.hours) / SOL_HOURS);
+      let forced = 0;
+      while (s.ops.batteryWh < floor && forced < 10) {
+        // Replays with a smaller battery: the rover must stop and recharge.
+        const gain = netPerSol(metrics, s.ops);
+        if (gain <= 0) break;
+        s.ops.sol += 1;
+        s.ops.rests++;
+        s.ops.batteryWh = Math.min(s.ops.batteryCapWh, s.ops.batteryWh + gain);
+        forced++;
+      }
+      if (forced) s.flags.notes.push(t('The battery ran down, so the rover had to stop and recharge for {n} sols.', { n: forced }));
+      s.ops.energyUsedWh += cost.energyWh;
+      const wearK = 1.2 - metrics.wheelDurability;
+      s.ops.wheelHealth = Math.max(0, s.ops.wheelHealth - dist * 0.02 * wearK * (1 + action.boostFrac * 0.8) - action.bumps * 2.5 * wearK);
+      s.ops.bumps += action.bumps;
+      s.ops.distanceU += dist;
+      s.ops.pos = [action.pos[0], action.pos[1]];
+      s.ops.heading = action.heading;
+      for (const site of mission.sites ?? []) {
+        if (!s.ops.sitesFound.includes(site.id) && siteDistance(site, s.ops.pos) <= DISCOVER_RADIUS) {
+          s.ops.sitesFound.push(site.id);
+          log(s, idx, { kind: 'operation', title: t('Discovered: {site}', { site: site.name }), detail: site.hint });
+        }
+      }
+      const rock = mission.sites?.find((x) => x.kind === 'rock');
+      if (rock && !s.ops.arrived && siteDistance(rock, s.ops.pos) <= rock.radius + 6) {
+        s.ops.arrived = true;
+        unlock(s, 'arch-cheyava');
+      }
+      triggerNextEvent(mission, s);
+      return s;
+    }
+    case 'REST': {
+      if (s.stage !== 'surface' || s.pendingEvent) return prev;
+      s.ops.sol = Math.floor(s.ops.sol) + 1;
+      s.ops.rests++;
+      s.ops.batteryWh = Math.min(s.ops.batteryCapWh, Math.max(batteryFloor(s.ops), s.ops.batteryWh) + Math.max(0, netPerSol(metrics, s.ops)));
+      triggerNextEvent(mission, s);
+      return s;
+    }
+    case 'INVESTIGATE': {
+      if (s.stage !== 'surface' || s.pendingEvent) return prev;
+      if (s.evidence.alertShown && !s.evidence.alertChoice) return prev;
+      const site = mission.sites?.find((x) => x.id === action.siteId);
+      const obs = mission.observations.find((o) => o.id === action.observationId);
+      if (!site || !obs || !site.observations.includes(obs.id)) return prev;
+      if (siteDistance(site, s.ops.pos) > site.radius + 6) return prev;
+      if (!observationAvailability(mission, s, metrics, obs).ok) return prev;
+      if (obs.id === 'obs-depot' && !s.evidence.observations.some((o) => o.id === 'obs-cache')) return prev;
+      const act = simulateActivity(s.ops, metrics, obs.hours, observationPowerW(mission, s.design, obs), MODEL.scienceHoursPerSol);
+      if (!act.completed) {
+        s.flags.notes.push(t('Not enough energy to complete {o}.', { o: obs.name }));
+        return s;
+      }
+      s.ops.sol += act.sols;
+      s.ops.batteryWh = act.batteryEnd;
+      s.ops.energyUsedWh += act.energyUsed;
+      const quality = observationQuality(mission, s, obs);
+      s.evidence.observations.push({ id: obs.id, quality, sol: s.ops.sol, site: site.id });
+      s.ops.dataStoredMb += observationDataMb(mission, s.design, obs);
+      if (obs.id === 'obs-dust-devil' && metrics.powerSource === 'solar') {
+        s.ops.solarFactor = Math.min(1.15, s.ops.solarFactor + 0.15);
+        log(s, idx, { kind: 'science', title: t('A dust devil cleaned your solar panels'), detail: t('Solar power output increased by about 15%.') });
+      }
+      log(s, idx, { kind: 'science', title: obs.name, detail: t('{site} · quality: {q}', { site: site.name, q: quality }) });
+      if ((obs.id === 'obs-xrf' || obs.id === 'obs-raman') && !s.evidence.alertShown) s.evidence.alertShown = true;
+      triggerNextEvent(mission, s);
+      return s;
+    }
+    case 'SEND_REPORT': {
+      if (s.stage !== 'surface' || s.pendingEvent || s.evidence.observations.length === 0) return prev;
+      if (s.evidence.alertShown && !s.evidence.alertChoice) return prev;
+      // Automatic downlink: most valuable data first, within the capacity your antenna allows.
+      const cap = downlinkCapacityMb(mission, s, metrics);
+      const ranked = [...s.evidence.observations].sort((a, b) => (OBS_VALUE[b.id] ?? 0) - (OBS_VALUE[a.id] ?? 0));
+      let used = 0;
+      const sent: string[] = [];
+      for (const r of ranked) {
+        const o = mission.observations.find((x) => x.id === r.id);
+        if (!o) continue;
+        const mb = observationDataMb(mission, s.design, o);
+        if (used + mb > cap) continue;
+        used += mb;
+        sent.push(r.id);
+      }
+      s.evidence.downlinked = sent;
+      const did = (id: string) => s.evidence.observations.some((o) => o.id === id);
+      const statements: string[] = [];
+      if (action.conclusion === 'proven') statements.push('st-proven');
+      else if (action.conclusion === 'nothing') statements.push('st-unimportant');
+      else {
+        if (action.conclusion === 'potential') statements.push('st-potential');
+        statements.push('st-abiotic');
+        statements.push('st-next');
+        if (did('obs-xrf')) statements.push('st-minerals');
+        if (did('obs-raman')) statements.push('st-organics');
+        if (did('obs-context') || did('obs-radar') || did('obs-delta-pano')) statements.push('st-water');
+        if (did('obs-cache')) statements.push('st-sample');
+      }
+      if (action.conclusion === 'proven') s.flags.overclaimed = true;
+      s.evidence.report = statements;
+      unlock(s, 'arch-perseverance');
+      unlock(s, 'arch-instruments');
+      if (s.ops.sitesFound.includes('site-layers')) unlock(s, 'arch-jezero');
+      s.outcome = computeOutcome(mission, s);
+      log(s, idx, { kind: 'science', checkpoint: true, title: t('Science report sent to Earth'), detail: t('{d} of {n} data products fit in the downlink.', { d: sent.length, n: s.evidence.observations.length }) });
       s.stage = 'debrief';
       return s;
     }

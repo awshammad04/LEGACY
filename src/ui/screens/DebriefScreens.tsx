@@ -4,7 +4,7 @@ import { getMission } from '../../content/missions';
 import { gradeReport } from '../../core/science';
 import { whatIfDesign, type WhatIfResult } from '../../core/reducer';
 import { compareQuizzes } from '../../core/quizEngine';
-import { ACHIEVEMENTS } from '../../core/outcome';
+import { ACHIEVEMENTS, consequences } from '../../core/outcome';
 import { useGame, useT, useUi } from '../../game/store';
 import { say, sfx } from '../../game/audio';
 import { fmtNum } from '../../game/i18n';
@@ -181,18 +181,25 @@ export function DebriefScreen() {
           {t(tier.label)}
         </h2>
         <p className="muted">{t(tier.text)}</p>
-        <OutcomeTable a={state} />
         <div className="stack-sm">
-          <h4>{t('Achievements')}</h4>
-          {outcome.achievements.length === 0 && <span className="small dim">{t('None this time — try the What-If machine or replay a decision.')}</span>}
-          {outcome.achievements.map((a) => (
-            <div key={a} className="finding small">
-              🏅 <strong>{t(ACHIEVEMENTS[a as keyof typeof ACHIEVEMENTS].en)}</strong> — {t(ACHIEVEMENTS[a as keyof typeof ACHIEVEMENTS].desc)}
+          <h4>{t('What your choices changed')}</h4>
+          {consequences(mission, state).map((c, i) => (
+            <div key={i} className={`feed-item small ${c.kind === 'bad' ? 'bad' : c.kind === 'warn' ? 'warn' : ''}`}>
+              {c.kind === 'good' ? '✓ ' : c.kind === 'bad' ? '✕ ' : '! '}
+              {t(c.text)}
             </div>
           ))}
-          <span className="tiny dim">{t('Unsafe actions never earn an advantage, even when they produce dramatic results.')}</span>
         </div>
-        {!outcome.beforeConjunction && <div className="feed-item warn small">{t('Solar conjunction began before the report: scientists on Earth received it late.')}</div>}
+        {outcome.achievements.length > 0 && (
+          <div className="row-wrap">
+            {outcome.achievements.map((a) => (
+              <span key={a} className="badge badge-verified" title={t(ACHIEVEMENTS[a as keyof typeof ACHIEVEMENTS].desc)}>
+                🏅 {t(ACHIEVEMENTS[a as keyof typeof ACHIEVEMENTS].en)}
+              </span>
+            ))}
+          </div>
+        )}
+        <span className="tiny dim">{t('Unsafe actions never earn an advantage, even when they produce dramatic results.')}</span>
         <button className="btn btn-primary" onClick={() => (sfx('confirm'), dispatch({ type: 'ADVANCE', to: 'quizPost' }))}>
           {t('Take the final knowledge check')} →
         </button>
@@ -207,7 +214,7 @@ export function DebriefScreen() {
             {t('What-If machine')}
           </button>
           <button role="tab" aria-selected={tab === 'report'} aria-pressed={tab === 'report'} onClick={() => setTab('report')}>
-            {t('Report feedback')}
+            {t('Details')}
           </button>
         </div>
         {tab === 'timeline' && (
@@ -233,6 +240,7 @@ export function DebriefScreen() {
         {tab === 'whatif' && <WhatIfMachine />}
         {tab === 'report' && (
           <div className="stack-sm">
+            <OutcomeTable a={state} />
             <div className="row between">
               <h4>{t('How Earth scientists read your report')}</h4>
               <ProvenanceBadge p="calculated" />

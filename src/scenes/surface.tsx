@@ -34,7 +34,7 @@ function noiseTexture() {
   return tex;
 }
 
-function spotsTexture() {
+export function spotsTexture() {
   const c = document.createElement('canvas');
   c.width = c.height = 512;
   const ctx = c.getContext('2d')!;
@@ -76,7 +76,7 @@ function spotsTexture() {
   return tex;
 }
 
-function Terrain({ onPick }: { onPick: (p: [number, number]) => void }) {
+export function Terrain({ onPick }: { onPick: (p: [number, number]) => void }) {
   const geo = useMemo(() => {
     const g = new THREE.PlaneGeometry(TERRAIN_SIZE, TERRAIN_SIZE, SEG, SEG);
     g.rotateX(-Math.PI / 2);
@@ -138,7 +138,7 @@ void main(){
   gl_FragColor = vec4(col, 1.0);
 }`;
 
-function MarsSky({ sun }: { sun: THREE.Vector3 }) {
+export function MarsSky({ sun }: { sun: THREE.Vector3 }) {
   const uniforms = useMemo(() => ({ uSun: { value: sun.clone().normalize() } }), [sun]);
   return (
     <mesh scale={1500}>
@@ -181,7 +181,7 @@ function Rocks({ target }: { target: [number, number] }) {
   );
 }
 
-function TargetRock({ pos, focus }: { pos: [number, number]; focus: boolean }) {
+export function TargetRock({ pos, focus }: { pos: [number, number]; focus: boolean }) {
   const tex = useMemo(() => spotsTexture(), []);
   const ring = useRef<THREE.Mesh>(null);
   const t = useT();

@@ -55,42 +55,45 @@ test('Mission 2 can be played end to end with real recomputed results', async ({
   await page.getByRole('radio', { name: /Delta Front/ }).click();
   await btn(page, /Begin entry, descent and landing/).click();
 
-  // Surface: plan, uplink, drive, events
-  await expect(page.getByRole('heading', { name: 'Plan the drive' })).toBeVisible();
-  await btn(page, /Waypoint toward target/).click();
-  await btn(page, /◎ Target rock/).click();
-  await expect(page.getByText(/Mobility risk/)).toBeVisible();
-  await btn(page, /Uplink drive commands/).click();
-  await expect(page.getByRole('heading', { name: 'Power anomaly' })).toBeVisible({ timeout: 30_000 });
-  await btn(page, /Shed non-essential loads/).click();
-  await expect(page.getByRole('heading', { name: 'Solar particle event warning' })).toBeVisible();
-  await btn(page, /Enter safe mode/).click();
-  await btn(page, /Begin the investigation/).click();
-
-  // Evidence: instrument-gated, alert, evidence before certainty
-  await expect(page.getByRole('heading', { name: 'Choose measurements' })).toBeVisible();
-  await expect(page.getByText('Not possible — this rover lacks the instrument.').first()).toBeVisible();
-  const run = async (name: string) => page.locator('.slot', { hasText: name }).getByRole('button', { name: 'Run' }).click();
-  await run('Panoramic context imaging');
-  await run('Abrade the rock surface');
-  await run('X-ray chemistry map');
-  await expect(page.getByRole('heading', { name: 'Possible biosignature? Further investigation required.' })).toBeVisible();
-  await btn(page, /Gather independent supporting measurements/).click();
-  await run('UV Raman organics scan');
-  await run('Core and cache a sample');
-  await btn(page, /Write the science report/).click();
-
-  // Report
-  for (const o of ['X-ray chemistry map', 'UV Raman organics scan', 'Panoramic context imaging', 'Core and cache a sample']) {
-    await page.getByRole('checkbox', { name: new RegExp(o) }).click();
+  // Surface: free-roaming exploration
+  await expect(page.locator('.hud-card strong', { hasText: 'Find the leopard-spot rock' })).toBeVisible();
+  await page.locator('canvas').first().click({ position: { x: 640, y: 450 } });
+  await page.keyboard.down('KeyW');
+  await page.waitForTimeout(6000);
+  await page.keyboard.up('KeyW');
+  await expect.poll(() => page.evaluate(() => (window as any).__legacy.useGame.getState().state.ops.distanceU), { timeout: 20000 }).toBeGreaterThan(0);
+  // Test hook: jump the rest of the way to the rock (the drive itself is covered above)
+  await page.evaluate(() => (window as any).__legacy.useGame.getState().dispatch({ type: 'DRIVE', dist: 150, slopeAvg: 4, boostFrac: 0, bumps: 0, pos: [62, -244], heading: 0.5 }));
+  await expect(page.locator('.event-card', { hasText: 'Power anomaly' })).toBeVisible();
+  await page.keyboard.press('1');
+  await expect(page.locator('.event-card', { hasText: 'Solar particle event warning' })).toBeVisible();
+  await page.keyboard.press('1');
+  await expect(page.locator('.prompt', { hasText: 'Investigate Leopard-Spot Rock' })).toBeVisible();
+  await page.keyboard.press('e');
+  await expect(page.locator('.action-panel')).toBeVisible();
+  for (const k of ['1', '3', '4']) {
+    await page.keyboard.press(k);
+    await page.waitForTimeout(250);
   }
-  for (const s of ['potential biosignature that deserves', 'Non-biological chemistry could', 'Iron-phosphate', 'Signals consistent with organic', 'Water once moved', 'A sample is cached', 'Confirming or ruling out']) {
-    await page.getByRole('checkbox', { name: new RegExp(s) }).click();
+  await expect(page.locator('.event-card', { hasText: 'Possible biosignature?' })).toBeVisible();
+  await page.keyboard.press('2');
+  const dust = page.locator('.event-card', { hasText: 'Dust storm approaching' });
+  if (await dust.isVisible()) await page.keyboard.press('2');
+  if (!(await page.locator('.action-panel').isVisible())) await page.keyboard.press('e');
+  await expect(page.locator('.action-panel')).toBeVisible();
+  for (const k of ['5', '6']) {
+    await page.keyboard.press(k);
+    await page.waitForTimeout(250);
+    if (await dust.isVisible()) await page.keyboard.press('2');
   }
-  await btn(page, /Send report to Earth/).click();
+  await expect.poll(() => page.evaluate(() => (window as any).__legacy.useGame.getState().state.evidence.observations.length)).toBe(5);
+  await page.keyboard.press('Escape');
+  await page.keyboard.press('f');
+  await page.getByRole('button', { name: /A potential biosignature/ }).click();
 
   // Debrief, recomputed What-If, final quiz
   await expect(page.locator('.eyebrow', { hasText: 'Mission debrief' })).toBeVisible();
+  await expect(page.getByText('What your choices changed')).toBeVisible();
   await expect(page.getByText('Careful Investigator')).toBeVisible();
   await page.getByRole('tab', { name: 'What-If machine' }).click();
   await page.locator('select').nth(2).selectOption('comms-basic');

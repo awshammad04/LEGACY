@@ -163,7 +163,13 @@ export const M2: MissionDefinition = {
   ),
   playable: true,
   accent: '#e07a4a',
-  stages: ['quizPre', 'briefing', 'workshop', 'review', 'launch', 'orbit', 'landingSite', 'surface', 'evidence', 'report', 'debrief', 'quizPost', 'results'],
+  stages: ['quizPre', 'briefing', 'workshop', 'review', 'launch', 'orbit', 'landingSite', 'surface', 'debrief', 'quizPost', 'results'],
+  sites: [
+    { id: 'site-rock', kind: 'rock', name: L('Leopard-Spot Rock'), hint: L('In the old river valley'), pos: [70, -250], radius: 16, observations: ['obs-context', 'obs-zoom', 'obs-abrasion', 'obs-xrf', 'obs-raman', 'obs-cache'] },
+    { id: 'site-layers', kind: 'layers', name: L('Delta Layers'), hint: L('At the foot of the delta cliff'), pos: [-150, -110], radius: 18, observations: ['obs-delta-pano', 'obs-radar'] },
+    { id: 'site-weather', kind: 'weather', name: L('Dust Devil Plain'), hint: L('Open ground on the crater floor'), pos: [70, 30], radius: 20, observations: ['obs-dust-devil', 'obs-weather'] },
+    { id: 'site-depot', kind: 'depot', name: L('Sample Depot'), hint: L('Flat ground below the delta'), pos: [-30, -40], radius: 16, observations: ['obs-depot'] },
+  ],
   slots: [launcher, edl, chassis, nav, power, comms, storage, protection, camera, instruments],
   quizPre: SHARED_PRE_QUIZ,
   quizPost: SHARED_POST_QUIZ,
@@ -178,7 +184,7 @@ export const M2: MissionDefinition = {
     { id: 'site-plains', name: L('Outer Safe Plains'), description: L('The safest, widest landing zone — and the longest drive. Any landing system can reach it.'), maxEllipseKm: 25, start: [-290, 260], mapPos: [0.3, 0.78] },
   ],
   target: [70, -250],
-  conjunctionSol: 24,
+  conjunctionSol: 14,
   observations: [
     {
       id: 'obs-context', name: L('Panoramic context imaging'), description: L('Photograph the rock and its surroundings.'), requires: ['context-imaging'], hours: 1, energyWh: 40, dataMb: 0, qualityFrom: 'camera',
@@ -219,6 +225,21 @@ export const M2: MissionDefinition = {
       support: { 'h-bio': 0, 'h-abiotic': 0, 'h-alteration': 0 },
     },
     {
+      id: 'obs-delta-pano', name: L('Photograph the delta layers'), description: L('Image the stacked rock layers in the cliff.'), requires: ['context-imaging'], hours: 1, energyWh: 30, dataMb: 0, qualityFrom: 'camera',
+      finding: L('Stacked, tilted rock layers: sediment laid down where a river flowed into a lake billions of years ago.'),
+      support: { 'h-bio': 0, 'h-abiotic': 0, 'h-alteration': 0 },
+    },
+    {
+      id: 'obs-dust-devil', name: L('Watch the dust devil'), description: L('Film a whirlwind crossing the plain.'), requires: ['context-imaging'], hours: 0.5, energyWh: 15, dataMb: 0,
+      finding: L('A dust devil sweeps past. Wind like this has cleaned dust off the solar panels of earlier Mars rovers.'),
+      support: { 'h-bio': 0, 'h-abiotic': 0, 'h-alteration': 0 },
+    },
+    {
+      id: 'obs-depot', name: L('Leave your sample at the depot'), description: L('Set down the sealed sample tube as a backup for a future mission.'), requires: ['sample-cache'], hours: 1, energyWh: 40, dataMb: 5,
+      finding: L("Your sample tube is set down at the depot — a backup a future mission could collect, like Perseverance's real \"Three Forks\" sample depot."),
+      support: { 'h-bio': 0, 'h-abiotic': 0, 'h-alteration': 0 }, learnCardId: 'lc-caching',
+    },
+    {
       id: 'obs-cache', name: L('Core and cache a sample'), description: L('Drill a core and seal it in a tube for possible future return to Earth.'), requires: ['sample-cache', 'arm'], hours: 3, energyWh: 120, dataMb: 10,
       finding: L('A rock core is sealed in a sample tube. Laboratories on Earth could one day test it with instruments far too large to fly to Mars.'),
       support: { 'h-bio': 0, 'h-abiotic': 0, 'h-alteration': 0 }, learnCardId: 'lc-caching',
@@ -230,7 +251,7 @@ export const M2: MissionDefinition = {
     { id: 'st-abiotic', kind: 'caution', text: L('Non-biological chemistry could also produce these features and cannot yet be ruled out.'), explanation: L('Listing alternative explanations is what careful scientists do.') },
     { id: 'st-minerals', kind: 'supported-claim', requiresAll: ['obs-xrf'], text: L('Iron-phosphate and iron-sulfide minerals are concentrated in the dark spot rims.'), explanation: L('Needs X-ray chemistry data on Earth.') },
     { id: 'st-organics', kind: 'supported-claim', requiresAll: ['obs-raman'], text: L('Signals consistent with organic compounds are present in the rock.'), explanation: L('Needs organics-scan data on Earth.') },
-    { id: 'st-water', kind: 'supported-claim', requiresAny: ['obs-context', 'obs-radar'], text: L('Water once moved through these sediments.'), explanation: L('Supported by the mineral veins in context images or by layered sediments seen by radar.') },
+    { id: 'st-water', kind: 'supported-claim', requiresAny: ['obs-context', 'obs-radar', 'obs-delta-pano'], text: L('Water once moved through these sediments.'), explanation: L('Supported by the mineral veins in context images or by layered sediments seen by radar.') },
     { id: 'st-sample', kind: 'supported-claim', requiresAll: ['obs-cache'], text: L('A sample is cached so laboratories on Earth could test it in the future.'), explanation: L('Only true if you actually cored and cached a sample.') },
     { id: 'st-unimportant', kind: 'dismissive', text: L('The rock is unimportant because it does not prove life.'), explanation: L('Evidence can be valuable without being proof. Dismissing it is as unscientific as overclaiming.') },
     { id: 'st-next', kind: 'caution', text: L('Confirming or ruling out a biological origin needs more evidence, such as laboratory analysis of returned samples.'), explanation: L('This matches how NASA scientists describe the real result.') },
@@ -247,6 +268,18 @@ export const M2: MissionDefinition = {
         { id: 'shed', label: L('Shed non-essential loads'), effects: L('Battery capacity −10%. Weather station and radar are switched off for the rest of the mission.') },
         { id: 'reserve', label: L('Spend $40M of the protected reserve on an engineering fix'), effects: L('Engineers upload new battery-management software. Capacity −3%, costs 1 sol.') },
         { id: 'accept', label: L('Accept the reduced capacity'), effects: L('Battery capacity −20%. All instruments stay on, but each sol supports less work.') },
+      ],
+    },
+    {
+      id: 'ev-dust',
+      title: L('Dust storm approaching'),
+      from: L('Mission Control — Mars Weather'),
+      message: L('A regional dust storm is moving in. Dust in the sky will block sunlight for a few sols.'),
+      cause: L('Martian dust storms reduce the sunlight reaching solar panels. A 2018 planet-wide storm ended Opportunity\'s mission. Radioisotope power is not affected the same way. This is different from a solar radiation storm.'),
+      concept: L('Power systems must match the environment. Solar is cheaper and lighter; radioisotope power keeps working through dust.'),
+      options: [
+        { id: 'wait', label: L('Park and wait it out'), effects: L('Lose 2 sols. The storm passes before you continue.') },
+        { id: 'continue', label: L('Keep exploring through the storm'), effects: L('No delay, but solar panels make only about a third of their power for 3 sols.') },
       ],
     },
     {

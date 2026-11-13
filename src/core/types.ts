@@ -307,6 +307,8 @@ export interface MissionDefinition {
   priorityHelp?: LText;
   /** Honest end screen for missions whose operations stage is still in development. */
   opsPreview?: { title: LText; intro: LText; next: LText[] };
+  /** Open-world exploration sites (Mission 02). */
+  sites?: ExploreSite[];
   /** Which 3D model the workshop shows. */
   model?: 'rover' | 'telescope' | 'lunar';
 }
@@ -365,12 +367,23 @@ export interface OpsState {
   energyUsedWh: number;
   incidents: number;
   dataStoredMb: number;
+  /** Open-world exploration */
+  heading: number;
+  distanceU: number;
+  rests: number;
+  bumps: number;
+  sitesFound: string[];
+  /** Solar output multiplier (dust on panels; a dust devil can clean them). */
+  solarFactor: number;
+  /** A dust storm reduces solar output until this sol. */
+  dustUntil: number;
 }
 
 export interface ObservationResult {
   id: string;
   quality: 'none' | 'low' | 'good' | 'high';
   sol: number;
+  site?: string;
 }
 
 export interface Outcome {
@@ -432,6 +445,21 @@ export type Action =
   | { type: 'ALERT_CHOICE'; choice: 'announce' | 'gather' | 'cautious' }
   | { type: 'SET_DOWNLINK'; observationIds: string[] }
   | { type: 'SUBMIT_REPORT'; statementIds: string[] }
-  | { type: 'ANSWER_POST_QUIZ'; answers: Record<string, string> };
+  | { type: 'ANSWER_POST_QUIZ'; answers: Record<string, string> }
+  | { type: 'DRIVE'; dist: number; slopeAvg: number; boostFrac: number; bumps: number; pos: [number, number]; heading: number }
+  | { type: 'REST' }
+  | { type: 'DISCOVER'; siteId: string }
+  | { type: 'INVESTIGATE'; siteId: string; observationId: string }
+  | { type: 'SEND_REPORT'; conclusion: 'proven' | 'potential' | 'untested' | 'nothing' };
 
 export type SpeedMode = 'cautious' | 'standard' | 'fast';
+
+export interface ExploreSite {
+  id: string;
+  kind: 'rock' | 'layers' | 'weather' | 'depot';
+  name: LText;
+  hint: LText;
+  pos: [number, number];
+  radius: number;
+  observations: string[];
+}

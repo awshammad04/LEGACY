@@ -134,7 +134,7 @@ export function gradeReport(mission: MissionDefinition, statementIds: string[], 
 
 /** Science value of the data that actually reached Earth. */
 export const OBS_VALUE: Record<string, number> = {
-  'obs-context': 10, 'obs-zoom': 10, 'obs-abrasion': 7, 'obs-xrf': 25, 'obs-raman': 25, 'obs-radar': 8, 'obs-weather': 2, 'obs-cache': 15,
+  'obs-context': 10, 'obs-zoom': 10, 'obs-abrasion': 7, 'obs-xrf': 25, 'obs-raman': 25, 'obs-radar': 8, 'obs-weather': 2, 'obs-cache': 15, 'obs-delta-pano': 8, 'obs-dust-devil': 3, 'obs-depot': 10,
 };
 
 export function scienceScore(state: MissionState): number {
