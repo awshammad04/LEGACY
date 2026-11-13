@@ -1,0 +1,51 @@
+import type { ArchiveEntry } from '../core/types';
+import { L } from './l';
+
+export const M2_ARCHIVE: ArchiveEntry[] = [
+  {
+    id: 'arch-perseverance',
+    missionId: 'm2-martian-mystery',
+    title: L('Perseverance: a robotic geologist'),
+    story: L('In February 2021 a car-sized rover was lowered on cables into Jezero Crater. Its job: read the rocks of an ancient lake, look for signs of past life, and seal the most promising samples in tubes that a future mission could bring home.'),
+    explanation: L('Perseverance carries cameras, X-ray and laser spectrometers, a radar and a weather station. No single instrument tells the whole story — scientists combine them.'),
+    applyQuestion: L('Which of your instruments gave independent lines of evidence about the rock?'),
+    image: 'assets/img/perseverance.jpg',
+    imageAlt: L('The Perseverance rover on the Martian surface.'),
+    sourceId: 'nasa-perseverance',
+    provenance: 'verified',
+  },
+  {
+    id: 'arch-cheyava',
+    missionId: 'm2-martian-mystery',
+    title: L('Cheyava Falls: the "leopard spots" rock'),
+    story: L('In July 2024 Perseverance found an arrowhead-shaped rock in an ancient river valley. It was covered in pale spots with dark rims. The core sample taken from it was named "Sapphire Canyon". In September 2025 NASA announced that the minerals in those spots — linked to vivianite and greigite — are a potential biosignature.'),
+    explanation: L('"Potential" is the key word. These minerals can form in reactions involving microbes, but non-biological chemistry cannot be ruled out. Scientists say samples would need to be studied on Earth to know for sure.'),
+    applyQuestion: L('How did your science report handle the difference between "potential" and "proven"?'),
+    image: 'assets/img/cheyava-falls.jpg',
+    imageAlt: L('Close-up of the Cheyava Falls rock showing pale spots with dark rims.'),
+    sourceId: 'nasa-biosignature-2025',
+    provenance: 'verified',
+  },
+  {
+    id: 'arch-jezero',
+    missionId: 'm2-martian-mystery',
+    title: L('Jezero Crater: an ancient lake'),
+    story: L('Billions of years ago, a river flowed into Jezero Crater and built a fan-shaped delta in a lake. Deltas on Earth trap sediment and organic material, which is why scientists chose Jezero as Perseverance\'s landing site.'),
+    explanation: L('Orbital images helped choose the landing site, but only a rover on the ground can measure the chemistry of individual rocks.'),
+    applyQuestion: L('What could your orbital survey show — and what could it not show?'),
+    image: 'assets/img/jezero-delta.jpg',
+    imageAlt: L('Orbital view of the river delta in Jezero Crater.'),
+    sourceId: 'nasa-perseverance',
+    provenance: 'verified',
+  },
+  {
+    id: 'arch-instruments',
+    missionId: 'm2-martian-mystery',
+    title: L('Instruments that read rocks'),
+    story: L('Perseverance\'s PIXL instrument uses X-rays to map chemical elements. SHERLOC uses an ultraviolet laser to detect organic compounds and minerals. Together they let scientists see both what a rock is made of and how its parts are arranged.'),
+    explanation: L('Each instrument costs mass, power and data. Choosing complementary instruments — rather than the most expensive one — is what makes a strong science payload.'),
+    applyQuestion: L('If you could add one more instrument next time, which would you drop to make room?'),
+    sourceId: 'nasa-perseverance-instruments',
+    provenance: 'verified',
+  },
+];
