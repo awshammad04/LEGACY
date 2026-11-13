@@ -14,7 +14,7 @@ interface LiveStore {
   /** Touch / on-screen controls */
   touch: { fwd: boolean; back: boolean; left: boolean; right: boolean; boost: boolean };
   /** UI panels that pause driving */
-  panel: 'none' | 'actions' | 'journal' | 'report';
+  panel: 'none' | 'actions' | 'journal' | 'report' | 'intro';
   set: (p: Partial<Omit<LiveStore, 'set'>>) => void;
 }
 

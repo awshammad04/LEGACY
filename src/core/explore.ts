@@ -17,7 +17,7 @@ export const WORLD_LIMIT = TERRAIN_SIZE / 2 - 70;
 
 /** Real-time top speed in world units per second (gameplay feel; fictional). */
 export function roverTopSpeed(m: DesignMetrics, wheelHealth: number) {
-  const base = m.maxSpeedMPerH >= 110 ? 10 : m.maxSpeedMPerH >= 80 ? 8 : 6;
+  const base = m.maxSpeedMPerH >= 110 ? 17 : m.maxSpeedMPerH >= 80 ? 14 : 11;
   return base * (wheelHealth < 40 ? 0.6 : 1);
 }
 

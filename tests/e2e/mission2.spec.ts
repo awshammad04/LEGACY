@@ -6,7 +6,7 @@ const btn = (page: Page, name: string | RegExp) => page.getByRole('button', { na
 async function answerQuiz(page: Page, correct: RegExp[]) {
   for (let i = 0; i < 3; i++) {
     await page.getByRole('radio', { name: correct[i] }).click();
-    if (i < 2) await btn(page, 'Next question').click();
+    await page.waitForTimeout(600);
   }
 }
 
@@ -19,29 +19,25 @@ test('Mission 2 can be played end to end with real recomputed results', async ({
   await page.locator('article', { hasText: 'The Martian Mystery' }).getByRole('button', { name: 'Start Mission' }).click();
   await expect(page.getByText('Before you launch — knowledge check')).toBeVisible();
   await answerQuiz(page, [/Check whether the complete design/, /I'm not sure/, /Life on Mars has been proven/]);
-  await btn(page, 'Save baseline & continue').click();
 
   // Briefing: question before instruments
-  await expect(page.getByRole('heading', { name: 'Which explanation will your mission test first?' })).toBeVisible();
-  await expect(btn(page, /Enter the Build Workshop/)).toBeDisabled();
+  await expect(page.getByText('Find out what made the leopard spots on a mysterious Mars rock.')).toBeVisible();
   await page.getByRole('radio', { name: /Ancient microbial activity/ }).click();
-  await btn(page, /Enter the Build Workshop/).click();
 
   // Workshop: an overweight design is blocked with an exact explanation
   await expect(page.getByRole('heading', { name: 'Build your rover' })).toBeVisible();
+  await expect(page.getByText('Balanced Explorer')).toBeVisible();
+  await page.getByText('Customize parts (advanced)').click();
   for (const n of ['Robotic arm', 'Abrasion & coring drill', 'X-ray chemistry spectrometer']) await btn(page, new RegExp(n)).click();
   await btn(page, 'Run Pre-Launch Readiness Review').click();
   await expect(page.getByText('Rover exceeds the landing system limit by 19 kg (469 kg vs 450 kg).')).toBeVisible();
   await expect(btn(page, 'LAUNCH MISSION')).toBeDisabled();
   await btn(page, /Return to Workshop/).click();
 
-  // Fix the design
-  for (const n of ['Heavy-lift launcher', 'terrain-relative navigation', 'Rocker-bogie chassis', 'Visual-odometry autonav', 'Large solar arrays', 'High-gain antenna \\+ relay', '4 GB recorder', 'Heated enclosure', 'Balanced scientific imager', 'UV Raman']) {
-    await btn(page, new RegExp(n)).click();
-  }
-  await btn(page, 'Run Pre-Launch Readiness Review').click();
-  await expect(page.getByRole('heading', { name: 'Mission authorization granted' })).toBeVisible();
-  await btn(page, 'LAUNCH MISSION').click();
+  // Fix the design with the recommended package, then launch in one click
+  await page.locator('.pkg-card', { hasText: 'Balanced Explorer' }).click();
+  await expect(page.getByText('Ready to launch ✓')).toBeVisible();
+  await btn(page, /LAUNCH MISSION/).click();
 
   // Orbit + puzzle hint
   await expect(page.getByRole('heading', { name: 'Orbit Explorer' })).toBeVisible();
@@ -49,14 +45,16 @@ test('Mission 2 can be played end to end with real recomputed results', async ({
   await btn(page, 'Perseverance Valley').click();
   await btn(page, /Perseverance \(2021/).click();
   await expect(page.getByText(/Not quite — hint/)).toBeVisible();
-  await btn(page, /Perform transfer burn to Mars/).click();
+  await btn(page, /Continue to Mars/).click();
 
-  // Landing site
-  await page.getByRole('radio', { name: /Delta Front/ }).click();
+  // Landing site (best reachable site is preselected)
+  await expect(page.getByRole('radio', { name: /Delta Front/ })).toHaveAttribute('aria-checked', 'true');
   await btn(page, /Begin entry, descent and landing/).click();
 
   // Surface: free-roaming exploration
-  await expect(page.locator('.hud-card strong', { hasText: 'Find the leopard-spot rock' })).toBeVisible();
+  await expect(page.getByText('Is there a sign of ancient life in this rock?')).toBeVisible();
+  await btn(page, "Let's go!").click();
+  await expect(page.locator('.checklist li.current', { hasText: 'Find the leopard-spot rock' })).toBeVisible();
   await page.locator('canvas').first().click({ position: { x: 640, y: 450 } });
   await page.keyboard.down('KeyW');
   await page.waitForTimeout(6000);
@@ -101,7 +99,6 @@ test('Mission 2 can be played end to end with real recomputed results', async ({
   await expect(page.getByRole('columnheader', { name: 'What-If' })).toBeVisible();
   await btn(page, /Take the final knowledge check/).click();
   await answerQuiz(page, [/Redesign or reprioritize/, /Follow the applicable hazard plan/, /Not necessarily/]);
-  await btn(page, 'Submit final answers').click();
   await expect(page.getByRole('heading', { name: 'Before: 1/3 · After: 3/3' })).toBeVisible();
 
   // Persistence: reload keeps progress and the archive
@@ -132,14 +129,8 @@ test('home and quiz screens have no serious accessibility violations', async ({ 
 test('Mission 04 Earth stage: build, pass review, launch, honest next-steps screen', async ({ page }) => {
   await page.goto('/?test=1');
   await page.locator('article', { hasText: 'The Cosmic Photographer' }).getByRole('button', { name: 'Start Mission' }).click();
-  await page.getByRole('radio', { name: /Check whether the complete design/ }).click();
-  await btn(page, 'Next question').click();
-  await page.getByRole('radio', { name: /Review the hazard plan/ }).click();
-  await btn(page, 'Next question').click();
-  await page.getByRole('radio', { name: /It deserves follow-up/ }).click();
-  await btn(page, 'Save baseline & continue').click();
+  await answerQuiz(page, [/Check whether the complete design/, /Review the hazard plan/, /It deserves follow-up/]);
   await page.getByRole('radio', { name: /What is it made of/ }).click();
-  await btn(page, /Enter the Build Workshop/).click();
   await expect(page.getByRole('heading', { name: 'Build your observatory' })).toBeVisible();
   await btn(page, /Infrared camera with cryocooler/).click();
   await btn(page, 'Run Pre-Launch Readiness Review').click();
@@ -147,9 +138,8 @@ test('Mission 04 Earth stage: build, pass review, launch, honest next-steps scre
   await btn(page, /Return to Workshop/).click();
   await btn(page, /Large solar wings/).click();
   await btn(page, /Radiation-hardened electronics/).click();
-  await btn(page, 'Run Pre-Launch Readiness Review').click();
-  await expect(page.getByRole('heading', { name: 'Mission authorization granted' })).toBeVisible();
-  await btn(page, 'LAUNCH MISSION').click();
+  await expect(page.getByText('Ready to launch ✓')).toBeVisible();
+  await btn(page, /LAUNCH MISSION/).click();
   await expect(page.getByRole('heading', { name: 'Your observatory has reached orbit' })).toBeVisible();
   await expect(page.getByText(/operations stage is still in development/)).toBeVisible();
 });

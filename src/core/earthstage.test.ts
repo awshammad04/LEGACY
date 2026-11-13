@@ -64,3 +64,17 @@ describe('Earth stage for Missions 01, 03 and 04', () => {
     }
   });
 });
+
+import { M2 } from '../content/missions';
+import { PACKAGES } from '../content/packages';
+
+describe('Rover packages (quick build)', () => {
+  it('every Mission 02 package passes the readiness review and differs in a real trade-off', () => {
+    const pkgs = PACKAGES['m2-martian-mystery']!;
+    expect(pkgs).toHaveLength(3);
+    for (const p of pkgs) expect(fails(M2, p.design), p.id).toEqual([]);
+    const caps = (id: string) => pkgs.find((p) => p.id === id)!.design.addons;
+    expect(caps('scout')).not.toContain('inst-xrf');
+    expect(pkgs.find((p) => p.id === 'lab')!.design.selections.power).toBe('power-advanced');
+  });
+});

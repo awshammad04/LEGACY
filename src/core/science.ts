@@ -137,6 +137,15 @@ export const OBS_VALUE: Record<string, number> = {
   'obs-context': 10, 'obs-zoom': 10, 'obs-abrasion': 7, 'obs-xrf': 25, 'obs-raman': 25, 'obs-radar': 8, 'obs-weather': 2, 'obs-cache': 15, 'obs-delta-pano': 8, 'obs-dust-devil': 3, 'obs-depot': 10,
 };
 
+/** Live "science points" for the HUD: value of everything collected so far (before downlink limits). */
+export function sciencePoints(state: MissionState): number {
+  return Math.round(state.evidence.observations.reduce((a, r) => a + (OBS_VALUE[r.id] ?? 0) * QUALITY_FACTOR[r.quality], 0));
+}
+
+export function pointsFor(id: string, quality: ObservationResult['quality']): number {
+  return Math.round((OBS_VALUE[id] ?? 0) * QUALITY_FACTOR[quality]);
+}
+
 export function scienceScore(state: MissionState): number {
   const total = Object.values(OBS_VALUE).reduce((a, b) => a + b, 0);
   let v = 0;

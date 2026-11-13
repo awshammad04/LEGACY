@@ -286,13 +286,13 @@ function DrivableRover({ mission, rocks }: { mission: MissionDefinition; rocks: 
 
     const top = roverTopSpeed(m, st.ops.wheelHealth) * (boost ? 1.5 : 1);
     const throttle = empty ? 0 : (fwd ? 1 : 0) - (back ? 0.6 : 0);
-    if (throttle !== 0) s.v += throttle * 6 * dt;
+    if (throttle !== 0) s.v += throttle * (Math.sign(throttle) !== Math.sign(s.v) && s.v !== 0 ? 30 : 16) * dt;
     else s.v *= Math.pow(0.04, dt);
     if (brake) s.v *= Math.pow(0.001, dt);
     s.v = Math.max(-top * 0.5, Math.min(top, s.v));
     if (Math.abs(s.v) < 0.02) s.v = 0;
     const steer = (left ? 1 : 0) - (right ? 1 : 0);
-    s.h += steer * dt * (1.6 - Math.min(0.6, Math.abs(s.v) * 0.06)) * (s.v < -0.1 ? -1 : 1);
+    s.h += steer * dt * (2.2 - Math.min(0.9, Math.abs(s.v) * 0.04)) * (s.v < -0.1 ? -1 : 1);
 
     let blocked: 'slope' | 'battery' | null = empty && (fwd || back) ? 'battery' : null;
     if (s.v !== 0) {

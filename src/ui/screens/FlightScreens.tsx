@@ -111,6 +111,10 @@ export function OrbitScreen() {
       </section>
       <section className="center-col" />
       <section className="side panel panel-pad stack scroll fade-in" aria-labelledby="puzzle-title">
+        <button className="btn btn-primary" style={{ fontSize: 16, padding: '12px 18px' }} onClick={() => (sfx('confirm'), dispatch({ type: 'ADVANCE', to: 'landingSite' }))}>
+          🚀 {t('Continue to Mars')} →
+        </button>
+        <div className="divider" />
         <span className="eyebrow">{t('Optional: Mission Parts & Orbit Puzzle')}</span>
         <h3 id="puzzle-title">{t('Match each archive fragment to its mission')}</h3>
         <p className="tiny dim">{t('These are virtual archive fragments — not real hardware drifting in orbit. Pick a fragment, then the mission it belongs to.')}</p>
@@ -142,9 +146,6 @@ export function OrbitScreen() {
           <span>{t('Matched {n} of {total}', { n: state.orbit.matched.length, total: PUZZLE_CLUES.length })}</span>
           <span>{t('Hints used: {n}', { n: state.orbit.mistakes })}</span>
         </div>
-        <button className="btn btn-primary" onClick={() => (sfx('confirm'), dispatch({ type: 'ADVANCE', to: 'landingSite' }))}>
-          {t('Perform transfer burn to Mars')} →
-        </button>
       </section>
     </main>
   );
@@ -157,7 +158,8 @@ export function LandingSiteScreen() {
   const dispatch = useGame((s) => s.dispatch);
   const mission = getMission(missionId);
   const m = useMemo(() => computeMetrics(mission, state.design), [mission, state.design]);
-  const [sel, setSel] = useState<string | null>(null);
+  const best = [...mission.landingSites].filter((x) => m.ellipseKm <= x.maxEllipseKm).sort((a, b) => a.maxEllipseKm - b.maxEllipseKm)[0];
+  const [sel, setSel] = useState<string | null>(best?.id ?? null);
   const credit = assetCredit('assets/img/jezero-delta.jpg');
 
   useEffect(() => {

@@ -1,6 +1,7 @@
 import { useEffect, useMemo } from 'react';
 import type { ComponentOption, RuleResult } from '../../core/types';
 import { getMission } from '../../content/missions';
+import { PACKAGES, sameDesign, type RoverPackage } from '../../content/packages';
 import { blockingFailures, computeMetrics, evaluateRules, isLaunchReady } from '../../core/evaluate';
 import { useGame, useT } from '../../game/store';
 import { say, sfx } from '../../game/audio';
@@ -50,7 +51,7 @@ export function WorkshopScreen() {
         () =>
           say(
             mission.id === 'm2-martian-mystery'
-              ? { en: 'Engineers have loaded a minimum-cost baseline. It can launch — but can it answer your science question? Upgrade wisely and watch every limit.' }
+              ? { en: 'Pick a rover to get started — or customize every part yourself.' }
               : { en: 'Engineers have loaded a minimum-cost baseline. Check every limit before you trust it — then upgrade wisely.' },
           ),
         500,
@@ -62,6 +63,23 @@ export function WorkshopScreen() {
   const n = (v: number, d = 0) => fmtNum(v, lang, d);
   const budgetLimit = m.budgetCapM - m.reserveMinM;
   const has = (rule: string) => !mission.rules || mission.rules.includes(rule);
+  const pkgs = PACKAGES[mission.id];
+  const applyPackage = (p: RoverPackage) => {
+    sfx('select');
+    for (const [slot, optionId] of Object.entries(p.design.selections)) if (state.design.selections[slot] !== optionId) dispatch({ type: 'SELECT_COMPONENT', slot, optionId });
+    const current = useGame.getState().state!.design.addons;
+    for (const id of current) if (!p.design.addons.includes(id)) dispatch({ type: 'TOGGLE_ADDON', optionId: id });
+    for (const id of p.design.addons) if (!useGame.getState().state!.design.addons.includes(id)) dispatch({ type: 'TOGGLE_ADDON', optionId: id });
+  };
+  /** One click: run the readiness review and, if everything passes, launch. */
+  const launch = () => {
+    dispatch({ type: 'REQUEST_REVIEW' });
+    if (isLaunchReady(evaluateRules(mission, useGame.getState().state!.design, useGame.getState().state!.sciencePriority))) {
+      sfx('success');
+      say({ en: 'Your spacecraft meets the modeled launch requirements. Mission authorization granted.' });
+      dispatch({ type: 'CONFIRM_LAUNCH' });
+    }
+  };
   const dayWord = mission.dayWord === 'day' ? t('day') : t('sol');
   const title = mission.model === 'telescope' ? t('Build your observatory') : mission.model === 'lunar' ? t('Build your lunar expedition') : t('Build your rover');
   const payloadLabel = mission.model === 'telescope' ? t('Spacecraft mass') : mission.model === 'lunar' ? t('Surface cargo') : t('Rover mass');
@@ -76,7 +94,49 @@ export function WorkshopScreen() {
           </div>
           <ProvenanceBadge p="fictional" />
         </div>
-        <p className="small muted">{t('Pick one option per system. Every part changes several limits at once. All values are fictional game values.')}</p>
+        {pkgs ? (
+          <>
+            <p className="small muted">{t('Pick a rover. Each one is good at something — and gives something up.')}</p>
+            <div className="pkg-grid">
+              {pkgs.map((p) => {
+                const on = sameDesign(state.design, p.design);
+                return (
+                  <button key={p.id} className="pkg-card" aria-pressed={on} onClick={() => applyPackage(p)}>
+                    <span className="row between">
+                      <span style={{ fontSize: 26 }} aria-hidden>
+                        {p.icon}
+                      </span>
+                      {p.recommended && <span className="badge badge-verified">{t('Recommended')}</span>}
+                    </span>
+                    <strong>{t(p.name)}</strong>
+                    <span className="tiny muted">{t(p.tagline)}</span>
+                    {(
+                      [
+                        ['speed', 'Speed'],
+                        ['science', 'Science'],
+                        ['power', 'Power'],
+                        ['data', 'Data to Earth'],
+                      ] as const
+                    ).map(([k, label]) => (
+                      <span key={k} className="pkg-bar">
+                        <span className="tiny">{t(label)}</span>
+                        <span className="dots" aria-label={`${t(label)} ${p.bars[k]}/5`}>
+                          {[1, 2, 3, 4, 5].map((i) => (
+                            <i key={i} className={i <= p.bars[k] ? 'on' : ''} />
+                          ))}
+                        </span>
+                      </span>
+                    ))}
+                  </button>
+                );
+              })}
+            </div>
+          </>
+        ) : (
+          <p className="small muted">{t('Pick one option per system. Every part changes several limits at once. All values are fictional game values.')}</p>
+        )}
+        <details open={!pkgs} className="customize">
+          <summary className="muted small">{pkgs ? t('Customize parts (advanced)') : t('Parts')}</summary>
         {mission.slots.map((slot) => (
           <div key={slot.id} className="slot" role="group" aria-labelledby={`slot-${slot.id}`}>
             <div className="slot-head">
@@ -113,6 +173,7 @@ export function WorkshopScreen() {
             </div>
           </div>
         ))}
+        </details>
       </section>
 
       <section className="center-col">
@@ -137,8 +198,21 @@ export function WorkshopScreen() {
       </section>
 
       <section className="side panel panel-pad stack scroll fade-in" aria-labelledby="limits-title">
-        <span className="eyebrow">{t('Engineering limits — live')}</span>
-        <h3 id="limits-title">{t('Does the whole system still fit?')}</h3>
+        <span className="eyebrow">{t('Safety check — live')}</span>
+        <h3 id="limits-title" className={fails.length ? 'warn' : 'ok'}>
+          {fails.length ? t('Not ready: {n} limits exceeded', { n: fails.length }) : t('Ready to launch ✓')}
+        </h3>
+        {fails.slice(0, 2).map((f) => (
+          <div key={f.id} className="feed-item bad small">
+            {t(f.message)}
+          </div>
+        ))}
+        <button className="btn btn-launch" disabled={fails.length > 0} onClick={launch}>
+          🚀 {t('LAUNCH MISSION')}
+        </button>
+        <details className="small">
+          <summary className="muted">{t('See all engineering limits')}</summary>
+          <div className="stack" style={{ marginTop: 10 }}>
         <Meter label={t('Budget (protected reserve kept)')} value={m.costM} max={budgetLimit} display={`$${n(m.costM)}M / $${n(budgetLimit)}M`} />
         <div className="tiny dim">
           {t('Cap ${cap}M · protected reserve ${min}M (recommended ${rec}M)', { cap: m.budgetCapM, min: m.reserveMinM, rec: m.reserveRecommendedM })}
@@ -194,7 +268,9 @@ export function WorkshopScreen() {
             ))}
           </div>
         )}
-        <button className="btn btn-primary" onClick={() => (sfx('confirm'), dispatch({ type: 'REQUEST_REVIEW' }))}>
+          </div>
+        </details>
+        <button className="btn btn-sm btn-ghost" onClick={() => (sfx('click'), dispatch({ type: 'REQUEST_REVIEW' }))}>
           {t('Run Pre-Launch Readiness Review')}
         </button>
       </section>

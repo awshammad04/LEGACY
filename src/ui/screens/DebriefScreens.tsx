@@ -17,6 +17,8 @@ const TIER: Record<string, { label: string; cls: string; text: string }> = {
   compromised: { label: 'Mission compromised', cls: 'bad', text: 'Safety problems or unsupported claims undermined the mission.' },
 };
 
+const STARS: Record<string, number> = { exemplary: 3, solid: 2, incomplete: 1, compromised: 0 };
+
 const KIND_COLOR: Record<DecisionEntry['kind'], string> = { design: '#9b8cff', operation: '#5ad1ff', event: '#ffb547', science: '#4ade80', safety: '#ff6b6b', quiz: '#a9b6d3' };
 
 function OutcomeTable({ a, b }: { a: MissionState; b?: MissionState }) {
@@ -177,6 +179,13 @@ export function DebriefScreen() {
     <main className="stage-body" id="main">
       <section className="side panel panel-pad stack scroll fade-in" aria-labelledby="db-title">
         <span className="eyebrow">{t('Mission debrief')}</span>
+        <div className="stars" aria-label={t('{n} of 3 stars', { n: STARS[outcome.tier] })}>
+          {[1, 2, 3].map((i) => (
+            <span key={i} className={i <= STARS[outcome.tier] ? 'on' : ''}>
+              ★
+            </span>
+          ))}
+        </div>
         <h2 id="db-title" className={tier.cls}>
           {t(tier.label)}
         </h2>

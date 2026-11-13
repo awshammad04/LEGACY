@@ -3,7 +3,7 @@ import type { ExploreSite, ObservationDef } from '../../core/types';
 import { getMission } from '../../content/missions';
 import { computeMetrics } from '../../core/evaluate';
 import { batteryFloor, WORLD_LIMIT } from '../../core/explore';
-import { downlinkCapacityMb, observationAvailability, observationDataMb, observationPowerW } from '../../core/science';
+import { downlinkCapacityMb, observationAvailability, observationDataMb, observationPowerW, pointsFor, sciencePoints } from '../../core/science';
 import { heightAt, TERRAIN_SIZE } from '../../core/terrain';
 import { useGame, useT, useUi } from '../../game/store';
 import { useLive } from '../../game/live';
@@ -37,26 +37,40 @@ function Objective() {
   const did = (id: string) => state.evidence.observations.some((o) => o.id === id);
   const rockFound = state.ops.sitesFound.includes('site-rock');
   const battPct = (state.ops.batteryWh - pending) / Math.max(1, state.ops.batteryCapWh);
-  let main: string;
-  let sub = '';
-  if (!rockFound) {
-    main = t('Find the leopard-spot rock');
-    sub = t('It lies in the old river valley. Follow the beacons.');
-  } else if (!state.ops.arrived) {
-    main = t('Drive to the Leopard-Spot Rock');
-  } else if (!did('obs-xrf') && !did('obs-raman') && !did('obs-context')) {
-    main = t('Investigate the rock');
-    sub = t('Drive into the ring and press E.');
-  } else {
-    main = t('Explore more sites, or send your report');
-    sub = t('Press F when you are ready to report to Earth.');
-  }
+  const tests = ['obs-context', 'obs-xrf', 'obs-raman'].filter(did).length;
+  const tested = did('obs-xrf') || did('obs-raman');
+  const steps = [
+    { done: state.ops.arrived, label: t('Find the leopard-spot rock'), hint: rockFound ? t('Drive into the glowing ring.') : t('Follow the yellow beacon into the old river valley.') },
+    { done: tested, label: t('Test the rock'), hint: state.ops.arrived ? t('Press E — photograph it, then test its chemistry.') : '' },
+    { done: false, label: t('Report to Earth'), hint: tested ? t('Press F when you are ready.') : '' },
+  ];
+  const current = steps.findIndex((s) => !s.done);
   const late = state.ops.sol >= mission.conjunctionSol;
+  const sites = mission.sites?.length ?? 0;
   return (
     <div className="hud-card fade-in" role="status" aria-live="polite">
-      <span className="eyebrow">{t('Objective')}</span>
-      <strong>{main}</strong>
-      {sub && <span className="small muted">{sub}</span>}
+      <span className="eyebrow">{t('Mission')}</span>
+      <ol className="checklist">
+        {steps.map((s, i) => (
+          <li key={i} className={s.done ? 'done' : i === current ? 'current' : ''}>
+            <span className="tick" aria-hidden>
+              {s.done ? '✓' : i + 1}
+            </span>
+            <span className="stack-sm" style={{ gap: 0 }}>
+              <span>{s.label}</span>
+              {i === current && s.hint && <span className="tiny muted">{s.hint}</span>}
+            </span>
+          </li>
+        ))}
+      </ol>
+      <div className="row between small">
+        <span title={t('Science points from everything you have measured')}>
+          ⭐ <strong className="mono">{sciencePoints(state)}</strong> {t('science')}
+        </span>
+        <span className="muted">
+          🗺 {state.ops.sitesFound.length}/{sites} {t('sites')} · 🧪 {tests}/3
+        </span>
+      </div>
       {battPct < 0.32 && <span className="small warn">⚡ {t('Battery low — press R to rest and recharge.')}</span>}
       {late && <span className="small bad">📡 {t('Solar conjunction has begun — send your report now. It will arrive late.')}</span>}
     </div>
@@ -246,7 +260,7 @@ function ActionPanel({ site, onClose }: { site: ExploreSite; onClose: () => void
 function FindingToast() {
   const t = useT();
   const { state, mission } = useMissionBits();
-  const [shown, setShown] = useState<{ id: string; text: string; img?: string; at: number } | null>(null);
+  const [shown, setShown] = useState<{ id: string; text: string; img?: string; at: number; pts?: number } | null>(null);
   const count = useRef(state.evidence.observations.length);
   const logLen = useRef(state.log.length);
   useEffect(() => {
@@ -256,7 +270,7 @@ function FindingToast() {
       const def = mission.observations.find((o) => o.id === last.id);
       if (def) {
         const text = t(last.quality === 'low' && def.findingLow ? def.findingLow : def.finding);
-        setShown({ id: last.id, text, img: last.quality !== 'low' ? OBS_IMAGE[last.id] : undefined, at: Date.now() });
+        setShown({ id: last.id, text, img: last.quality !== 'low' ? OBS_IMAGE[last.id] : undefined, at: Date.now(), pts: pointsFor(last.id, last.quality) });
         say(last.quality === 'low' && def.findingLow ? def.findingLow : def.finding, { en: 'Science Team' });
       }
     } else if (state.log.length > logLen.current) {
@@ -277,6 +291,7 @@ function FindingToast() {
   if (!shown) return null;
   return (
     <div className="hud-card finding-toast fade-in" role="status">
+      {shown.pts ? <strong className="points-pop">+{shown.pts} {t('science')}</strong> : null}
       {shown.img && <Figure file={shown.img} alt={t('Real NASA Perseverance image for comparison.')} maxHeight={120} />}
       <span className="small">{shown.text}</span>
       {shown.img && <span className="tiny dim">{t('Real NASA image for comparison — your mission is a simulation.')}</span>}
@@ -540,6 +555,58 @@ function ControlsHint() {
   );
 }
 
+/* ---------------- Mission intro ---------------- */
+
+function MissionIntro({ onGo }: { onGo: () => void }) {
+  const t = useT();
+  const { mission } = useMissionBits();
+  useEffect(() => {
+    say({ en: 'Your mission: find the leopard-spot rock, test it, and tell Earth the truth.' });
+    const onKey = (e: KeyboardEvent) => {
+      if (['Enter', ' ', 'w', 'W', 'ArrowUp'].includes(e.key)) onGo();
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [onGo]);
+  return (
+    <div className="intro-wrap">
+      <div className="hud-card intro-card fade-in" role="dialog" aria-labelledby="intro-t">
+        <span className="eyebrow">🎯 {t('Your mission')}</span>
+        <h2 id="intro-t">{t('Is there a sign of ancient life in this rock?')}</h2>
+        <ol className="intro-steps">
+          <li>
+            <span>🔭</span> {t('Find the leopard-spot rock — follow the yellow beacon.')}
+          </li>
+          <li>
+            <span>🧪</span> {t('Test it: photograph it, then check its chemistry.')}
+          </li>
+          <li>
+            <span>📡</span> {t('Tell Earth what you found — honestly — before sol {n}.', { n: mission.conjunctionSol })}
+          </li>
+        </ol>
+        <p className="small muted">⭐ {t('Bonus: explore all 4 sites and earn more science points.')}</p>
+        <div className="row-wrap small">
+          <span>
+            <kbd>W</kbd>
+            <kbd>A</kbd>
+            <kbd>S</kbd>
+            <kbd>D</kbd> {t('drive')}
+          </span>
+          <span>
+            <kbd>E</kbd> {t('investigate')}
+          </span>
+          <span>
+            <kbd>R</kbd> {t('recharge')}
+          </span>
+        </div>
+        <button className="btn btn-primary" style={{ fontSize: 17, padding: '12px 20px' }} onClick={onGo}>
+          {t("Let's go!")}
+        </button>
+      </div>
+    </div>
+  );
+}
+
 /* ---------------- HUD root ---------------- */
 
 export function ExploreHud() {
@@ -557,6 +624,8 @@ export function ExploreHud() {
     say({ en: 'Touchdown confirmed! The rover is yours, Commander. Find the leopard-spot rock — and explore anything that looks interesting.' });
     useUi.getState().set({ waypoints: [] });
     document.documentElement.classList.add('exploring');
+    const st = useGame.getState().state;
+    if (st && st.ops.distanceU === 0 && st.evidence.observations.length === 0) setLive({ panel: 'intro' });
     return () => {
       setLive({ panel: 'none' });
       document.documentElement.classList.remove('exploring');
@@ -626,6 +695,7 @@ export function ExploreHud() {
       <TouchControls />
       {panel === 'journal' && <Journal onClose={() => setLive({ panel: 'none' })} onReport={() => setLive({ panel: 'report' })} />}
       {panel === 'report' && <ReportCard onClose={() => setLive({ panel: 'none' })} />}
+      {panel === 'intro' && <MissionIntro onGo={() => setLive({ panel: 'none' })} />}
       <span className="scene-label explore-note">{t('Illustrative terrain inspired by Jezero Crater — not to scale.')}</span>
     </main>
   );

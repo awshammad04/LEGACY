@@ -120,7 +120,7 @@ export function WorkshopScene() {
 /* Launch cinematic                                                    */
 /* ------------------------------------------------------------------ */
 
-export const launchClock = { start: 0, duration: 14 };
+export const launchClock = { start: 0, duration: 10 };
 
 export function LaunchScene() {
   const state = useGame((s) => s.state);

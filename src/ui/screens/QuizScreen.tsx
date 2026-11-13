@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useMemo, useRef, useState } from 'react';
 import { getMission } from '../../content/missions';
 import { shuffledOptions } from '../../core/quizEngine';
 import { useGame, useT } from '../../game/store';
@@ -14,18 +14,19 @@ export function QuizScreen({ mode }: { mode: 'pre' | 'post' }) {
   const [idx, setIdx] = useState(0);
   const [answers, setAnswers] = useState<Record<string, string>>({});
   const [confirmSkip, setConfirmSkip] = useState(false);
+  const advancing = useRef(false);
   const q = questions[idx];
   const options = useMemo(() => shuffledOptions(q, state.seed + (mode === 'post' ? 7 : 0)), [q, state.seed, mode]);
   const chosen = answers[q.id];
   const last = idx === questions.length - 1;
 
-  const submit = () => {
+  const submit = (ans: Record<string, string> = answers) => {
     sfx('confirm');
     if (mode === 'pre') {
-      dispatch({ type: 'ANSWER_PRE_QUIZ', answers });
+      dispatch({ type: 'ANSWER_PRE_QUIZ', answers: ans });
       say({ en: 'Baseline saved. Your decisions will help you discover the answers.' });
     } else {
-      dispatch({ type: 'ANSWER_POST_QUIZ', answers });
+      dispatch({ type: 'ANSWER_POST_QUIZ', answers: ans });
     }
   };
 
@@ -42,7 +43,7 @@ export function QuizScreen({ mode }: { mode: 'pre' | 'post' }) {
         </div>
         <p className="small muted">
           {mode === 'pre'
-            ? t('Three questions to record what you already know. No pass or fail — "I\'m not sure" is a perfectly good answer.')
+            ? t('3 quick questions before you start. No pass or fail — just tap an answer.')
             : t('Three new questions on the same ideas. Your answers are compared only with what you actually answered at the start.')}
         </p>
         <div className="stack-sm">
@@ -61,8 +62,16 @@ export function QuizScreen({ mode }: { mode: 'pre' | 'post' }) {
               role="radio"
               aria-checked={chosen === o.id}
               onClick={() => {
+                if (advancing.current) return;
+                advancing.current = true;
                 sfx('click');
-                setAnswers({ ...answers, [q.id]: o.id });
+                const next = { ...answers, [q.id]: o.id };
+                setAnswers(next);
+                setTimeout(() => {
+                  advancing.current = false;
+                  if (last) submit(next);
+                  else setIdx((i) => Math.min(i + 1, questions.length - 1));
+                }, 420);
               }}
             >
               <span className="letter" aria-hidden>
@@ -85,15 +94,7 @@ export function QuizScreen({ mode }: { mode: 'pre' | 'post' }) {
               </button>
             )}
           </div>
-          {last ? (
-            <button className="btn btn-primary" disabled={!chosen} onClick={submit}>
-              {mode === 'pre' ? t('Save baseline & continue') : t('Submit final answers')}
-            </button>
-          ) : (
-            <button className="btn btn-primary" disabled={!chosen} onClick={() => (sfx('click'), setIdx(idx + 1))}>
-              {t('Next question')}
-            </button>
-          )}
+          <span className="tiny dim">{t('Tap an answer to continue')}</span>
         </div>
         {confirmSkip && (
           <div className="feed-item warn stack-sm" role="alert">
