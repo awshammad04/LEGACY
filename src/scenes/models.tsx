@@ -1,4 +1,6 @@
 import { useMemo, useRef } from 'react';
+import type { MutableRefObject } from 'react';
+import { RockerBogie, type VehicleMotion } from './roverfx';
 import * as THREE from 'three';
 import { useFrame, useLoader } from '@react-three/fiber';
 import type { Design, MissionDefinition } from '../core/types';
@@ -10,13 +12,12 @@ const WHITE = '#e9edf3';
 const GREY = '#8a93a3';
 const DARK = '#2a2f38';
 const GOLD = '#c99a3c';
-const WHEEL = '#3b3f46';
 
 /* ------------------------------------------------------------------ */
 /* Rover — every visible part reflects a workshop choice               */
 /* ------------------------------------------------------------------ */
 
-export function RoverModel({ mission, design, scale = 1 }: { mission: MissionDefinition; design: Design; scale?: number }) {
+export function RoverModel({ mission, design, scale = 1, motion }: { mission: MissionDefinition; design: Design; scale?: number; motion?: MutableRefObject<VehicleMotion> }) {
   const chassis = tierOf(mission, design, 'chassis') ?? 'basic';
   const camera = tierOf(mission, design, 'camera') ?? 'basic';
   const comms = tierOf(mission, design, 'comms') ?? 'basic';
@@ -34,24 +35,10 @@ export function RoverModel({ mission, design, scale = 1 }: { mission: MissionDef
   const panelScale = powerOpt.includes('balanced') ? 1.35 : 1;
   const rtg = powerOpt.includes('advanced');
 
-  const wheelX = [-bodyL * 0.42, 0, bodyL * 0.42];
   return (
     <group scale={scale}>
-      {/* Wheels + rocker-bogie */}
-      {[-1, 1].map((side) => (
-        <group key={side} position={[0, wheelR, side * (bodyW / 2 + 0.22)]}>
-          {wheelX.map((x, i) => (
-            <mesh key={i} position={[x, 0, 0]} rotation={[Math.PI / 2, 0, 0]} castShadow>
-              <cylinderGeometry args={[wheelR, wheelR, 0.26 * size, 18]} />
-              <meshStandardMaterial color={WHEEL} roughness={0.8} metalness={0.3} />
-            </mesh>
-          ))}
-          <mesh position={[0, 0.32 * size, 0]} rotation={[0, 0, 0.12]}>
-            <boxGeometry args={[bodyL * 0.95, 0.07, 0.07]} />
-            <meshStandardMaterial color={GREY} metalness={0.6} roughness={0.4} />
-          </mesh>
-        </group>
-      ))}
+      {/* Wheels + rocker-bogie (rolls and follows terrain when driven) */}
+      <RockerBogie bodyL={bodyL} bodyW={bodyW} wheelR={wheelR} size={size} motion={motion} />
       {/* Body */}
       <mesh position={[0, wheelR + 0.45 * size, 0]} castShadow>
         <boxGeometry args={[bodyL, 0.42 * size, bodyW]} />

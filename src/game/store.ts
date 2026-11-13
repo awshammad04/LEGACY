@@ -184,7 +184,27 @@ export function useT() {
 /* Transient UI state (not persisted)                                  */
 /* ------------------------------------------------------------------ */
 
+export type MenuPhase = 'intro' | 'main' | 'select';
+const introSeen = () => {
+  try {
+    if (typeof location !== 'undefined' && new URLSearchParams(location.search).has('intro')) return false;
+    return isTestMode() || localStorage.getItem('legacy.v1.introSeen') === '1';
+  } catch {
+    return true;
+  }
+};
+export function markIntroSeen() {
+  try {
+    localStorage.setItem('legacy.v1.introSeen', '1');
+  } catch {
+    /* storage unavailable */
+  }
+}
+
 interface UiStore {
+  menu: MenuPhase;
+  focusMission: MissionId;
+  introT0: number;
   learnCard?: LearnCard;
   settingsOpen: boolean;
   previewMission?: MissionId;
@@ -196,6 +216,9 @@ interface UiStore {
   set: (p: Partial<Omit<UiStore, 'set'>>) => void;
 }
 export const useUi = create<UiStore>((set) => ({
+  menu: introSeen() ? 'main' : 'intro',
+  focusMission: 'm2-martian-mystery',
+  introT0: typeof performance !== 'undefined' ? performance.now() : 0,
   settingsOpen: false,
   driving: false,
   lookAround: false,

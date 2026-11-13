@@ -122,3 +122,54 @@ export function stopNarration() {
   }
   useSubtitles.getState().set({ line: undefined });
 }
+
+/* ------------------------------------------------------------------ */
+/* Ambient menu soundscape — synthesized drone, no audio files          */
+/* ------------------------------------------------------------------ */
+
+let amb: { gain: GainNode; nodes: AudioScheduledSourceNode[] } | null = null;
+
+export function setAmbient(on: boolean) {
+  const c = ac();
+  if (!c) return;
+  if (on && !amb) {
+    const gain = c.createGain();
+    gain.gain.setValueAtTime(0, c.currentTime);
+    gain.gain.linearRampToValueAtTime(0.05, c.currentTime + 3);
+    const filter = c.createBiquadFilter();
+    filter.type = 'lowpass';
+    filter.frequency.value = 420;
+    filter.Q.value = 0.7;
+    filter.connect(gain).connect(c.destination);
+    const nodes: AudioScheduledSourceNode[] = [];
+    // Low open fifth, slightly detuned, for a calm "space" pad
+    for (const [f, g, det] of [[55, 0.5, 0], [82.4, 0.35, 4], [110, 0.18, -6], [164.8, 0.08, 3]] as const) {
+      const o = c.createOscillator();
+      o.type = 'sine';
+      o.frequency.value = f;
+      o.detune.value = det;
+      const og = c.createGain();
+      og.gain.value = g;
+      o.connect(og).connect(filter);
+      o.start();
+      nodes.push(o);
+    }
+    // Slow filter sweep
+    const lfo = c.createOscillator();
+    lfo.frequency.value = 0.05;
+    const lfoGain = c.createGain();
+    lfoGain.gain.value = 160;
+    lfo.connect(lfoGain).connect(filter.frequency);
+    lfo.start();
+    nodes.push(lfo);
+    amb = { gain, nodes };
+  } else if (!on && amb) {
+    const { gain, nodes } = amb;
+    amb = null;
+    const t = c.currentTime;
+    gain.gain.cancelScheduledValues(t);
+    gain.gain.setValueAtTime(gain.gain.value, t);
+    gain.gain.linearRampToValueAtTime(0, t + 1.2);
+    nodes.forEach((n) => n.stop(t + 1.3));
+  }
+}

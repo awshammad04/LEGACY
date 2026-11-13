@@ -3,6 +3,13 @@ import AxeBuilder from '@axe-core/playwright';
 
 const btn = (page: Page, name: string | RegExp) => page.getByRole('button', { name }).first();
 
+/** Main menu → PLAY → focus a mission on the holographic deck. */
+async function pickMission(page: Page, title: string) {
+  await page.getByRole('button', { name: 'Play', exact: true }).click();
+  await page.getByRole('tab', { name: new RegExp(title) }).click();
+  return page.getByRole('tabpanel', { name: title });
+}
+
 async function answerQuiz(page: Page, correct: RegExp[]) {
   for (let i = 0; i < 3; i++) {
     await page.getByRole('radio', { name: correct[i] }).click();
@@ -12,11 +19,11 @@ async function answerQuiz(page: Page, correct: RegExp[]) {
 
 test('Mission 2 can be played end to end with real recomputed results', async ({ page }) => {
   await page.goto('/?test=1');
-  await expect(page.getByRole('heading', { name: 'Choose your mission' })).toBeVisible();
-  await expect(page.getByText('3-question knowledge check')).toBeVisible();
-
+  await expect(page.getByRole('heading', { name: 'LEGACY' })).toBeVisible();
   // Mission choice first, then the baseline quiz
-  await page.locator('article', { hasText: 'The Martian Mystery' }).getByRole('button', { name: 'Start Mission' }).click();
+  const card = await pickMission(page, 'The Martian Mystery');
+  await expect(card.getByText('Starts with 3 quick questions')).toBeVisible();
+  await card.getByRole('button', { name: 'Start Mission' }).click();
   await expect(page.getByText('Before you launch — knowledge check')).toBeVisible();
   await answerQuiz(page, [/Check whether the complete design/, /I'm not sure/, /Life on Mars has been proven/]);
 
@@ -100,7 +107,10 @@ test('Mission 2 can be played end to end with real recomputed results', async ({
 
   // Persistence: reload keeps progress and the archive
   await page.reload();
-  await expect(page.locator('article', { hasText: 'The Martian Mystery' }).getByRole('button', { name: 'Continue Mission' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'LEGACY' })).toBeVisible();
+  const again = await pickMission(page, 'The Martian Mystery');
+  await expect(again.getByRole('button', { name: 'Continue Mission' }).or(again.getByText('Completed — replay any time'))).toBeVisible();
+  await btn(page, 'Back').click();
   await btn(page, 'Legacy Archive').click();
   await expect(page.getByText('Cheyava Falls: the "leopard spots" rock')).toBeVisible();
 });
@@ -114,10 +124,13 @@ test('Arabic switches the whole layout to right-to-left', async ({ page }) => {
 
 test('home and quiz screens have no serious accessibility violations', async ({ page }) => {
   await page.goto('/?test=1');
-  await expect(page.getByRole('heading', { name: 'Choose your mission' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'LEGACY' })).toBeVisible();
   const home = await new AxeBuilder({ page }).disableRules(['color-contrast']).analyze();
   expect(home.violations.filter((v) => v.impact === 'serious' || v.impact === 'critical').map((v) => v.id)).toEqual([]);
-  await page.locator('article', { hasText: 'The Martian Mystery' }).getByRole('button', { name: 'Start Mission' }).click();
+  const card = await pickMission(page, 'The Martian Mystery');
+  const select = await new AxeBuilder({ page }).disableRules(['color-contrast']).analyze();
+  expect(select.violations.filter((v) => v.impact === 'serious' || v.impact === 'critical').map((v) => v.id)).toEqual([]);
+  await card.getByRole('button', { name: 'Start Mission' }).click();
   await expect(page.getByText('Before you launch — knowledge check')).toBeVisible();
   const quiz = await new AxeBuilder({ page }).disableRules(['color-contrast']).analyze();
   expect(quiz.violations.filter((v) => v.impact === 'serious' || v.impact === 'critical').map((v) => v.id)).toEqual([]);
@@ -125,7 +138,7 @@ test('home and quiz screens have no serious accessibility violations', async ({ 
 
 test('Mission 04: build a telescope, launch, observe the supernova over 3 nights, report', async ({ page }) => {
   await page.goto('/?test=1');
-  await page.locator('article', { hasText: 'The Cosmic Photographer' }).getByRole('button', { name: 'Start Mission' }).click();
+  await (await pickMission(page, 'The Cosmic Photographer')).getByRole('button', { name: 'Start Mission' }).click();
   await answerQuiz(page, [/Check whether the complete design/, /Review the hazard plan/, /It deserves follow-up/]);
   await page.getByRole('radio', { name: /What is it made of/ }).click();
   await expect(page.getByRole('heading', { name: 'Build your observatory' })).toBeVisible();
@@ -150,7 +163,7 @@ test('Mission 04: build a telescope, launch, observe the supernova over 3 nights
 
 test('Mission 01: life aboard with crew health, then a safe moonwalk', async ({ page }) => {
   await page.goto('/?test=1');
-  await page.locator('article', { hasText: 'Echoes of Apollo' }).getByRole('button', { name: 'Start Mission' }).click();
+  await (await pickMission(page, 'Echoes of Apollo')).getByRole('button', { name: 'Start Mission' }).click();
   await answerQuiz(page, [/Check whether the complete design/, /Review the hazard plan/, /Document it from a safe distance/]);
   await page.getByRole('radio', { name: /Document Apollo 15 heritage/ }).click();
   await page.locator('.pkg-card', { hasText: 'Apollo-style Rover Team' }).click();
@@ -180,7 +193,7 @@ test('Mission 01: life aboard with crew health, then a safe moonwalk', async ({ 
 
 test('Mission 03: find Opportunity and document it without entering the protected zone', async ({ page }) => {
   await page.goto('/?test=1');
-  await page.locator('article', { hasText: 'The Lost Rover' }).getByRole('button', { name: 'Start Mission' }).click();
+  await (await pickMission(page, 'The Lost Rover')).getByRole('button', { name: 'Start Mission' }).click();
   await answerQuiz(page, [/Check whether the complete design/, /Review the hazard plan/, /Document it from a safe distance/]);
   await page.getByRole('radio', { name: /High-resolution photography/ }).click();
   await page.locator('.pkg-card', { hasText: 'Heritage Documenter' }).click();

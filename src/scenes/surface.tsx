@@ -10,29 +10,10 @@ import { mulberry32 } from '../core/rng';
 import { isTestMode, useGame, useT, useUi } from '../game/store';
 import { sfx } from '../game/audio';
 import { RoverModel } from './models';
+import { groundTextures } from './terrainfx';
 
 const SEG = 240;
 
-function noiseTexture() {
-  const c = document.createElement('canvas');
-  c.width = c.height = 256;
-  const ctx = c.getContext('2d')!;
-  const img = ctx.createImageData(256, 256);
-  const rnd = mulberry32(99);
-  for (let i = 0; i < 256 * 256; i++) {
-    const v = 200 + rnd() * 55;
-    img.data[i * 4] = v;
-    img.data[i * 4 + 1] = v * 0.97;
-    img.data[i * 4 + 2] = v * 0.94;
-    img.data[i * 4 + 3] = 255;
-  }
-  ctx.putImageData(img, 0, 0);
-  const tex = new THREE.CanvasTexture(c);
-  tex.wrapS = tex.wrapT = THREE.RepeatWrapping;
-  tex.repeat.set(90, 90);
-  tex.colorSpace = THREE.SRGBColorSpace;
-  return tex;
-}
 
 export function spotsTexture() {
   const c = document.createElement('canvas');
@@ -119,7 +100,7 @@ export function Terrain({ onPick, theme = 'mars' }: { onPick: (p: [number, numbe
     g.setAttribute('color', new THREE.BufferAttribute(colors, 3));
     return g;
   }, [theme]);
-  const tex = useMemo(() => noiseTexture(), []);
+  const ground = useMemo(() => groundTextures(theme), [theme]);
   const click = (e: ThreeEvent<MouseEvent>) => {
     if (e.delta > 6) return;
     e.stopPropagation();
@@ -127,7 +108,7 @@ export function Terrain({ onPick, theme = 'mars' }: { onPick: (p: [number, numbe
   };
   return (
     <mesh geometry={geo} receiveShadow onClick={click}>
-      <meshStandardMaterial vertexColors map={tex} roughness={0.97} metalness={0} />
+      <meshStandardMaterial vertexColors map={ground.map} normalMap={ground.normal} normalScale={new THREE.Vector2(0.85, 0.85)} roughness={0.96} metalness={0} />
     </mesh>
   );
 }

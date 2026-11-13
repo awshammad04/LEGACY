@@ -10,7 +10,9 @@ import { TopBar } from './ui/TopBar';
 import { Subtitles } from './ui/Subtitles';
 import { LearnCardModal } from './ui/common';
 import { SettingsModal } from './ui/SettingsModal';
-import { HomeScreen, MissionPreviewModal } from './ui/HomeScreen';
+import { MissionPreviewModal } from './ui/HomeScreen';
+import { MenuScreen } from './ui/MenuScreen';
+import { MenuScene } from './scenes/menu';
 import { MissionScreens } from './ui/MissionScreens';
 import { ArchiveScreen, ArchiveMemoryModal } from './ui/ArchiveScreen';
 import { CreditsScreen } from './ui/CreditsScreen';
@@ -36,6 +38,7 @@ function SceneRouter() {
   const view = useGame((s) => s.view);
   const stage = useGame((s) => s.state?.stage);
   const missionId = useGame((s) => s.missionId);
+  if (view === 'home') return <MenuScene />;
   if (view !== 'mission' || !stage) return <HQScene />;
   switch (stage) {
     case 'quizPre':
@@ -100,8 +103,8 @@ export function App() {
       </div>
       <div className="vignette" />
       <div className="overlay">
-        <TopBar />
-        {view === 'home' && <HomeScreen />}
+        {view !== 'home' && <TopBar />}
+        {view === 'home' && <MenuScreen />}
         {view === 'mission' && <MissionScreens />}
         {view === 'archive' && <ArchiveScreen />}
         {view === 'credits' && <CreditsScreen />}

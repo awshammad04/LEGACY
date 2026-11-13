@@ -9,6 +9,7 @@ import { useGame, useT, useUi } from '../game/store';
 import { openLearnCard } from '../ui/common';
 import { Earth, Exhaust, JEZERO, MarsGlobe, Rocket, RoverModel, Satellite, latLonToVec3, rocketHeight } from './models';
 import { LanderModel, TelescopeModel } from './craft';
+import { Astronaut } from './astronaut';
 
 /* ------------------------------------------------------------------ */
 /* Shared                                                              */
@@ -110,6 +111,12 @@ export function WorkshopScene() {
           <RoverModel mission={mission} design={state.design} />
         )}
       </group>
+      {/* Crewed missions only: the crew inspects their lander before launch (robotic missions never show astronauts) */}
+      {mission.type === 'crewed' && (
+        <>
+          <Astronaut pose="interact" position={[2.45, 0, 1.75]} rotation={[0, -2.19, 0]} />
+        </>
+      )}
       <OrbitControls enablePan={false} minDistance={4} maxDistance={11} maxPolarAngle={Math.PI / 2.1} target={[0, 0.9, 0]} />
       <CameraRigOnce position={[6.8, 3.4, 6.8]} />
     </>
@@ -409,7 +416,7 @@ function Smoke() {
 /* Journey to the Moon — the view from the crew cabin window            */
 /* ------------------------------------------------------------------ */
 
-function ProceduralMoon({ radius = 1 }: { radius?: number }) {
+export function ProceduralMoon({ radius = 1 }: { radius?: number }) {
   const geo = useMemo(() => {
     const g = new THREE.SphereGeometry(radius, 96, 96);
     const pos = g.attributes.position as THREE.BufferAttribute;

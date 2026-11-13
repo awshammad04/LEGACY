@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef } from 'react';
 import * as THREE from 'three';
 import { useFrame, useThree } from '@react-three/fiber';
-import { OrbitControls } from '@react-three/drei';
+import { Environment, Lightformer, OrbitControls } from '@react-three/drei';
 import { TextSprite } from './TextSprite';
 import { getMission } from '../content/missions';
 import { computeMetrics } from '../core/evaluate';
@@ -13,7 +13,10 @@ import { useLive } from '../game/live';
 import { sfx } from '../game/audio';
 import { MarsSky, Terrain, TargetRock } from './surface';
 import { Earth, RoverModel } from './models';
-import { AstronautModel, DescentStageModel, LanderModel, LrvModel, MerModel } from './craft';
+import { DescentStageModel, LanderModel, LrvModel, MerModel } from './craft';
+import { CraterRim, DustMotes, Pebbles, VariedRocks } from './terrainfx';
+import { Astronaut, type AstroMotion } from './astronaut';
+import type { VehicleMotion } from './roverfx';
 import { Stars } from '@react-three/drei';
 import { tierOf } from '../core/evaluate';
 
@@ -48,28 +51,6 @@ function useKeyboard() {
 /* Rocks (instanced, shared with collision)                            */
 /* ------------------------------------------------------------------ */
 
-function RockField({ rocks, color = '#8a5236' }: { rocks: Rock[]; color?: string }) {
-  const ref = useRef<THREE.InstancedMesh>(null);
-  useEffect(() => {
-    const m = ref.current;
-    if (!m) return;
-    const o = new THREE.Object3D();
-    rocks.forEach((r, i) => {
-      o.position.set(r.x, r.y, r.z);
-      o.rotation.set(r.rx, r.ry, r.rz);
-      o.scale.set(r.s, r.s * r.sy, r.s * r.sz);
-      o.updateMatrix();
-      m.setMatrixAt(i, o.matrix);
-    });
-    m.instanceMatrix.needsUpdate = true;
-  }, [rocks]);
-  return (
-    <instancedMesh ref={ref} args={[undefined, undefined, rocks.length]} castShadow receiveShadow>
-      <dodecahedronGeometry args={[1, 0]} />
-      <meshStandardMaterial color={color} roughness={0.92} flatShading />
-    </instancedMesh>
-  );
-}
 
 /* ------------------------------------------------------------------ */
 /* Sites                                                               */
@@ -283,6 +264,8 @@ function DrivableRover({ mission, rocks }: { mission: MissionDefinition; rocks: 
   const controls = useThree((s) => s.controls) as unknown as { target: THREE.Vector3 } | null;
   const { camera } = useThree();
   const up = useMemo(() => new THREE.Vector3(0, 1, 0), []);
+  const vehicleMotion = useRef<VehicleMotion>({ v: 0 });
+  const astroMotion = useRef<AstroMotion>({ pose: 'idle', speed: 0, lowGravity: true });
 
   const sim = useRef({
     x: state.ops.pos[0],
@@ -423,6 +406,9 @@ function DrivableRover({ mission, rocks }: { mission: MissionDefinition; rocks: 
     if (s.pending.dist > 0 && (now - s.lastCommit > 1100 || (s.v === 0 && now - s.lastCommit > 250))) commit();
 
     // Rover pose
+    vehicleMotion.current.v = s.v;
+    astroMotion.current.speed = Math.abs(s.v) / 3;
+    astroMotion.current.pose = Math.abs(s.v) > 0.4 ? 'walk' : 'idle';
     if (g.current) {
       const y = heightAt(s.x, s.z);
       g.current.position.set(s.x, y, s.z);
@@ -473,7 +459,17 @@ function DrivableRover({ mission, rocks }: { mission: MissionDefinition; rocks: 
   const lrv = mission.world?.vehicle === 'lrv';
   const walking = lrv && tierOf(mission, state.design, 'chassis') === 'basic';
   return (
-    <group ref={g}>{lrv ? walking ? <AstronautModel /> : <LrvModel /> : <RoverModel mission={mission} design={state.design} scale={1.4} />}</group>
+    <group ref={g}>
+      {lrv ? (
+        walking ? (
+          <Astronaut motion={astroMotion} scale={1.4} rotation={[0, Math.PI / 2, 0]} />
+        ) : (
+          <LrvModel crew motion={vehicleMotion} />
+        )
+      ) : (
+        <RoverModel mission={mission} design={state.design} scale={1.4} motion={vehicleMotion} />
+      )}
+    </group>
   );
 }
 
@@ -520,8 +516,17 @@ export function ExploreScene() {
         shadow-camera-far={600}
       />
       <primitive object={shadowTarget.current} />
+      {/* Image-based light for metal and foil (procedural, no download) */}
+      <Environment resolution={64} frames={1}>
+        <color attach="background" args={[moon ? '#050505' : '#b98560']} />
+        <Lightformer form="rect" intensity={moon ? 3 : 2.2} color={moon ? '#ffffff' : '#ffe2c0'} position={[-6, 6, -4]} scale={[6, 3, 1]} />
+        <Lightformer form="rect" intensity={moon ? 0.15 : 0.8} color={moon ? '#8a8a8a' : '#8a4a2a'} position={[0, -5, 0]} rotation={[Math.PI / 2, 0, 0]} scale={[20, 20, 1]} />
+      </Environment>
       <Terrain onPick={() => undefined} theme={moon ? 'moon' : 'mars'} />
-      <RockField rocks={rocks} color={moon ? '#77787d' : '#8a5236'} />
+      <VariedRocks rocks={rocks} theme={moon ? 'moon' : 'mars'} />
+      <Pebbles theme={moon ? 'moon' : 'mars'} count={quality === 'high' ? 3200 : 1200} />
+      <CraterRim theme={moon ? 'moon' : 'mars'} />
+      {!moon && quality === 'high' && <DustMotes storm={storm} />}
       {(mission.sites ?? []).map((site) => (
         <group key={site.id}>
           <Beacon site={site} found={state.ops.sitesFound.includes(site.id)} done={done(site)} />

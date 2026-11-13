@@ -1,4 +1,8 @@
 import * as THREE from 'three';
+import { useRef, type MutableRefObject } from 'react';
+import { useFrame } from '@react-three/fiber';
+import { Astronaut } from './astronaut';
+import type { VehicleMotion } from './roverfx';
 import type { Design, MissionDefinition } from '../core/types';
 import { tierOf } from '../core/evaluate';
 
@@ -142,7 +146,14 @@ export function LanderModel({ mission, design }: { mission: MissionDefinition; d
 /* ------------------------------------------------------------------ */
 
 /** Lunar Roving Vehicle–style rover with two seated astronauts (reconstruction). */
-export function LrvModel() {
+export function LrvModel({ crew = false, motion }: { crew?: boolean; motion?: MutableRefObject<VehicleMotion> }) {
+  const wheels = useRef<(THREE.Mesh | null)[]>([]);
+  const spin = useRef(0);
+  useFrame((_, dt) => {
+    if (!motion) return;
+    spin.current += (motion.current.v * Math.min(dt, 0.1)) / (0.42 * 1.3 * 1.3);
+    wheels.current.forEach((w) => w && (w.rotation.y = -spin.current));
+  });
   return (
     <group scale={1.3}>
       <mesh position={[0, 0.75, 0]} castShadow>
@@ -151,7 +162,7 @@ export function LrvModel() {
       </mesh>
       {[-1, 1].map((x) =>
         [-1, 1].map((z) => (
-          <mesh key={`${x}${z}`} position={[x * 1.05, 0.42, z * 0.85]} rotation={[Math.PI / 2, 0, 0]} castShadow>
+          <mesh key={`${x}${z}`} ref={(el) => (wheels.current[(x + 1) + (z + 1) / 2] = el)} position={[x * 1.05, 0.42, z * 0.85]} rotation={[Math.PI / 2, 0, 0]} castShadow>
             <cylinderGeometry args={[0.42, 0.42, 0.24, 18]} />
             <meshStandardMaterial color="#9a8f78" roughness={0.9} />
           </mesh>
@@ -161,18 +172,10 @@ export function LrvModel() {
         <cylinderGeometry args={[0.38, 0.02, 0.18, 20]} />
         <meshStandardMaterial color={WHITE} />
       </mesh>
-      {[-0.35, 0.35].map((z) => (
-        <group key={z} position={[-0.25, 0.85, z]}>
-          <mesh position={[0, 0.45, 0]} castShadow>
-            <capsuleGeometry args={[0.2, 0.45, 6, 12]} />
-            <meshStandardMaterial color="#f3f4f6" roughness={0.6} />
-          </mesh>
-          <mesh position={[0, 0.98, 0]}>
-            <sphereGeometry args={[0.17, 16, 16]} />
-            <meshStandardMaterial color={GOLD} metalness={0.9} roughness={0.15} />
-          </mesh>
-        </group>
-      ))}
+      {crew &&
+        [-0.36, 0.36].map((z) => (
+          <Astronaut key={z} pose="drive" scale={0.72} position={[-0.3, 0.05, z]} rotation={[0, Math.PI / 2, 0]} />
+        ))}
     </group>
   );
 }

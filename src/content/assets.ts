@@ -17,6 +17,7 @@ export const ASSETS: AssetCredit[] = [
   { file: 'assets/img/sapphire-canyon-core.jpg', title: "Mastcam-Z Views 'Leopard Spots' in Perseverance's Drill Bit (PIA26370)", credit: 'NASA/JPL-Caltech/ASU/MSSS', url: 'https://science.nasa.gov/photojournal/mastcam-z-views-leopard-spots-in-perseverances-drill-bit', license: 'NASA media — not copyrighted' },
   { file: 'assets/img/pixl-mineral-map.jpg', title: "Perseverance's PIXL Finds Vivianite, Greigite in Cheyava Falls Sample (PIA26640)", credit: 'NASA/JPL-Caltech', url: 'https://science.nasa.gov/photojournal/perseverances-pixl-finds-vivianite-greigite-in-cheyava-falls-sample', license: 'NASA media — not copyrighted' },
   { file: 'assets/img/perseverance.jpg', title: "Perseverance's Selfie with Cheyava Falls (PIA26344)", credit: 'NASA/JPL-Caltech/MSSS', url: 'https://science.nasa.gov/resource/perseverances-selfie-with-cheyava-falls/', license: 'NASA media — not copyrighted' },
+  { file: 'assets/models/astronaut.glb', title: 'Rigged Astronaut (3D model)', credit: 'J-Toastie, via Poly Pizza', url: 'https://poly.pizza/m/0oBRDJ9Zl9', license: 'CC-BY 3.0', modified: 'Materials retuned (gold visor, suit roughness); poses animated procedurally in code' },
 ];
 
 export const assetCredit = (file: string | undefined) => ASSETS.find((a) => a.file === file);
