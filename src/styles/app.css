@@ -338,3 +338,12 @@ details summary { cursor: pointer; }
 .stars { font-size: 34px; letter-spacing: 6px; line-height: 1; }
 .stars span { color: rgba(255, 255, 255, 0.15); }
 .stars span.on { color: #ffd166; text-shadow: 0 0 14px rgba(255, 209, 102, 0.6); }
+
+/* ---------- Mission Control messages: bottom corner, closable ---------- */
+.subtitles, :root.exploring .subtitles { position: fixed; top: auto; bottom: 16px; inset-inline-start: 16px; inset-inline-end: auto; display: block; z-index: 60; pointer-events: none; padding: 0; width: min(380px, calc(100vw - 32px)); }
+.subtitles .box, :root.exploring .subtitles .box { pointer-events: auto; max-width: none; font-size: 14px; line-height: 1.45; padding: 10px 12px; background: rgba(6, 10, 20, 0.88); border: 1px solid var(--line-strong); border-radius: 12px; display: flex; flex-direction: column; gap: 4px; box-shadow: 0 10px 30px rgba(0, 0, 0, 0.45); opacity: 1; }
+.subtitles .who { font-size: 12px; margin: 0; }
+.sub-close { background: none; border: 0; color: var(--text-2); cursor: pointer; font-size: 13px; padding: 0 2px; line-height: 1; }
+.sub-close:hover { color: var(--text); }
+:root.exploring .subtitles { bottom: 16px; }
+@media (pointer: coarse) { :root.exploring .subtitles { bottom: 210px; } }

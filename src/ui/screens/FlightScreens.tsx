@@ -1,12 +1,10 @@
 import { useEffect, useMemo, useState } from 'react';
 import { getMission } from '../../content/missions';
-import { ORBIT_LEARN_CARDS, SKY_CARDS } from '../../content/learn';
-import { PUZZLE_BINS, PUZZLE_CLUES } from '../../content/puzzle';
 import { computeMetrics, tierOf } from '../../core/evaluate';
-import { isTestMode, useGame, useT, useUi } from '../../game/store';
+import { isTestMode, useGame, useT } from '../../game/store';
 import { say, sfx } from '../../game/audio';
 import { launchClock } from '../../scenes/scenes';
-import { openLearnCard, ProvenanceBadge } from '../common';
+import { ProvenanceBadge } from '../common';
 import { Figure } from '../Figure';
 import { asset } from '../../scenes/models';
 import { assetCredit } from '../../content/assets';
@@ -66,87 +64,27 @@ export function LaunchScreen() {
 
 export function OrbitScreen() {
   const t = useT();
-  const state = useGame((s) => s.state)!;
+  const missionId = useGame((s) => s.missionId)!;
   const dispatch = useGame((s) => s.dispatch);
-  const [clue, setClue] = useState<string | null>(null);
-  const [feedback, setFeedback] = useState<{ ok: boolean; text: string } | null>(null);
+  const mission = getMission(missionId);
+  const next = mission.stages[mission.stages.indexOf('orbit') + 1] ?? 'landingSite';
+  const toMoon = mission.id === 'm1-apollo';
 
   useEffect(() => {
-    say({ en: 'Welcome to low Earth orbit, Commander. Explore the satellites around you, then solve the mission puzzle before we perform the transfer burn to Mars.' });
+    say(toMoon ? { en: 'Earth orbit reached. Next stop: the Moon.' } : { en: 'Earth orbit reached. Next stop: Mars.' });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const tryMatch = (bin: string) => {
-    if (!clue) return;
-    const c = PUZZLE_CLUES.find((x) => x.id === clue)!;
-    dispatch({ type: 'PUZZLE_MATCH', clueId: clue, missionKey: bin });
-    if (c.answer === bin) {
-      sfx('success');
-      const b = PUZZLE_BINS.find((x) => x.key === bin)!;
-      setFeedback({ ok: true, text: t(b.story) });
-    } else {
-      sfx('warn');
-      setFeedback({ ok: false, text: `${t('Not quite — hint:')} ${t(c.hint)}` });
-    }
-    setClue(null);
-  };
-  const remaining = PUZZLE_CLUES.filter((c) => !state.orbit.matched.includes(c.id));
-
   return (
-    <main className="stage-body" id="main">
-      <section className="side panel panel-pad stack scroll fade-in" aria-labelledby="orbit-title">
-        <span className="eyebrow">{t('In orbit — the space highway')}</span>
-        <h2 id="orbit-title">{t('Orbit Explorer')}</h2>
-        <p className="small muted">{t('You are in a low parking orbit. Drag to look around and select anything to learn about it — or head straight to Mars.')}</p>
-        <div className="feed-item small">{t('Illustrative animation — not live tracking data. Starlink satellites are operated by SpaceX, not NASA.')}</div>
-        <div className="stack-sm">
-          {ORBIT_LEARN_CARDS.map((c) => (
-            <button key={c.id} className="btn btn-sm" style={{ justifyContent: 'space-between' }} onClick={() => (openLearnCard(c), dispatch({ type: 'EXPLORE', cardId: c.id }))}>
-              <span>{t(c.name)}</span>
-              {state.orbit.explored.includes(c.id) ? <span className="ok">✓</span> : <span className="dim">→</span>}
-            </button>
-          ))}
-        </div>
-        <div className="divider" />
-        <LookAroundPanel />
-      </section>
-      <section className="center-col" />
-      <section className="side panel panel-pad stack scroll fade-in" aria-labelledby="puzzle-title">
-        <button className="btn btn-primary" style={{ fontSize: 16, padding: '12px 18px' }} onClick={() => (sfx('confirm'), dispatch({ type: 'ADVANCE', to: 'landingSite' }))}>
-          🚀 {t('Continue to Mars')} →
+    <main className="stage-body" id="main" style={{ alignItems: 'flex-end', justifyContent: 'center' }}>
+      <div className="panel panel-pad stack fade-in" style={{ width: 'min(420px, 92vw)', textAlign: 'center' }}>
+        <span className="eyebrow">{t('In orbit around Earth')}</span>
+        <p className="small muted">{t('Drag to look around. Tap a satellite to learn about it.')}</p>
+        <button className="btn btn-primary" style={{ fontSize: 17, padding: '13px 18px' }} onClick={() => (sfx('confirm'), dispatch({ type: 'ADVANCE', to: next }))}>
+          🚀 {toMoon ? t('Continue to the Moon') : t('Continue to Mars')} →
         </button>
-        <div className="divider" />
-        <span className="eyebrow">{t('Optional: Mission Parts & Orbit Puzzle')}</span>
-        <h3 id="puzzle-title">{t('Match each archive fragment to its mission')}</h3>
-        <p className="tiny dim">{t('These are virtual archive fragments — not real hardware drifting in orbit. Pick a fragment, then the mission it belongs to.')}</p>
-        <div className="row-wrap" role="group" aria-label={t('Fragments')}>
-          {remaining.map((c) => (
-            <button key={c.id} className="btn btn-sm" aria-pressed={clue === c.id} style={clue === c.id ? { borderColor: 'var(--cyan)', background: 'rgba(90,209,255,.15)' } : undefined} onClick={() => (sfx('click'), setClue(c.id))}>
-              {t(c.text)}
-            </button>
-          ))}
-          {remaining.length === 0 && <span className="ok small">✓ {t('All fragments matched!')}</span>}
-        </div>
-        <div className="stack-sm" role="group" aria-label={t('Missions')}>
-          {PUZZLE_BINS.map((b) => {
-            const count = state.orbit.matched.filter((id) => PUZZLE_CLUES.find((c) => c.id === id)?.answer === b.key).length;
-            return (
-              <button key={b.key} className="quiz-option" disabled={!clue} onClick={() => tryMatch(b.key)} style={{ opacity: clue ? 1 : 0.75 }}>
-                <span className="grow">{t(b.name)}</span>
-                <span className="mono small">{count}/2</span>
-              </button>
-            );
-          })}
-        </div>
-        {feedback && (
-          <div className={`feed-item small ${feedback.ok ? '' : 'warn'}`} role="status">
-            {feedback.text}
-          </div>
-        )}
-        <div className="row between tiny dim">
-          <span>{t('Matched {n} of {total}', { n: state.orbit.matched.length, total: PUZZLE_CLUES.length })}</span>
-          <span>{t('Hints used: {n}', { n: state.orbit.mistakes })}</span>
-        </div>
-      </section>
+        <span className="tiny dim">{t('Illustrative animation — not live tracking data. Starlink satellites are operated by SpaceX, not NASA.')}</span>
+      </div>
     </main>
   );
 }
@@ -225,33 +163,5 @@ export function LandingSiteScreen() {
         </button>
       </section>
     </main>
-  );
-}
-
-function LookAroundPanel() {
-  const t = useT();
-  const look = useUi((s) => s.lookAround);
-  const set = useUi((s) => s.set);
-  return (
-    <div className="stack-sm">
-      <div className="row between">
-        <h4>{t('Look Around')}</h4>
-        <button className="btn btn-sm" aria-pressed={look} onClick={() => (sfx('click'), set({ lookAround: !look }))}>
-          {look ? t('Hide sky labels') : t('Show sky labels')}
-        </button>
-      </div>
-      <p className="tiny dim">{t('Drag to look out of the window, then select the Moon or a planet.')}</p>
-      {look && (
-        <>
-          <div className="feed-item small">{t('Illustrative sky — not a real-time star map. Objects are placed for learning, not at their true positions today.')}</div>
-          {SKY_CARDS.map((c) => (
-            <button key={c.id} className="btn btn-sm" style={{ justifyContent: 'space-between' }} onClick={() => openLearnCard(c)}>
-              <span>✦ {t(c.name)}</span>
-              <span className="dim">→</span>
-            </button>
-          ))}
-        </>
-      )}
-    </div>
   );
 }
