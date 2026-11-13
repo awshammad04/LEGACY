@@ -177,3 +177,26 @@ test('Mission 01: life aboard with crew health, then a safe moonwalk', async ({ 
   await btn(page, /Send summary to Earth/).click();
   await expect(page.getByText('Heritage Protector')).toBeVisible();
 });
+
+test('Mission 03: find Opportunity and document it without entering the protected zone', async ({ page }) => {
+  await page.goto('/?test=1');
+  await page.locator('article', { hasText: 'The Lost Rover' }).getByRole('button', { name: 'Start Mission' }).click();
+  await answerQuiz(page, [/Check whether the complete design/, /Review the hazard plan/, /Document it from a safe distance/]);
+  await page.getByRole('radio', { name: /High-resolution photography/ }).click();
+  await page.locator('.pkg-card', { hasText: 'Heritage Documenter' }).click();
+  await btn(page, /LAUNCH MISSION/).click();
+  await btn(page, /Continue to Mars/).click();
+  await btn(page, "Let's go!").click();
+  await page.evaluate(() => (window as any).__legacy.useGame.getState().dispatch({ type: 'DRIVE', dist: 300, slopeAvg: 3, boostFrac: 0, bumps: 0, pos: [50, -250], heading: 0 }));
+  for (let i = 0; i < 2; i++) if (await page.locator('.event-card').isVisible()) await page.keyboard.press('1');
+  await expect(page.locator('.prompt', { hasText: 'Opportunity' })).toBeVisible();
+  await page.keyboard.press('e');
+  await page.keyboard.press('1');
+  await page.waitForTimeout(300);
+  if (await page.locator('.event-card').isVisible()) await page.keyboard.press('1');
+  await expect.poll(() => page.evaluate(() => (window as any).__legacy.useGame.getState().state.evidence.observations.length)).toBeGreaterThan(0);
+  await page.keyboard.press('Escape');
+  await page.keyboard.press('f');
+  await btn(page, /Send summary to Earth/).click();
+  await expect(page.getByText('Heritage Protector')).toBeVisible();
+});
