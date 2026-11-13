@@ -213,7 +213,7 @@ p { margin: 0; }
 .feed-item.bad { border-inline-start-color: var(--red); }
 
 /* ---------- Subtitles ---------- */
-.subtitles { position: fixed; inset-inline: 0; bottom: 18px; display: flex; justify-content: center; z-index: 60; pointer-events: none; padding-inline: 16px; }
+.subtitles { position: fixed; inset-inline: 0; top: 58px; display: flex; justify-content: center; z-index: 60; pointer-events: none; padding-inline: 16px; }
 .subtitles .box { max-width: 860px; background: rgba(0, 0, 0, 0.78); border: 1px solid var(--line); border-radius: 10px; padding: 10px 16px; font-size: 16px; }
 .subtitles .who { color: var(--cyan); font-weight: 600; margin-inline-end: 8px; }
 

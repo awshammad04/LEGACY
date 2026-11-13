@@ -223,7 +223,7 @@ export function step(mission: MissionDefinition, prev: MissionState, action: Act
         s.ops.sol += 1;
         s.ops.wheelHealth = Math.max(0, s.ops.wheelHealth - 15 * (1.5 - metrics.wheelDurability));
         s.ops.batteryWh = Math.max(s.ops.batteryCapWh * MODEL.batteryFloor, s.ops.batteryWh - 150);
-        incidentText = ' Wheel slip on a risky slope: one sol lost freeing the rover.';
+        incidentText = 'incident';
       }
       s.ops.pos = [...wps[wps.length - 1]];
       s.ops.path.push(...wps.map((w) => [...w] as [number, number]));
@@ -233,11 +233,15 @@ export function step(mission: MissionDefinition, prev: MissionState, action: Act
         s.ops.arrived = true;
         unlock(s, 'arch-cheyava');
       }
+      const modeLabel = { cautious: t('Cautious'), standard: t('Standard'), fast: t('Fast') }[action.speed];
+      const driveVars = { d: round(pred.distanceM), sols: round(act.sols, 1), e: round(act.energyUsed) };
       log(s, idx, {
         kind: pred.incidentSegment !== null ? 'safety' : 'operation',
         checkpoint: true,
-        title: t('Drive {n} ({mode})', { n: s.ops.drives, mode: action.speed }),
-        detail: t('{d} m in {sols} sols using {e} Wh.' + incidentText, { d: round(pred.distanceM), sols: round(act.sols, 1), e: round(act.energyUsed) }),
+        title: t('Drive {n} ({mode})', { n: s.ops.drives, mode: modeLabel }),
+        detail: incidentText
+          ? t('{d} m in {sols} sols using {e} Wh. Wheel slip on a risky slope: one sol lost freeing the rover.', driveVars)
+          : t('{d} m in {sols} sols using {e} Wh.', driveVars),
       });
       triggerNextEvent(mission, s);
       return s;

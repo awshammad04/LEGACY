@@ -261,13 +261,14 @@ export function Exhaust({ length = 4, radius = 0.5, intensity = 1 }: { length?: 
 
 const ATMO_VERT = `varying vec3 vNormal; varying vec3 vView;
 void main(){ vec4 mv = modelViewMatrix * vec4(position,1.0); vNormal = normalize(normalMatrix*normal); vView = normalize(-mv.xyz); gl_Position = projectionMatrix*mv; }`;
+// Back-face glow shell: brightest just outside the planet's limb, fading to zero at the shell edge.
 const ATMO_FRAG = `uniform vec3 uColor; uniform float uPower; uniform float uStrength; varying vec3 vNormal; varying vec3 vView;
-void main(){ float f = pow(1.0 - max(dot(vNormal, vView), 0.0), uPower); gl_FragColor = vec4(uColor, f * uStrength); }`;
+void main(){ float d = -dot(vNormal, vView); float f = pow(smoothstep(0.0, 0.48, d), uPower); gl_FragColor = vec4(uColor, f * uStrength); }`;
 
 export function Atmosphere({ radius, color, power = 3, strength = 1.2 }: { radius: number; color: string; power?: number; strength?: number }) {
   const uniforms = useMemo(() => ({ uColor: { value: new THREE.Color(color) }, uPower: { value: power }, uStrength: { value: strength } }), [color, power, strength]);
   return (
-    <mesh scale={radius * 1.06}>
+    <mesh scale={radius * 1.12}>
       <sphereGeometry args={[1, 64, 64]} />
       <shaderMaterial vertexShader={ATMO_VERT} fragmentShader={ATMO_FRAG} uniforms={uniforms} transparent blending={THREE.AdditiveBlending} depthWrite={false} side={THREE.BackSide} />
     </mesh>
@@ -294,11 +295,11 @@ export function Earth({ radius = 2, spin = 0.03, clouds = true }: { radius?: num
         {clouds && (
           <mesh ref={c} scale={1.012}>
             <sphereGeometry args={[radius, 96, 96]} />
-            <meshStandardMaterial alphaMap={cloud} transparent color="#ffffff" depthWrite={false} opacity={0.9} />
+            <meshStandardMaterial alphaMap={cloud} transparent color="#ffffff" depthWrite={false} opacity={0.55} />
           </mesh>
         )}
       </group>
-      <Atmosphere radius={radius} color="#5aa8ff" power={2.6} strength={1.5} />
+      <Atmosphere radius={radius} color="#5aa8ff" power={3} strength={0.55} />
     </group>
   );
 }
@@ -328,7 +329,7 @@ export function MarsGlobe({ radius = 2, spin = 0, children }: { radius?: number;
         </mesh>
         {children}
       </group>
-      <Atmosphere radius={radius} color="#ff9b6a" power={3.5} strength={0.7} />
+      <Atmosphere radius={radius} color="#ff9b6a" power={2.6} strength={0.45} />
     </group>
   );
 }
