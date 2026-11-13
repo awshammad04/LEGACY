@@ -820,5 +820,13 @@
  "Basic": "أساسي",
  "Balanced": "متوازن",
  "Advanced": "متقدم",
- "return to Mission Control home": "العودة إلى مقر مركز التحكم"
+ "return to Mission Control home": "العودة إلى مقر مركز التحكم",
+ "Look Around": "انظر حولك",
+ "Hide sky labels": "إخفاء تسميات السماء",
+ "Show sky labels": "إظهار تسميات السماء",
+ "Drag to look out of the window, then select the Moon or a planet.": "اسحب للنظر من النافذة، ثم اختر القمر أو كوكبًا.",
+ "Illustrative sky — not a real-time star map. Objects are placed for learning, not at their true positions today.": "سماء توضيحية — ليست خريطة نجوم آنية. وُضعت الأجرام لأغراض التعلّم، لا في مواقعها الحقيقية اليوم.",
+ "Earth's Moon: Facts": "قمر الأرض: حقائق",
+ "Venus: Facts": "الزهرة: حقائق",
+ "Jupiter: Facts": "المشتري: حقائق"
 }

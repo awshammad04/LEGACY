@@ -3,11 +3,12 @@ import * as THREE from 'three';
 import { useFrame, useThree } from '@react-three/fiber';
 import { Html, OrbitControls, Stars } from '@react-three/drei';
 import { getMission } from '../content/missions';
-import { ORBIT_LEARN_CARDS } from '../content/learn';
+import { ORBIT_LEARN_CARDS, SKY_CARDS } from '../content/learn';
 import { tierOf } from '../core/evaluate';
-import { useGame, useT } from '../game/store';
+import { useGame, useT, useUi } from '../game/store';
 import { openLearnCard } from '../ui/common';
 import { Earth, Exhaust, JEZERO, MarsGlobe, Rocket, RoverModel, Satellite, latLonToVec3, rocketHeight } from './models';
+import { LanderModel, TelescopeModel } from './craft';
 
 /* ------------------------------------------------------------------ */
 /* Shared                                                              */
@@ -49,7 +50,7 @@ export function HQScene({ showMars = false }: { showMars?: boolean }) {
       <SpaceBackdrop />
       <ambientLight intensity={0.08} />
       <directionalLight position={[-6, 3, 8]} intensity={3} color="#fff6e8" />
-      <group ref={g} position={[x, -0.2, 0]}>
+      <group ref={g} position={[x, showMars ? -0.2 : 1.1, 0]}>
         {showMars ? <MarsGlobe radius={2.1} spin={0.04} /> : <Earth radius={2.1} spin={0.035} />}
       </group>
       <CameraRig position={[0, 0.3, 8.5]} target={[0, 0, 0]} lerp={1.2} />
@@ -101,7 +102,13 @@ export function WorkshopScene() {
         </mesh>
       ))}
       <group ref={turn} position={[0, 0.12, 0]}>
-        <RoverModel mission={mission} design={state.design} />
+        {mission.model === 'telescope' ? (
+          <TelescopeModel mission={mission} design={state.design} />
+        ) : mission.model === 'lunar' ? (
+          <LanderModel mission={mission} design={state.design} />
+        ) : (
+          <RoverModel mission={mission} design={state.design} />
+        )}
       </group>
       <OrbitControls enablePan={false} minDistance={4} maxDistance={11} maxPolarAngle={Math.PI / 2.1} target={[0, 0.9, 0]} />
       <CameraRigOnce position={[6.8, 3.4, 6.8]} />
@@ -173,6 +180,7 @@ export function LaunchScene() {
           <Exhaust length={h * 0.55} radius={tier === 'advanced' ? 1 : 0.6} />
         </group>
       </group>
+      <Smoke />
       <Stars radius={200} depth={60} count={3000} factor={4} fade />
     </>
   );
@@ -277,6 +285,7 @@ export function OrbitScene() {
           <NamedSatellite s={s} />
         </group>
       ))}
+      <SkyObjects />
       <OrbitControls enablePan={false} minDistance={3.6} maxDistance={12} autoRotate autoRotateSpeed={0.25} />
       <CameraRigOnce position={[5.5, 2.2, 6]} />
     </>
@@ -321,5 +330,77 @@ export function MarsOrbitScene() {
       </MarsGlobe>
       <CameraRig position={[camPos.x, camPos.y, camPos.z]} target={[marker.x * 0.6, marker.y * 0.6, marker.z * 0.6]} lerp={0.8} />
     </>
+  );
+}
+
+/* ------------------------------------------------------------------ */
+/* Look Around — illustrative sky (not a real-time star map)           */
+/* ------------------------------------------------------------------ */
+
+const SKY: { id: string; pos: [number, number, number]; color: string; size: number }[] = [
+  { id: 'sky-moon', pos: [-38, 9, -30], color: '#d8d8d2', size: 1.6 },
+  { id: 'sky-venus', pos: [55, 14, -40], color: '#fff3c4', size: 0.45 },
+  { id: 'sky-mars', pos: [-60, 22, 35], color: '#ff8a5c', size: 0.5 },
+  { id: 'sky-jupiter', pos: [40, 30, 60], color: '#f0d9b0', size: 0.6 },
+];
+
+function SkyObjects() {
+  const look = useUi((s) => s.lookAround);
+  const t = useT();
+  return (
+    <group>
+      {SKY.map((o) => {
+        const card = SKY_CARDS.find((c) => c.id === o.id)!;
+        return (
+          <group key={o.id} position={o.pos}>
+            <mesh onClick={(e) => (e.stopPropagation(), openLearnCard(card))}>
+              <sphereGeometry args={[o.size, 32, 32]} />
+              <meshBasicMaterial color={o.color} toneMapped={false} />
+            </mesh>
+            {look && (
+              <Html center distanceFactor={40} zIndexRange={[10, 0]}>
+                <button className="poi-label" onClick={() => openLearnCard(card)}>
+                  ✦ {t(card.name)}
+                </button>
+              </Html>
+            )}
+          </group>
+        );
+      })}
+    </group>
+  );
+}
+
+/** Exhaust smoke: puffs released at the rocket's base along its (deterministic) ascent path. */
+function Smoke() {
+  const N = 40;
+  const refs = useRef<(THREE.Mesh | null)[]>([]);
+  const mats = useMemo(() => Array.from({ length: N }, () => new THREE.MeshStandardMaterial({ color: '#d9d4cc', transparent: true, opacity: 0, depthWrite: false, roughness: 1 })), []);
+  useFrame(() => {
+    const t = (performance.now() - launchClock.start) / 1000;
+    for (let i = 0; i < N; i++) {
+      const m = refs.current[i];
+      if (!m) continue;
+      const born = 3 + i * 0.16;
+      const age = t - born;
+      if (age < 0) { mats[i].opacity = 0; continue; }
+      const tt = Math.max(0, born - 3);
+      const y = 0.35 * tt * tt * 1.6;
+      const x = Math.min(30, tt * tt * 0.08);
+      const spread = (i % 2 ? 1 : -1) * age * 1.2;
+      m.position.set(x + spread, Math.max(0.6, y + 0.4 - age * 0.3), (i % 3 - 1) * age);
+      const r = 0.8 + age * 1.6;
+      m.scale.setScalar(r);
+      mats[i].opacity = Math.max(0, 0.55 - age * 0.12);
+    }
+  });
+  return (
+    <group>
+      {mats.map((mat, i) => (
+        <mesh key={i} ref={(el) => { refs.current[i] = el; }} material={mat}>
+          <sphereGeometry args={[1, 12, 10]} />
+        </mesh>
+      ))}
+    </group>
   );
 }

@@ -1,9 +1,9 @@
 import { useEffect, useMemo, useState } from 'react';
 import { getMission } from '../../content/missions';
-import { ORBIT_LEARN_CARDS } from '../../content/learn';
+import { ORBIT_LEARN_CARDS, SKY_CARDS } from '../../content/learn';
 import { PUZZLE_BINS, PUZZLE_CLUES } from '../../content/puzzle';
 import { computeMetrics, tierOf } from '../../core/evaluate';
-import { isTestMode, useGame, useT } from '../../game/store';
+import { isTestMode, useGame, useT, useUi } from '../../game/store';
 import { say, sfx } from '../../game/audio';
 import { launchClock } from '../../scenes/scenes';
 import { openLearnCard, ProvenanceBadge } from '../common';
@@ -17,7 +17,9 @@ export function LaunchScreen() {
   const reduced = useGame((s) => s.settings.reducedMotion);
   const state = useGame((s) => s.state)!;
   const missionId = useGame((s) => s.missionId)!;
-  const tier = tierOf(getMission(missionId), state.design, 'launcher') ?? 'basic';
+  const mission = getMission(missionId);
+  const tier = tierOf(mission, state.design, 'launcher') ?? 'basic';
+  const next = mission.stages[mission.stages.indexOf('launch') + 1] ?? 'orbit';
   const [now, setNow] = useState(0);
   const duration = isTestMode() ? 0.5 : reduced ? 3 : launchClock.duration;
 
@@ -33,7 +35,7 @@ export function LaunchScreen() {
         sfx('launch');
       }
       if (tt >= duration) {
-        dispatch({ type: 'ADVANCE', to: 'orbit' });
+        dispatch({ type: 'ADVANCE', to: next });
         return;
       }
       raf = requestAnimationFrame(tick);
@@ -41,7 +43,7 @@ export function LaunchScreen() {
     raf = requestAnimationFrame(tick);
     say({ en: 'All systems are go. Launch in three… two… one…' });
     return () => cancelAnimationFrame(raf);
-  }, [dispatch, duration, reduced]);
+  }, [dispatch, duration, reduced, next]);
 
   const countdown = Math.max(0, Math.ceil(3 - now));
   const phase = now < 3 ? t('Countdown') : now < 9.5 ? t('Liftoff — first stage burning') : now < 11 ? t('Stage separation') : t('Fairing separation — reaching parking orbit');
@@ -54,7 +56,7 @@ export function LaunchScreen() {
         </h2>
         <span className="muted">{phase}</span>
         <span className="tiny dim">{t('Launcher: fictional {tier} vehicle sized by your workshop choice.', { tier: t(tier) })}</span>
-        <button className="btn btn-sm btn-ghost" style={{ alignSelf: 'flex-start' }} onClick={() => dispatch({ type: 'ADVANCE', to: 'orbit' })}>
+        <button className="btn btn-sm btn-ghost" style={{ alignSelf: 'flex-start' }} onClick={() => dispatch({ type: 'ADVANCE', to: next })}>
           {t('Skip cinematic')} ⏭
         </button>
       </div>
@@ -104,6 +106,8 @@ export function OrbitScreen() {
             </button>
           ))}
         </div>
+        <div className="divider" />
+        <LookAroundPanel />
       </section>
       <section className="center-col" />
       <section className="side panel panel-pad stack scroll fade-in" aria-labelledby="puzzle-title">
@@ -219,5 +223,33 @@ export function LandingSiteScreen() {
         </button>
       </section>
     </main>
+  );
+}
+
+function LookAroundPanel() {
+  const t = useT();
+  const look = useUi((s) => s.lookAround);
+  const set = useUi((s) => s.set);
+  return (
+    <div className="stack-sm">
+      <div className="row between">
+        <h4>{t('Look Around')}</h4>
+        <button className="btn btn-sm" aria-pressed={look} onClick={() => (sfx('click'), set({ lookAround: !look }))}>
+          {look ? t('Hide sky labels') : t('Show sky labels')}
+        </button>
+      </div>
+      <p className="tiny dim">{t('Drag to look out of the window, then select the Moon or a planet.')}</p>
+      {look && (
+        <>
+          <div className="feed-item small">{t('Illustrative sky — not a real-time star map. Objects are placed for learning, not at their true positions today.')}</div>
+          {SKY_CARDS.map((c) => (
+            <button key={c.id} className="btn btn-sm" style={{ justifyContent: 'space-between' }} onClick={() => openLearnCard(c)}>
+              <span>✦ {t(c.name)}</span>
+              <span className="dim">→</span>
+            </button>
+          ))}
+        </>
+      )}
+    </div>
   );
 }

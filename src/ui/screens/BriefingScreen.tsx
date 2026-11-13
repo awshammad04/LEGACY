@@ -24,7 +24,7 @@ export function BriefingScreen() {
         <span className="eyebrow">{t('On Earth — Mission briefing')}</span>
         <h2 id="brief-title">{t(mission.title)}</h2>
         <p>{t(mission.briefing.intro)}</p>
-        <Figure file="assets/img/cheyava-falls.jpg" alt={t('The Cheyava Falls rock photographed by Perseverance, with pale spots ringed by dark rims.')} maxHeight={200} />
+        {mission.id === 'm2-martian-mystery' && <Figure file="assets/img/cheyava-falls.jpg" alt={t('The Cheyava Falls rock photographed by Perseverance, with pale spots ringed by dark rims.')} maxHeight={200} />}
         <div className="stack-sm">
           <h4 className="muted">{t('NASA fact cards')}</h4>
           {mission.briefing.facts.map((f, i) => (
@@ -43,8 +43,8 @@ export function BriefingScreen() {
 
       <section className="side panel panel-pad stack scroll fade-in" aria-labelledby="priority-title">
         <span className="eyebrow">{t('Step 1 — Ask the question first')}</span>
-        <h3 id="priority-title">{t('Which explanation will your mission test first?')}</h3>
-        <p className="small muted">{t('Scientists choose questions before instruments. Your choice guides which tools you will need.')}</p>
+        <h3 id="priority-title">{mission.priorityPrompt ? t(mission.priorityPrompt) : t('Which explanation will your mission test first?')}</h3>
+        <p className="small muted">{mission.priorityHelp ? t(mission.priorityHelp) : t('Scientists choose questions before instruments. Your choice guides which tools you will need.')}</p>
         <div className="stack-sm" role="radiogroup" aria-labelledby="priority-title">
           {mission.hypotheses.map((h) => (
             <button
@@ -70,7 +70,7 @@ export function BriefingScreen() {
             <ProvenanceBadge p="fictional" />
           </div>
           <span className="mono" style={{ fontSize: 26 }}>
-            ${(mission.budgetCapM / 1000).toFixed(1)}B
+            {mission.budgetCapM >= 1000 ? `$${(mission.budgetCapM / 1000).toFixed(1)}B` : `$${mission.budgetCapM}M`}
           </span>
           <button className="btn btn-ghost btn-sm" aria-expanded={showBudget} onClick={() => setShowBudget(!showBudget)} style={{ alignSelf: 'flex-start' }}>
             {showBudget ? '▾' : '▸'} {t('How we chose this budget')}

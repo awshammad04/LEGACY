@@ -96,3 +96,39 @@ export const M2_LEARN_CARDS: LearnCard[] = [
     connection: L('NASA scientists say confirming the Sapphire Canyon result would likely need returned samples.'),
   },
 ];
+
+/** "Look Around" sky objects (illustrative placement — not a real-time star map). */
+export const SKY_CARDS: LearnCard[] = [
+  {
+    id: 'sky-moon', provenance: 'verified', sourceId: 'nasa-moon',
+    name: L('The Moon', 'القمر'),
+    what: L("Earth's only natural satellite, about 384,400 km away on average.", 'التابع الطبيعي الوحيد للأرض، ويبعد في المتوسط نحو 384,400 كم.'),
+    does: L('Its gravity drives most of the tides in Earth\'s oceans.', 'جاذبيته هي المسبّب الرئيسي لمعظم المدّ والجزر في محيطات الأرض.'),
+    why: L('It is the only other world humans have walked on — during the Apollo missions.', 'إنه العالم الوحيد الآخر الذي مشى عليه البشر — خلال مهمات أبولو.'),
+    connection: L('Mission 01, Echoes of Apollo, will take you to the Apollo 15 landing region.', 'ستأخذك المهمة 01، أصداء أبولو، إلى منطقة هبوط أبولو 15.'),
+  },
+  {
+    id: 'sky-venus', provenance: 'verified', sourceId: 'nasa-venus',
+    name: L('Venus', 'الزهرة'),
+    what: L('The second planet from the Sun and the brightest planet in our sky.', 'الكوكب الثاني من الشمس وألمع كوكب في سمائنا.'),
+    does: L('Its thick carbon-dioxide atmosphere traps heat, making it the hottest planet in the solar system.', 'يحبس غلافه الجوي الكثيف من ثاني أكسيد الكربون الحرارة، فيجعله أشدّ كواكب المجموعة الشمسية حرارة.'),
+    why: L('Venus shows how an atmosphere can change a whole planet\'s climate.', 'تُظهر الزهرة كيف يمكن لغلاف جوي أن يغيّر مناخ كوكب بأكمله.'),
+    connection: L('Bright planets are among the easiest objects to spot from a spacecraft window.', 'الكواكب اللامعة من أسهل الأجرام رصدًا من نافذة مركبة فضائية.'),
+  },
+  {
+    id: 'sky-mars', provenance: 'verified', sourceId: 'nasa-mars-facts',
+    name: L('Mars — your destination', 'المريخ — وجهتك'),
+    what: L('The fourth planet from the Sun. Iron-rich dust gives its surface a reddish color.', 'الكوكب الرابع من الشمس. يمنح الغبار الغني بالحديد سطحه لونًا مائلًا إلى الحمرة.'),
+    does: L('Radio signals take many minutes to travel between Earth and Mars; the delay depends on where both planets are in their orbits.', 'تستغرق إشارات الراديو دقائق عديدة للسفر بين الأرض والمريخ، ويعتمد التأخير على موقع الكوكبين في مداريهما.'),
+    why: L('That delay is why Mars rovers must drive themselves between commands.', 'هذا التأخير هو سبب اضطرار المركبات الجوالة على المريخ إلى القيادة الذاتية بين الأوامر.'),
+    connection: L('Your rover will land in Jezero Crater, an ancient lake bed.', 'ستهبط مركبتك الجوالة في فوهة جيزيرو، قاع بحيرة قديمة.'),
+  },
+  {
+    id: 'sky-jupiter', provenance: 'verified', sourceId: 'nasa-jupiter',
+    name: L('Jupiter', 'المشتري'),
+    what: L('The largest planet in our solar system — about 11 times wider than Earth.', 'أكبر كواكب مجموعتنا الشمسية — أعرض من الأرض بنحو 11 مرة.'),
+    does: L('A gas giant with a storm, the Great Red Spot, bigger than Earth.', 'عملاق غازي فيه عاصفة، البقعة الحمراء العظيمة، أكبر من الأرض.'),
+    why: L('Its powerful gravity has shaped the orbits of many asteroids and comets.', 'شكّلت جاذبيته القوية مدارات كثير من الكويكبات والمذنبات.'),
+    connection: L('Even a bright planet like Jupiter can be hard to see when sunlight floods a camera\'s view.', 'حتى كوكب لامع مثل المشتري قد يصعب رؤيته عندما يغمر ضوء الشمس مجال رؤية الكاميرا.'),
+  },
+];

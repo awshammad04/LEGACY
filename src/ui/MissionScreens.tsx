@@ -6,6 +6,7 @@ import { LandingSiteScreen, LaunchScreen, OrbitScreen } from './screens/FlightSc
 import { SurfaceScreen } from './screens/SurfaceScreen';
 import { EvidenceScreen, ReportScreen } from './screens/EvidenceScreens';
 import { DebriefScreen, ResultsScreen } from './screens/DebriefScreens';
+import { OpsPreviewScreen } from './screens/OpsPreviewScreen';
 
 export function MissionScreens() {
   const stage = useGame((s) => s.state?.stage);
@@ -36,6 +37,8 @@ export function MissionScreens() {
       return <QuizScreen key="post" mode="post" />;
     case 'results':
       return <ResultsScreen />;
+    case 'opsPreview':
+      return <OpsPreviewScreen />;
     default:
       return null;
   }

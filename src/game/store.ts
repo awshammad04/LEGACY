@@ -190,6 +190,7 @@ interface UiStore {
   previewMission?: MissionId;
   archiveEntry?: string;
   driving: boolean;
+  lookAround: boolean;
   waypoints: [number, number][];
   speed: 'cautious' | 'standard' | 'fast';
   set: (p: Partial<Omit<UiStore, 'set'>>) => void;
@@ -197,6 +198,7 @@ interface UiStore {
 export const useUi = create<UiStore>((set) => ({
   settingsOpen: false,
   driving: false,
+  lookAround: false,
   waypoints: [],
   speed: 'standard',
   set: (p) => set(p),

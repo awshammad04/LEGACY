@@ -239,7 +239,7 @@ Checkpoint commits happen after each milestone (`git init` in M0). Each **⛔ cu
 | R22 | Orbit explorer: rotate Earth, tap satellites, Starlink credited to SpaceX, motion labeled illustrative | scenes/orbit | ✅ | manual |
 | R23 | Mission Parts & Orbit Puzzle with hints | orbit | ✅ (cut line) | unit |
 | R24 | Point-to-Learn cards (6 fields), hover + tap + keyboard, everywhere | ui/LearnCard | ✅ | component + axe |
-| R25 | Look Around sky, viewpoint-aware, labeled | scenes/shared | ◐ stretch | — |
+| R25 | Look Around sky, viewpoint-aware, labeled | scenes/orbit | ✅ illustrative (labeled; positions not astronomical) | manual |
 | R26 | Orbital survey/landing choice (M2) | orbit | ✅ | unit |
 | R27 | Surface navigation with slope/speed → time/energy/risk | sim/mobility | ✅ Mars / ⏭ Moon | unit |
 | R28 | Comm delay modeled (Moon vs Mars) | sim/comms | ✅ Mars | unit |
@@ -298,3 +298,13 @@ Checkpoint commits happen after each milestone (`git init` in M0). Each **⛔ cu
 - Procedural 3D models and terrain for the deadline. Real NASA DEMs and GLBs come later.
 - I translate the Arabic and it is flagged for native-speaker review.
 - Checkpoint git commits after each milestone. Asset downloads and deployment each get a confirmation from you at the time.
+
+---
+
+## Delivery log (Nov 13, 2026)
+
+- M0–M7 complete: Mission 2 is playable end to end (quiz → briefing → workshop → review → launch → orbit → landing → surface → events → evidence → report → debrief/What-If → final check → archive).
+- M8: full Arabic translation map (machine-drafted, needs native review), RTL layout, LTR-isolated telemetry, synthesized SFX, Web Speech narration with subtitles, credits screen, briefing previews for Missions 1/3/4.
+- Stretch done: Look Around illustrative sky; bloom/vignette post-processing (High quality only); launch smoke.
+- Tests: 25 Vitest unit tests (rules, quiz, mobility, golden scripts, What-If, integrity); 3 Playwright E2E tests (full run + reload, RTL, axe on home/quiz).
+- Known limits: Missions 1/3/4 operations not built; terrain is analytic/illustrative, not a DEM; Arabic not yet reviewed by a native speaker.

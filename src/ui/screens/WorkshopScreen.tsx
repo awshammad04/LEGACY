@@ -46,13 +46,25 @@ export function WorkshopScreen() {
 
   useEffect(() => {
     if (state.reviewAttempts === 0) {
-      const id = setTimeout(() => say({ en: 'Engineers have loaded a minimum-cost baseline. It can launch — but can it answer your science question? Upgrade wisely and watch every limit.' }), 500);
+      const id = setTimeout(
+        () =>
+          say(
+            mission.id === 'm2-martian-mystery'
+              ? { en: 'Engineers have loaded a minimum-cost baseline. It can launch — but can it answer your science question? Upgrade wisely and watch every limit.' }
+              : { en: 'Engineers have loaded a minimum-cost baseline. Check every limit before you trust it — then upgrade wisely.' },
+          ),
+        500,
+      );
       return () => clearTimeout(id);
     }
-  }, [state.reviewAttempts]);
+  }, [state.reviewAttempts, mission.id]);
 
   const n = (v: number, d = 0) => fmtNum(v, lang, d);
   const budgetLimit = m.budgetCapM - m.reserveMinM;
+  const has = (rule: string) => !mission.rules || mission.rules.includes(rule);
+  const dayWord = mission.dayWord === 'day' ? t('day') : t('sol');
+  const title = mission.model === 'telescope' ? t('Build your observatory') : mission.model === 'lunar' ? t('Build your lunar expedition') : t('Build your rover');
+  const payloadLabel = mission.model === 'telescope' ? t('Spacecraft mass') : mission.model === 'lunar' ? t('Surface cargo') : t('Rover mass');
 
   return (
     <main className="stage-body" id="main">
@@ -60,7 +72,7 @@ export function WorkshopScreen() {
         <div className="row between">
           <div className="stack-sm">
             <span className="eyebrow">{t('On Earth — Build workshop')}</span>
-            <h2 id="ws-title">{t('Build your rover')}</h2>
+            <h2 id="ws-title">{title}</h2>
           </div>
           <ProvenanceBadge p="fictional" />
         </div>
@@ -116,7 +128,7 @@ export function WorkshopScreen() {
             <div className={`v ${m.reserveRemainingM < m.reserveMinM ? 'bad' : m.reserveRemainingM < m.reserveRecommendedM ? 'warn' : ''}`}>${n(m.reserveRemainingM)}M</div>
           </div>
           <div className="hud-tile">
-            <div className="lbl">{t('Rover mass')}</div>
+            <div className="lbl">{payloadLabel}</div>
             <div className="v">{n(m.roverMassKg)} kg</div>
           </div>
           <div className="hud-tile">
@@ -134,21 +146,45 @@ export function WorkshopScreen() {
           {t('Cap ${cap}M · protected reserve ${min}M (recommended ${rec}M)', { cap: m.budgetCapM, min: m.reserveMinM, rec: m.reserveRecommendedM })}
         </div>
         <Meter label={t('Launch mass vs launcher')} value={m.launchStackMassKg} max={m.launchCapacityKg} display={`${n(m.launchStackMassKg)} / ${n(m.launchCapacityKg)} kg`} />
-        <Meter label={t('Rover mass vs landing system')} value={m.roverMassKg} max={m.landingCapacityKg} display={`${n(m.roverMassKg)} / ${n(m.landingCapacityKg)} kg`} />
-        <Meter label={t('Typical sol energy demand vs supply')} value={m.typicalSolDemandWh} max={m.generationWhPerSol} display={`${n(m.typicalSolDemandWh)} / ${n(m.generationWhPerSol)} Wh`} />
+        {has('landing-mass') && (
+          <Meter
+            label={mission.model === 'lunar' ? t('Surface cargo vs lander capacity') : t('Rover mass vs landing system')}
+            value={m.roverMassKg}
+            max={m.landingCapacityKg}
+            display={`${n(m.roverMassKg)} / ${n(m.landingCapacityKg)} kg`}
+          />
+        )}
+        {mission.requiredCrewDays ? (
+          <Meter
+            label={t('Crew life support (days, incl. 20% margin)')}
+            value={Math.ceil(mission.requiredCrewDays * 1.2)}
+            max={Math.max(1, m.crewDays)}
+            display={`${n(Math.ceil(mission.requiredCrewDays * 1.2))} / ${n(m.crewDays)}`}
+          />
+        ) : null}
+        <Meter
+          label={mission.dayWord === 'day' ? t('Typical day energy demand vs supply') : t('Typical sol energy demand vs supply')}
+          value={m.typicalSolDemandWh}
+          max={m.generationWhPerSol}
+          display={`${n(m.typicalSolDemandWh)} / ${n(m.generationWhPerSol)} Wh`}
+        />
         <Meter label={t('Night energy (with margin) vs battery')} value={m.nightDemandWh * 1.25} max={m.batteryWh} display={`${n(m.nightDemandWh * 1.25)} / ${n(m.batteryWh)} Wh`} />
         <Meter label={t('Science data (2 sets) vs storage')} value={m.essentialDataMb * 2} max={m.storageMb} display={`${n(m.essentialDataMb * 2)} / ${n(m.storageMb)} MB`} />
         <Meter label={t('Heat load vs thermal capacity')} value={m.heatLoad} max={m.thermalCapacity} display={`${n(m.heatLoad)} / ${n(m.thermalCapacity)}`} />
         <div className="row-wrap tiny dim">
           <span>
-            {t('Downlink')}: <span className="mono">{n(m.downlinkMbPerSol)} MB/sol</span>
+            {t('Downlink')}: <span className="mono">{n(m.downlinkMbPerSol)} MB</span> / {dayWord}
           </span>
-          <span>
-            {t('Landing ellipse')}: <span className="mono">{n(m.ellipseKm)} km</span>
-          </span>
-          <span>
-            {t('Max slope')}: <span className="mono">{n(m.slopeLimitDeg)}°</span>
-          </span>
+          {has('landing-mass') && mission.model !== 'lunar' && (
+            <span>
+              {t('Landing ellipse')}: <span className="mono">{n(m.ellipseKm)} km</span>
+            </span>
+          )}
+          {m.slopeLimitDeg > 0 && (
+            <span>
+              {t('Max slope')}: <span className="mono">{n(m.slopeLimitDeg)}°</span>
+            </span>
+          )}
         </div>
         {warnings.length > 0 && (
           <div className="stack-sm" aria-label={t('Ground control notes')}>

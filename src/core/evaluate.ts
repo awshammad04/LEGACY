@@ -74,15 +74,18 @@ export function computeMetrics(mission: MissionDefinition, design: Design): Desi
   const camera = sel('camera');
 
   const costM = parts.reduce((a, o) => a + o.costM, 0);
-  const roverMassKg = parts.reduce((a, o) => a + o.massKg, 0);
+  // Surface payload: everything except orbiting segments (e.g. a crew capsule that stays in lunar orbit).
+  const roverMassKg = parts.filter((o) => o.segment !== 'orbiter').reduce((a, o) => a + o.massKg, 0);
+  const totalPartsMass = parts.reduce((a, o) => a + o.massKg, 0);
   const edlMass = edl?.edlSystemMassKg ?? 0;
   const heater = Math.max(0, (protection?.heaterWhPerSol ?? 600) - (power?.heaterSavingsWh ?? 0));
   const commsWh = (comms?.powerW ?? 0) * MODEL.commsHoursPerSol;
   const drivePowerW = (chassis?.drivePowerW ?? 0) + (nav?.powerW ?? 0);
+  const continuousWh = parts.reduce((a, o) => a + (o.continuousW ?? 0), 0) * 24;
   const sciencePeak = Math.max(0, ...parts.filter((o) => o.slot === 'instruments' || o.slot === 'camera').map((o) => o.powerW));
   const typicalSolDemandWh =
-    MODEL.housekeepingWh + heater + commsWh + MODEL.typicalDriveHours * drivePowerW + MODEL.typicalScienceHours * sciencePeak;
-  const nightDemandWh = (MODEL.housekeepingWh + heater) * MODEL.nightFraction;
+    MODEL.housekeepingWh + heater + commsWh + continuousWh + MODEL.typicalDriveHours * drivePowerW + MODEL.typicalScienceHours * sciencePeak;
+  const nightDemandWh = (MODEL.housekeepingWh + heater + continuousWh) * MODEL.nightFraction;
 
   // Essential data: one full set of every observation the payload can make.
   const caps = capabilitiesOf(mission, design);
@@ -97,7 +100,8 @@ export function computeMetrics(mission: MissionDefinition, design: Design): Desi
     reserveRecommendedM: mission.reserveRecommendedM,
     reserveRemainingM: mission.budgetCapM - costM,
     roverMassKg,
-    launchStackMassKg: edlMass + roverMassKg,
+    launchStackMassKg: edlMass + totalPartsMass,
+    crewDays: parts.reduce((a, o) => a + (o.crewDays ?? 0), 0),
     launchCapacityKg: launcher?.launchCapacityKg ?? 0,
     landingCapacityKg: edl?.landingCapacityKg ?? 0,
     generationWhPerSol: power?.generationWhPerSol ?? 0,
@@ -118,7 +122,7 @@ export function computeMetrics(mission: MissionDefinition, design: Design): Desi
     drivePowerW,
     radiationHardness: protection?.radiationHardness ?? 0,
     powerSource: power?.powerSource ?? 'none',
-    housekeepingWh: MODEL.housekeepingWh + heater + commsWh,
+    housekeepingWh: MODEL.housekeepingWh + heater + commsWh + continuousWh,
   };
 }
 
@@ -288,6 +292,25 @@ export function evaluateRules(mission: MissionDefinition, design: Design, priori
         : { en: '{name} needs a robotic arm to touch the rock.', vars: { name: unmet[0].name } },
   });
 
+  // 11. Crew life support (crewed missions only)
+  if (mission.requiredCrewDays) {
+    const need = Math.ceil(mission.requiredCrewDays * 1.2);
+    res.push({
+      id: 'life-support',
+      severity: 'blocking',
+      pass: m.crewDays >= need,
+      measured: m.crewDays,
+      limit: need,
+      delta: need - m.crewDays,
+      unit: 'days',
+      provenance: 'calculated',
+      message:
+        m.crewDays >= need
+          ? { en: 'Life support covers {have} crew-days; the plan needs {need} including a 20% safety margin.', vars: { have: m.crewDays, need } }
+          : { en: 'Life support covers only {have} crew-days; the plan needs {need} including a 20% safety margin. Crew safety limits are not optional.', vars: { have: m.crewDays, need } },
+    });
+  }
+
   // ---- Ground warnings (never block) ----
   if (over <= 0 && m.reserveRemainingM < m.reserveRecommendedM) {
     res.push({
@@ -302,7 +325,7 @@ export function evaluateRules(mission: MissionDefinition, design: Design, priori
     res.push({ id: 'mass-margin', severity: 'warning', pass: false, provenance: 'calculated', message: { en: 'Launch mass margin is under 5%. Engineers usually keep more margin for surprises.' } });
   }
   if (powerShort <= 0 && m.generationWhPerSol > 0 && -powerShort / m.generationWhPerSol < MODEL.powerMarginWarn) {
-    res.push({ id: 'power-margin', severity: 'warning', pass: false, provenance: 'calculated', message: { en: 'Power margin is under 10%. Each sol will allow only a little driving or science.' } });
+    res.push({ id: 'power-margin', severity: 'warning', pass: false, provenance: 'calculated', message: mission.model === 'telescope' || mission.model === 'lunar' ? { en: 'Power margin is under 10%. There is little spare energy for extra operations or surprises.' } : { en: 'Power margin is under 10%. Each sol will allow only a little driving or science.' } });
   }
   if (priority) {
     const needs: Record<string, string[]> = {
@@ -315,14 +338,19 @@ export function evaluateRules(mission: MissionDefinition, design: Design, priori
       res.push({ id: 'science-fit', severity: 'warning', pass: false, provenance: 'calculated', message: { en: 'None of your instruments can measure chemistry or organics — your chosen science question may stay unanswered.' } });
     }
   }
-  if (m.powerSource === 'solar') {
+  if (m.powerSource === 'solar' && mission.destination.en.startsWith('Mars')) {
     res.push({ id: 'solar-dust', severity: 'info', pass: true, provenance: 'verified', message: { en: 'Solar power: dust on the panels or a dust storm can reduce output (this is what ended Opportunity\'s mission in 2018).' } });
   }
-  if (m.ellipseKm > 0) {
+  if (m.ellipseKm > 0 && mission.landingSites.length > 0) {
     const sites = mission.landingSites.filter((s) => m.ellipseKm <= s.maxEllipseKm).length;
     res.push({ id: 'ellipse', severity: 'info', pass: true, provenance: 'fictional', message: { en: 'Landing ellipse {e} km: {n} of {t} candidate landing sites reachable.', vars: { e: m.ellipseKm, n: sites, t: mission.landingSites.length } } });
   }
-  return res;
+  const applies = (r: RuleResult) => r.severity !== 'blocking' || !mission.rules || mission.rules.includes(r.id) || r.id === 'life-support';
+  const out = res.filter(applies);
+  if (mission.dayWord === 'day') {
+    for (const r of out) r.message = { ...r.message, en: r.message.en.replace(/\bsol\b/g, 'day') };
+  }
+  return out;
 }
 
 export const blockingFailures = (rules: RuleResult[]) => rules.filter((r) => r.severity === 'blocking' && !r.pass);

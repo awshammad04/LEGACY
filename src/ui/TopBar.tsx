@@ -17,6 +17,7 @@ const STAGE_LABEL: Partial<Record<StageId, string>> = {
   debrief: 'Debrief',
   quizPost: 'Final check',
   results: 'Results',
+  opsPreview: 'Next steps',
 };
 
 export function TopBar() {

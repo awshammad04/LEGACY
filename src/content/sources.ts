@@ -28,6 +28,9 @@ export const SOURCES: Source[] = [
   { id: 'nasa-aqua', title: 'Aqua Mission', credit: 'NASA', url: 'https://aqua.nasa.gov/', license: 'NASA public information', accessed: '2026-11-13' },
   { id: 'nasa-landsat9', title: 'Landsat 9', credit: 'NASA / USGS', url: 'https://landsat.gsfc.nasa.gov/satellites/landsat-9/', license: 'NASA public information', accessed: '2026-11-13' },
   { id: 'celestrak-starlink', title: 'CelesTrak — Starlink orbital catalog (non-NASA)', credit: 'CelesTrak (data: U.S. Space Force); Starlink operated by SpaceX', url: 'https://celestrak.org/NORAD/elements/gp.php?GROUP=starlink&FORMAT=json', license: 'Public catalog data', accessed: '2026-11-13' },
+  { id: 'nasa-moon', title: "Earth's Moon: Facts", credit: 'NASA Science', url: 'https://science.nasa.gov/moon/facts/', license: 'NASA public information', accessed: '2026-11-13' },
+  { id: 'nasa-venus', title: 'Venus: Facts', credit: 'NASA Science', url: 'https://science.nasa.gov/venus/venus-facts/', license: 'NASA public information', accessed: '2026-11-13' },
+  { id: 'nasa-jupiter', title: 'Jupiter: Facts', credit: 'NASA Science', url: 'https://science.nasa.gov/jupiter/jupiter-facts/', license: 'NASA public information', accessed: '2026-11-13' },
   { id: 'legacy-game-model', title: 'LEGACY simplified game model (fictional, educational)', credit: 'LEGACY team', url: '#how-numbers-work', license: 'Original work', accessed: '2026-11-13' },
 ];
 

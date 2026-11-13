@@ -16,7 +16,7 @@ test('Mission 2 can be played end to end with real recomputed results', async ({
   await expect(page.getByText('3-question knowledge check')).toBeVisible();
 
   // Mission choice first, then the baseline quiz
-  await btn(page, 'Start Mission').click();
+  await page.locator('article', { hasText: 'The Martian Mystery' }).getByRole('button', { name: 'Start Mission' }).click();
   await expect(page.getByText('Before you launch — knowledge check')).toBeVisible();
   await answerQuiz(page, [/Check whether the complete design/, /I'm not sure/, /Life on Mars has been proven/]);
   await btn(page, 'Save baseline & continue').click();
@@ -103,7 +103,7 @@ test('Mission 2 can be played end to end with real recomputed results', async ({
 
   // Persistence: reload keeps progress and the archive
   await page.reload();
-  await expect(btn(page, 'Continue Mission')).toBeVisible();
+  await expect(page.locator('article', { hasText: 'The Martian Mystery' }).getByRole('button', { name: 'Continue Mission' })).toBeVisible();
   await btn(page, 'Legacy Archive').click();
   await expect(page.getByText('Cheyava Falls: the "leopard spots" rock')).toBeVisible();
 });
@@ -120,8 +120,33 @@ test('home and quiz screens have no serious accessibility violations', async ({ 
   await expect(page.getByRole('heading', { name: 'Choose your mission' })).toBeVisible();
   const home = await new AxeBuilder({ page }).disableRules(['color-contrast']).analyze();
   expect(home.violations.filter((v) => v.impact === 'serious' || v.impact === 'critical').map((v) => v.id)).toEqual([]);
-  await btn(page, 'Start Mission').click();
+  await page.locator('article', { hasText: 'The Martian Mystery' }).getByRole('button', { name: 'Start Mission' }).click();
   await expect(page.getByText('Before you launch — knowledge check')).toBeVisible();
   const quiz = await new AxeBuilder({ page }).disableRules(['color-contrast']).analyze();
   expect(quiz.violations.filter((v) => v.impact === 'serious' || v.impact === 'critical').map((v) => v.id)).toEqual([]);
+});
+
+test('Mission 04 Earth stage: build, pass review, launch, honest next-steps screen', async ({ page }) => {
+  await page.goto('/?test=1');
+  await page.locator('article', { hasText: 'The Cosmic Photographer' }).getByRole('button', { name: 'Start Mission' }).click();
+  await page.getByRole('radio', { name: /Check whether the complete design/ }).click();
+  await btn(page, 'Next question').click();
+  await page.getByRole('radio', { name: /Review the hazard plan/ }).click();
+  await btn(page, 'Next question').click();
+  await page.getByRole('radio', { name: /It deserves follow-up/ }).click();
+  await btn(page, 'Save baseline & continue').click();
+  await page.getByRole('radio', { name: /What is it made of/ }).click();
+  await btn(page, /Enter the Build Workshop/).click();
+  await expect(page.getByRole('heading', { name: 'Build your observatory' })).toBeVisible();
+  await btn(page, /Infrared camera with cryocooler/).click();
+  await btn(page, 'Run Pre-Launch Readiness Review').click();
+  await expect(btn(page, 'LAUNCH MISSION')).toBeDisabled();
+  await btn(page, /Return to Workshop/).click();
+  await btn(page, /Large solar wings/).click();
+  await btn(page, /Radiation-hardened electronics/).click();
+  await btn(page, 'Run Pre-Launch Readiness Review').click();
+  await expect(page.getByRole('heading', { name: 'Mission authorization granted' })).toBeVisible();
+  await btn(page, 'LAUNCH MISSION').click();
+  await expect(page.getByRole('heading', { name: 'Your observatory has reached orbit' })).toBeVisible();
+  await expect(page.getByText(/operations stage is still in development/)).toBeVisible();
 });

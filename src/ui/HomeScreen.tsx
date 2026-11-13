@@ -1,6 +1,6 @@
 import { useEffect, useMemo } from 'react';
 import type { MissionDefinition, MissionId } from '../core/types';
-import { MISSIONS, getMission } from '../content/missions';
+import { MISSIONS, getMission, isStartable } from '../content/missions';
 import { replay } from '../core/reducer';
 import { deleteSave, useGame, useT, useUi } from '../game/store';
 import { say, sfx } from '../game/audio';
@@ -10,7 +10,7 @@ import { SHARED_PRE_QUIZ } from '../content/quiz';
 const TYPE_LABEL = { crewed: 'Crewed', robotic: 'Robotic', telescope: 'Telescope' } as const;
 const STAGE_NAME: Record<string, string> = {
   quizPre: 'Knowledge check', briefing: 'Briefing', workshop: 'Build workshop', review: 'Readiness review', launch: 'Launch', orbit: 'In orbit',
-  landingSite: 'Landing site', surface: 'Mars surface', evidence: 'Evidence', report: 'Science report', debrief: 'Debrief', quizPost: 'Final check', results: 'Complete',
+  landingSite: 'Landing site', surface: 'Mars surface', evidence: 'Evidence', report: 'Science report', debrief: 'Debrief', quizPost: 'Final check', results: 'Complete', opsPreview: 'Launched — operations in development',
 };
 
 function budgetLabel(m: MissionDefinition) {
@@ -45,7 +45,7 @@ export function HomeScreen() {
     const out: Partial<Record<MissionId, string>> = {};
     for (const m of MISSIONS) {
       const slot = saves[m.id];
-      if (!slot || !m.playable) continue;
+      if (!slot || !isStartable(m)) continue;
       try {
         out[m.id] = replay(m, slot.seed, slot.actions).stage;
       } catch {
@@ -94,10 +94,10 @@ export function HomeScreen() {
                     <span className="mono">{budgetLabel(m)}</span> <ProvenanceBadge p="fictional" />
                   </dd>
                   <dt>{t('Progress')}</dt>
-                  <dd>{!m.playable ? t('Operations stage in development') : done ? t('Completed — replay any time') : stage ? t(STAGE_NAME[stage] ?? stage) : t('Not started')}</dd>
+                  <dd>{stage ? t(STAGE_NAME[stage] ?? stage) : done ? t('Completed — replay any time') : !m.playable ? t('Earth stage playable · operations in development') : t('Not started')}</dd>
                 </dl>
                 <div className="actions">
-                  {m.playable ? (
+                  {isStartable(m) ? (
                     stage ? (
                       <>
                         <button className="btn btn-primary" onClick={() => (sfx('confirm'), continueMission(m.id))}>

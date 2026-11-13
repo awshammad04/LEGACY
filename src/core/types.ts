@@ -78,6 +78,12 @@ export interface ComponentOption {
   capabilities?: string[];
   requires?: string[];
   inspiredBy?: { name: string; sourceId: string };
+  /** 'orbiter' parts fly but do not land (excluded from landing mass). */
+  segment?: 'orbiter' | 'surface';
+  /** Constant electrical load all day (life support, pointing, cryocooler). */
+  continuousW?: number;
+  /** Crew consumables endurance provided (crewed missions). */
+  crewDays?: number;
 }
 
 export interface Slot {
@@ -106,6 +112,7 @@ export interface DesignMetrics {
   reserveRemainingM: number;
   roverMassKg: number;
   launchStackMassKg: number;
+  crewDays: number;
   launchCapacityKg: number;
   landingCapacityKg: number;
   generationWhPerSol: number;
@@ -185,7 +192,8 @@ export type StageId =
   | 'report'
   | 'debrief'
   | 'quizPost'
-  | 'results';
+  | 'results'
+  | 'opsPreview';
 
 export interface LandingSite {
   id: string;
@@ -291,6 +299,16 @@ export interface MissionDefinition {
   learnCards: LearnCard[];
   briefing: { intro: LText; facts: { text: LText; sourceId: string }[]; references: { label: LText; value: LText; sourceId: string }[] };
   conjunctionSol: number;
+  /** Blocking readiness rules that apply to this mission (default: all Mars-rover rules). */
+  rules?: string[];
+  dayWord?: 'sol' | 'day';
+  requiredCrewDays?: number;
+  priorityPrompt?: LText;
+  priorityHelp?: LText;
+  /** Honest end screen for missions whose operations stage is still in development. */
+  opsPreview?: { title: LText; intro: LText; next: LText[] };
+  /** Which 3D model the workshop shows. */
+  model?: 'rover' | 'telescope' | 'lunar';
 }
 
 /* ------------------------------------------------------------------ */

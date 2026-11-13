@@ -16,7 +16,7 @@ import { round } from './rng';
 const ALLOWED: Partial<Record<StageId, StageId[]>> = {
   briefing: ['workshop'],
   review: ['workshop'],
-  launch: ['orbit'],
+  launch: ['orbit', 'opsPreview'],
   orbit: ['landingSite'],
   surface: ['evidence'],
   evidence: ['report'],

@@ -1,5 +1,6 @@
 import { Suspense, useEffect } from 'react';
 import { Canvas } from '@react-three/fiber';
+import { Bloom, EffectComposer, Vignette } from '@react-three/postprocessing';
 import { useGame } from './game/store';
 import { HQScene, LaunchScene, MarsOrbitScene, OrbitScene, WorkshopScene } from './scenes/scenes';
 import { SurfaceScene } from './scenes/surface';
@@ -15,12 +16,13 @@ import { CreditsScreen } from './ui/CreditsScreen';
 function SceneRouter() {
   const view = useGame((s) => s.view);
   const stage = useGame((s) => s.state?.stage);
+  const missionId = useGame((s) => s.missionId);
   if (view !== 'mission' || !stage) return <HQScene />;
   switch (stage) {
     case 'quizPre':
       return <HQScene />;
     case 'briefing':
-      return <HQScene showMars />;
+      return <HQScene showMars={missionId === 'm2-martian-mystery' || missionId === 'm3-lost-rover'} />;
     case 'workshop':
     case 'review':
       return <WorkshopScene />;
@@ -35,6 +37,8 @@ function SceneRouter() {
     case 'evidence':
     case 'report':
       return <SurfaceScene focusRock />;
+    case 'opsPreview':
+      return missionId === 'm3-lost-rover' ? <MarsOrbitScene /> : missionId === 'm4-cosmic-photographer' ? <OrbitScene /> : <HQScene />;
     default:
       return <HQScene showMars />;
   }
@@ -60,6 +64,12 @@ export function App() {
           <Suspense fallback={null}>
             <SceneRouter />
           </Suspense>
+          {quality === 'high' && (
+            <EffectComposer multisampling={4}>
+              <Bloom intensity={0.55} luminanceThreshold={0.82} luminanceSmoothing={0.2} mipmapBlur />
+              <Vignette offset={0.32} darkness={0.45} />
+            </EffectComposer>
+          )}
         </Canvas>
       </div>
       <div className="vignette" />
