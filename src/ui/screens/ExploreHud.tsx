@@ -94,7 +94,7 @@ function PowerCard() {
         <span className={left <= 3 ? 'bad' : left <= 6 ? 'warn' : 'muted'}>{t('{n} sols to conjunction', { n: left })}</span>
       </div>
       {storm && <span className="tiny warn">🌪 {t('Dust storm: solar power reduced')}</span>}
-      {state.ops.wheelHealth < 60 && <span className="tiny warn">⚙ {t('Wheels damaged: {n}%', { n: Math.round(state.ops.wheelHealth) })}</span>}
+      {state.ops.wheelHealth < 60 && <span className="tiny warn">⚙ {t('Wheel health low: {n}%', { n: Math.round(state.ops.wheelHealth) })}</span>}
       {blocked === 'battery' && <span className="tiny bad">{t('Battery at safety floor — rest to recharge.')}</span>}
       {blocked === 'slope' && <span className="tiny warn">{t('Too steep for this chassis — find a gentler path.')}</span>}
       <button className="btn btn-sm" onClick={() => (sfx('click'), dispatch({ type: 'REST' }))} disabled={!!state.pendingEvent} title={t('Park overnight and recharge. Costs 1 sol.')}>
@@ -410,6 +410,14 @@ function ReportCard({ onClose }: { onClose: () => void }) {
     sfx('success');
     dispatch({ type: 'SEND_REPORT', conclusion: c });
   };
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      const n = Number(e.key);
+      if (n >= 1 && n <= options.length) send(options[n - 1].id);
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  });
   return (
     <Modal onClose={onClose} labelledBy="rep-t">
       <div className="stack">
