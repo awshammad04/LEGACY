@@ -34,7 +34,7 @@ export function QuizScreen({ mode }: { mode: 'pre' | 'post' }) {
       <div className="panel panel-pad content-card stack fade-in" style={{ maxWidth: 760 }}>
         <div className="row between">
           <span className="eyebrow">{mode === 'pre' ? t('Before you launch — knowledge check') : t('Final knowledge check')}</span>
-          <div className="progress-dots" aria-label={t('Question {n} of {total}', { n: idx + 1, total: questions.length })}>
+          <div className="progress-dots" role="img" aria-label={t('Question {n} of {total}', { n: idx + 1, total: questions.length })}>
             {questions.map((x, i) => (
               <span key={x.id} className={i <= idx ? 'on' : ''} />
             ))}

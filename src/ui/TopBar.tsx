@@ -41,10 +41,11 @@ export function TopBar() {
           stopNarration();
           exitToHome();
         }}
-        aria-label={t('LEGACY — return to Mission Control home')}
+        title={t('return to Mission Control home')}
       >
         <span className="brand-mark">LEGACY</span>
         <span className="brand-sub">{view === 'mission' && mission ? `${mission.number} · ${t(mission.title)}` : t('Every Mission Leaves a Story')}</span>
+        <span className="sr-only"> — {t('return to Mission Control home')}</span>
       </button>
       <div className="spacer" />
       {view === 'mission' && state && (

@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { getMission } from '../../content/missions';
 import { computeMetrics } from '../../core/evaluate';
-import { MAX_WAYPOINTS, ONE_WAY_LIGHT_MINUTES, predictRoute } from '../../core/ops';
+import { MAX_WAYPOINTS, ONE_WAY_LIGHT_MINUTES, approachPoint, predictRoute } from '../../core/ops';
 import { isTestMode, useGame, useT, useUi } from '../../game/store';
 import { say, sfx } from '../../game/audio';
 import { fmtNum } from '../../game/i18n';
@@ -165,7 +165,7 @@ export function SurfaceScreen() {
 
   const addToward = (fraction: number) => {
     const last = waypoints[waypoints.length - 1] ?? state.ops.pos;
-    const p: [number, number] = fraction >= 1 ? [...mission.target] : [last[0] + (mission.target[0] - last[0]) * fraction, last[1] + (mission.target[1] - last[1]) * fraction];
+    const p: [number, number] = fraction >= 1 ? approachPoint(last, mission.target) : [last[0] + (mission.target[0] - last[0]) * fraction, last[1] + (mission.target[1] - last[1]) * fraction];
     if (waypoints.length < MAX_WAYPOINTS) set({ waypoints: [...waypoints, p] });
   };
 

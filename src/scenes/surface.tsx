@@ -4,10 +4,10 @@ import { useFrame, useThree, type ThreeEvent } from '@react-three/fiber';
 import { Html, Line, OrbitControls } from '@react-three/drei';
 import { getMission } from '../content/missions';
 import { computeMetrics } from '../core/evaluate';
-import { ARRIVAL_RADIUS, MAX_WAYPOINTS, predictRoute } from '../core/ops';
+import { ARRIVAL_RADIUS, MAX_WAYPOINTS, approachPoint, predictRoute } from '../core/ops';
 import { TERRAIN_SIZE, heightAt } from '../core/terrain';
 import { mulberry32 } from '../core/rng';
-import { useGame, useT, useUi } from '../game/store';
+import { isTestMode, useGame, useT, useUi } from '../game/store';
 import { sfx } from '../game/audio';
 import { RoverModel } from './models';
 
@@ -82,24 +82,35 @@ function Terrain({ onPick }: { onPick: (p: [number, number]) => void }) {
     g.rotateX(-Math.PI / 2);
     const pos = g.attributes.position as THREE.BufferAttribute;
     const colors = new Float32Array(pos.count * 3);
-    const low = new THREE.Color('#6e3820');
-    const high = new THREE.Color('#c08454');
-    const dark = new THREE.Color('#4f2a1a');
+    const low = new THREE.Color('#6a341d');
+    const high = new THREE.Color('#c98c5a');
+    const dark = new THREE.Color('#47261a');
+    const pale = new THREE.Color('#d9a273');
     const c = new THREE.Color();
     const rnd = mulberry32(3);
     for (let i = 0; i < pos.count; i++) {
       const x = pos.getX(i);
       const z = pos.getZ(i);
-      const h = heightAt(x, z);
-      pos.setY(i, h);
+      pos.setY(i, heightAt(x, z));
+    }
+    g.computeVertexNormals();
+    const nrm = g.attributes.normal as THREE.BufferAttribute;
+    for (let i = 0; i < pos.count; i++) {
+      const h = pos.getY(i);
+      const x = pos.getX(i);
+      const z = pos.getZ(i);
       const k = THREE.MathUtils.clamp((h + 6) / 22, 0, 1);
       c.copy(low).lerp(high, k);
-      if (h < -3) c.lerp(dark, 0.35);
-      c.offsetHSL(0, 0, (rnd() - 0.5) * 0.03);
+      // dusty patches + darker steep slopes (exposed rock) + pale bedrock streaks
+      const patch = Math.sin(x * 0.021 + Math.sin(z * 0.013) * 2) * Math.cos(z * 0.017 - x * 0.006);
+      if (patch > 0.55) c.lerp(pale, (patch - 0.55) * 0.9);
+      const steep = 1 - nrm.getY(i);
+      c.lerp(dark, THREE.MathUtils.clamp(steep * 5, 0, 0.6));
+      if (h < -3) c.lerp(dark, 0.3);
+      c.offsetHSL(0, 0, (rnd() - 0.5) * 0.035);
       colors.set([c.r, c.g, c.b], i * 3);
     }
     g.setAttribute('color', new THREE.BufferAttribute(colors, 3));
-    g.computeVertexNormals();
     return g;
   }, []);
   const tex = useMemo(() => noiseTexture(), []);
@@ -165,7 +176,7 @@ function Rocks({ target }: { target: [number, number] }) {
   return (
     <instancedMesh ref={ref} args={[undefined, undefined, N]} castShadow receiveShadow>
       <dodecahedronGeometry args={[1, 0]} />
-      <meshStandardMaterial color="#6a3a26" roughness={0.95} flatShading />
+      <meshStandardMaterial color="#8a5236" roughness={0.92} flatShading />
     </instancedMesh>
   );
 }
@@ -193,11 +204,13 @@ function TargetRock({ pos, focus }: { pos: [number, number]; focus: boolean }) {
           <meshBasicMaterial color="#5ad1ff" transparent opacity={0.55} side={THREE.DoubleSide} />
         </mesh>
       )}
-      <Html position={[0, 3.2, 0]} center distanceFactor={60} zIndexRange={[10, 0]}>
-        <div className="poi-label" style={{ transform: 'none', cursor: 'default' }}>
-          ◎ {t('Target rock')}
-        </div>
-      </Html>
+      {!focus && (
+        <Html position={[0, 3.2, 0]} center distanceFactor={60} zIndexRange={[10, 0]}>
+          <div className="poi-label" style={{ transform: 'none', cursor: 'default' }}>
+            ◎ {t('Target rock')}
+          </div>
+        </Html>
+      )}
     </group>
   );
 }
@@ -249,7 +262,7 @@ function Rover() {
       const dx = tx - x;
       const dz = tz - z;
       const d = Math.hypot(dx, dz);
-      const stepLen = (reduced ? 400 : 34) * dt;
+      const stepLen = (reduced || isTestMode() ? 400 : 34) * dt;
       if (d <= stepLen) {
         disp.current = [tx, tz];
         q.shift();
@@ -294,8 +307,8 @@ export function SurfaceScene({ focusRock = false }: { focusRock?: boolean }) {
   useEffect(() => {
     const [x, z] = focusRock ? mission.target : state.ops.pos;
     const y = heightAt(x, z);
-    if (focusRock) camera.position.set(x + 9, y + 6, z + 10);
-    else camera.position.set(x + 30, y + 26, z + 34);
+    if (focusRock) camera.position.set(x + 10, y + 5, z + 12);
+    else camera.position.set(x + 26, y + 11, z + 30);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [focusRock]);
 
@@ -305,7 +318,7 @@ export function SurfaceScene({ focusRock = false }: { focusRock?: boolean }) {
     if (!canPlan) return;
     if (waypoints.length >= MAX_WAYPOINTS) return sfx('error');
     let pt = p;
-    if (Math.hypot(p[0] - mission.target[0], p[1] - mission.target[1]) < ARRIVAL_RADIUS * 1.6) pt = [...mission.target];
+    if (Math.hypot(p[0] - mission.target[0], p[1] - mission.target[1]) < ARRIVAL_RADIUS * 1.6) pt = approachPoint(waypoints[waypoints.length - 1] ?? state.ops.pos, mission.target);
     sfx('click');
     useUi.getState().set({ waypoints: [...waypoints, pt] });
   };

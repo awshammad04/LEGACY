@@ -115,3 +115,12 @@ export function simulateActivity(ops: OpsState, m: DesignMetrics, hours: number,
   }
   return { sols, batteryEnd: battery, energyUsed, completed: remaining <= 1e-6 };
 }
+
+/** A stopping point `standoff` units short of the target along the approach (rover parks beside the rock, not on it). */
+export function approachPoint(from: [number, number], target: [number, number], standoff = 7): [number, number] {
+  const dx = target[0] - from[0];
+  const dz = target[1] - from[1];
+  const d = Math.hypot(dx, dz);
+  if (d <= standoff + 0.5) return [...target];
+  return [target[0] - (dx / d) * standoff, target[1] - (dz / d) * standoff];
+}
