@@ -31,6 +31,9 @@ export const SOURCES: Source[] = [
   { id: 'nasa-moon', title: "Earth's Moon: Facts", credit: 'NASA Science', url: 'https://science.nasa.gov/moon/facts/', license: 'NASA public information', accessed: '2026-11-13' },
   { id: 'nasa-venus', title: 'Venus: Facts', credit: 'NASA Science', url: 'https://science.nasa.gov/venus/venus-facts/', license: 'NASA public information', accessed: '2026-11-13' },
   { id: 'nasa-jupiter', title: 'Jupiter: Facts', credit: 'NASA Science', url: 'https://science.nasa.gov/jupiter/jupiter-facts/', license: 'NASA public information', accessed: '2026-11-13' },
+  { id: 'nasa-design-science-missions', title: 'Design and Develop Science Missions (Space Apps challenge resource)', credit: 'NASA', url: 'https://www.nasa.gov/wp-content/uploads/2025/04/250323-design-and-develop-science-mission.pdf', license: 'NASA public information', accessed: '2026-11-14' },
+  { id: 'jpl-cml', title: 'Concept Maturity Levels (Space Apps challenge resource)', credit: 'NASA/JPL', url: 'https://dataverse.jpl.nasa.gov/dataset.xhtml?persistentId=hdl:2014/44299', license: 'NASA public information', accessed: '2026-11-14' },
+  { id: 'gsfc-mdl', title: 'Mission Design Lab (Space Apps challenge resource)', credit: 'NASA Goddard Space Flight Center', url: 'https://etd.gsfc.nasa.gov/capabilities/integrated-design-center/mission-design-lab/', license: 'NASA public information', accessed: '2026-11-14' },
   { id: 'legacy-game-model', title: 'LEGACY simplified game model (fictional, educational)', credit: 'LEGACY team', url: '#how-numbers-work', license: 'Original work', accessed: '2026-11-13' },
 ];
 

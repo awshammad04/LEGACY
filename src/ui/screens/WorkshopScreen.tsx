@@ -2,6 +2,7 @@ import { useEffect, useMemo } from 'react';
 import type { ComponentOption, RuleResult } from '../../core/types';
 import { getMission } from '../../content/missions';
 import { PACKAGES, sameDesign, type RoverPackage } from '../../content/packages';
+import { ConceptMaturity, MissionSegments } from './MissionSegments';
 import { blockingFailures, computeMetrics, evaluateRules, isLaunchReady } from '../../core/evaluate';
 import { useGame, useT } from '../../game/store';
 import { say, sfx } from '../../game/audio';
@@ -44,6 +45,7 @@ export function WorkshopScreen() {
   const rules = useMemo(() => evaluateRules(mission, state.design, state.sciencePriority), [mission, state.design, state.sciencePriority]);
   const warnings = rules.filter((r) => r.severity !== 'blocking' && !r.pass);
   const fails = blockingFailures(rules);
+  const customized = useGame((s) => s.actions.some((a) => a.type === 'SELECT_COMPONENT' || a.type === 'TOGGLE_ADDON'));
 
   useEffect(() => {
     if (state.reviewAttempts === 0) {
@@ -210,6 +212,8 @@ export function WorkshopScreen() {
         <button className="btn btn-launch" disabled={fails.length > 0} onClick={launch}>
           🚀 {t('LAUNCH MISSION')}
         </button>
+        <ConceptMaturity ready={fails.length === 0} customized={customized} />
+        <MissionSegments rules={rules} />
         <details className="small">
           <summary className="muted">{t('See all engineering limits')}</summary>
           <div className="stack" style={{ marginTop: 10 }}>

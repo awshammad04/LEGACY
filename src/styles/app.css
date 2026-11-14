@@ -476,3 +476,17 @@ details summary { cursor: pointer; }
 
 .interior-views { position:absolute; top:8px; left:50%; transform:translateX(-20%); padding:6px; background:rgba(6,11,22,.75); max-width:calc(100% - 380px); }
 @media(max-width:900px) { .interior-views { top:39%; left:auto; inset-inline-end:16px; transform:none; max-width:55%; } }
+
+/* NASA mission segments + concept maturity (Space Apps challenge resources) */
+.segments { display: flex; flex-direction: column; gap: 6px; padding-top: 4px; }
+.segments-title { font-size: 13px; color: var(--text-2); margin: 0; }
+.segment { display: flex; align-items: center; gap: 10px; padding: 7px 9px; border-radius: 9px; background: rgba(255, 255, 255, 0.03); border-inline-start: 3px solid var(--green); }
+.segment.bad { border-inline-start-color: var(--red); background: rgba(255, 90, 90, 0.07); }
+.segment.warn { border-inline-start-color: var(--amber); }
+.segment-icon { font-size: 18px; }
+.segment strong { font-size: 13px; }
+.cml { display: flex; flex-direction: column; gap: 5px; }
+.cml-steps { list-style: none; display: flex; gap: 4px; margin: 0; padding: 0; flex-wrap: wrap; }
+.cml-steps li { font-size: 11.5px; padding: 3px 8px; border-radius: 99px; border: 1px solid var(--line); color: var(--text-3); }
+.cml-steps li.done { color: var(--green); border-color: rgba(74, 222, 128, 0.4); }
+.cml-steps li.current { color: var(--text); border-color: var(--cyan); background: rgba(90, 209, 255, 0.1); }

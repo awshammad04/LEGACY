@@ -119,6 +119,30 @@ The full plan, requirements matrix and roadmap are in [`docs/ARCHITECTURE_AND_RO
 7. **Debrief** — *What your choices changed* explains the consequences. Open the **What-If machine**, switch to the low-gain antenna and re-run: fewer data products arrive and the science score falls. This is a real recomputation.
 8. **Final check** — before/after scores built only from your real answers.
 
+## NASA data and Space Apps challenge resources
+
+### From the challenge's own Resources list ("Space Mission Design Game")
+
+| Challenge resource | How LEGACY uses it | Where to see it |
+|---|---|---|
+| [NASA — Design and Develop Science Missions](https://www.nasa.gov/wp-content/uploads/2025/04/250323-design-and-develop-science-mission.pdf) | The live readiness checks are grouped into NASA's four mission segments: **Launch, Space, Ground and User**. Each choice shows which segment it affects. For example, too little downlink fails the Ground segment, and instruments that can't answer the science question flag the User segment. | Build workshop → **NASA mission segments** (all four missions) |
+| [NASA/JPL — Concept Maturity Levels](https://dataverse.jpl.nasa.gov/dataset.xhtml?persistentId=hdl:2014/44299) and [NASA Goddard — Mission Design Lab](https://etd.gsfc.nasa.gov/capabilities/integrated-design-center/mission-design-lab/) | The design moves through **CML 1 Concept**, then **CML 3 Trade study**, then **CML 4 Point design**, using the MDL study names. Point design is reached only after a trade study that ends in a design meeting every requirement. | Build workshop → **Concept maturity** |
+
+All three are cited where they are used and on the in-game **Sources & credits** screen.
+
+### Other NASA data in the game
+
+- **NASA images used as gameplay data:**
+  - Mission 2: you choose your landing site on NASA's Jezero Crater image (PIA23239). Each instrument you built returns the real Perseverance result: the Cheyava Falls image (PIA26368), the PIXL mineral map (PIA26640) and the Sapphire Canyon core (PIA26370).
+  - The Blue Marble Earth images and the Viking MDIM2.1 Mars map are used for the globes.
+- **NASA findings and guidance that set game rules:**
+  - The report is scored against NASA's 2025 "potential biosignature" wording.
+  - The protected zones at the Apollo 15 and Opportunity sites follow NASA's recommendations for protecting lunar historic sites.
+  - Crew health and radiation decisions follow the NASA Human Research Program hazards.
+  - Real NASA mission costs are shown as budget scale references, kept separate from the game's own budget.
+- **Stories:** 12 narrated site stories written from NASA mission records.
+- **Registry:** all 29 sources are in `src/content/sources.ts`.
+
 ## Narrated site stories
 
 When you reach a historic place, its story is narrated in English or Arabic. Press **T** near a site to hear it again. The stories cover:
