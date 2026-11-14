@@ -258,6 +258,9 @@ export interface MissionEventDef {
   cause: LText;
   concept: LText;
   options: MissionEventOption[];
+  /** The option a careful mission team would pick, and a one-line reason (shown after the choice). */
+  best?: string;
+  why?: LText;
 }
 
 export interface ArchiveEntry {
@@ -529,6 +532,8 @@ export interface CruiseStep {
   prompt: LText;
   learn: LText;
   options: CruiseOption[];
+  /** Best option id (defaults to the first option); `learn` explains why. */
+  best?: string;
 }
 
 export interface TelescopeConfig {

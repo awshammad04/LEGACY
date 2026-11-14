@@ -264,6 +264,8 @@ export const M2: MissionDefinition = {
       message: L('Battery telemetry shows a cell imbalance. Usable battery capacity has dropped. How should we respond?'),
       cause: L('Battery cells age unevenly. One weak cell limits how deeply the whole battery can be discharged.'),
       concept: L('Engineers protect mission-critical functions first: power for heaters, computers and communication comes before optional science.'),
+      best: 'shed',
+      why: L("Switching off what you don't need costs the least and keeps the protected reserve for bigger emergencies."),
       options: [
         { id: 'shed', label: L('Shed non-essential loads'), effects: L('Battery capacity −10%. Weather station and radar are switched off for the rest of the mission.') },
         { id: 'reserve', label: L('Spend $40M of the protected reserve on an engineering fix'), effects: L('Engineers upload new battery-management software. Capacity −3%, costs 1 sol.') },
@@ -277,6 +279,8 @@ export const M2: MissionDefinition = {
       message: L('A regional dust storm is moving in. Dust in the sky will block sunlight for a few sols.'),
       cause: L('Martian dust storms reduce the sunlight reaching solar panels. A 2018 planet-wide storm ended Opportunity\'s mission. Radioisotope power is not affected the same way. This is different from a solar radiation storm.'),
       concept: L('Power systems must match the environment. Solar is cheaper and lighter; radioisotope power keeps working through dust.'),
+      best: 'wait',
+      why: L("Solar panels make little power in a dust storm. Waiting protects the battery — a dust storm ended Opportunity's mission in 2018."),
       options: [
         { id: 'wait', label: L('Park and wait it out'), effects: L('Lose 2 sols. The storm passes before you continue.') },
         { id: 'continue', label: L('Keep exploring through the storm'), effects: L('No delay, but solar panels make only about a third of their power for 3 sols.') },
@@ -289,6 +293,8 @@ export const M2: MissionDefinition = {
       message: L('Solar activity has increased. A burst of energetic particles is heading for Mars. Review radiation precautions before sensitive instrument work.'),
       cause: L('Eruptions on the Sun can release energetic particles that cause errors or damage in electronics. This is a radiation hazard — it is not the same as a Martian dust storm.'),
       concept: L('Safety comes from planning, monitoring and adapting to alerts — not from racing to finish before the hazard arrives.'),
+      best: 'safe',
+      why: L("Safe mode shields the electronics from energetic particles. A short delay is better than damaged hardware."),
       options: [
         { id: 'safe', label: L('Enter safe mode until it passes'), effects: L('Costs 1 sol. Electronics stay protected.') },
         { id: 'replan', label: L('Postpone sensitive work, do low-power tasks only'), effects: L('Costs half a sol. Small exposure for the electronics.') },

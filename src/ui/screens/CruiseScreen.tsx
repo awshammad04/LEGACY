@@ -3,6 +3,7 @@ import { getMission } from '../../content/missions';
 import { useGame, useT } from '../../game/store';
 import { say, sfx } from '../../game/audio';
 import { CrewPanel, StatusChip } from '../CrewPanel';
+import { BestChoiceNote } from './ExploreHud';
 
 /** A short, live "day aboard" on the way to the Moon: five quick choices that change crew health. */
 export function CruiseScreen() {
@@ -14,29 +15,40 @@ export function CruiseScreen() {
   const steps = mission.cruise ?? [];
   const crew = state.crew!;
   const step = steps[crew.step];
-  const [result, setResult] = useState<{ text: string; unsafe?: boolean } | null>(null);
+  const [picked, setPicked] = useState<string | null>(null);
 
   useEffect(() => {
+    setPicked(null);
     if (step) say(step.prompt, { en: 'Mission Control' });
     else say({ en: 'The Moon is filling the window. Prepare for landing!' });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [crew.step]);
 
   const choose = (optId: string) => {
-    if (!step || result) return;
+    if (!step || picked) return;
     const opt = step.options.find((o) => o.id === optId)!;
-    sfx(opt.unsafe ? 'warn' : 'select');
-    setResult({ text: t(opt.result), unsafe: opt.unsafe });
-    setTimeout(() => {
-      dispatch({ type: 'CREW_CHOICE', stepId: step.id, optionId: optId });
-      setResult(null);
-    }, 1600);
+    const best = (step.best ?? step.options[0].id) === optId;
+    sfx(opt.unsafe ? 'warn' : best ? 'success' : 'select');
+    setPicked(optId);
+  };
+  // The choice is applied when the player continues, after reading which option was best and why.
+  const next = () => {
+    if (!step || !picked) return;
+    sfx('click');
+    dispatch({ type: 'CREW_CHOICE', stepId: step.id, optionId: picked });
   };
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       if (!step) {
         if (e.key === 'Enter') dispatch({ type: 'ADVANCE', to: 'surface' });
+        return;
+      }
+      if (picked) {
+        if (e.key === 'Enter' || e.key === ' ' || e.key === '1' || e.key === '2') {
+          e.preventDefault();
+          next();
+        }
         return;
       }
       const n = Number(e.key);
@@ -46,26 +58,32 @@ export function CruiseScreen() {
     return () => window.removeEventListener('keydown', onKey);
   });
 
+  const pickedOpt = step?.options.find((o) => o.id === picked);
+  const bestOpt = step ? step.options.find((o) => o.id === (step.best ?? step.options[0].id)) : undefined;
+
   return (
-    <main className="stage-body" id="main">
-      <section className="side panel panel-pad stack scroll fade-in" aria-labelledby="cruise-title">
+    <main className="stage-body cruise-hud" id="main">
+      <section className="cruise-schedule panel fade-in" aria-labelledby="cruise-title">
         <span className="eyebrow">{t('Life aboard — journey to the Moon')}</span>
         <h2 id="cruise-title">{t('A day in space')}</h2>
-        <p className="small muted">{t('Your choices today change how rested, healthy and safe the crew is for the moonwalk.')}</p>
-        <div className="stack-sm">
+        <ol className="cruise-steps">
           {steps.map((s, i) => (
-            <div key={s.id} className={`cruise-step ${i < crew.step ? 'done' : i === crew.step ? 'current' : ''}`}>
+            <li key={s.id} className={`cruise-step ${i < crew.step ? 'done' : i === crew.step ? 'current' : ''}`}>
               <span className="t">{t(s.time)}</span>
               <span className="grow">{t(s.title)}</span>
               {i < crew.step && <span>✓</span>}
-            </div>
+            </li>
           ))}
-        </div>
+        </ol>
       </section>
 
-      <section className="center-col">
+      <section className="cruise-crew panel fade-in" aria-label={t('Crew health')}>
+        <CrewPanel crew={mission.crew ?? []} vitals={crew.vitals} />
+      </section>
+
+      <section className="cruise-card">
         {step ? (
-          <div className="panel panel-pad stack fade-in" key={step.id} style={{ width: 'min(520px, 92vw)' }} role="dialog" aria-labelledby="step-t">
+          <div className="panel panel-pad stack fade-in" key={step.id} role="dialog" aria-labelledby="step-t">
             <span className="eyebrow">
               {t(step.time)} · {t('Mission Control')}
             </span>
@@ -73,9 +91,15 @@ export function CruiseScreen() {
               {t(step.title)}
             </h3>
             <p>{t(step.prompt)}</p>
-            {result ? (
-              <div className={`feed-item ${result.unsafe ? 'bad' : ''}`} role="status">
-                {result.text}
+            {pickedOpt && bestOpt ? (
+              <div className="stack-sm">
+                <div className={`feed-item ${pickedOpt.unsafe ? 'bad' : ''}`} role="status">
+                  {t(pickedOpt.result)}
+                </div>
+                <BestChoiceNote best={pickedOpt.id === bestOpt.id} label={t(bestOpt.label)} why={t(step.learn)} />
+                <button className="btn btn-primary" onClick={next} autoFocus>
+                  {t('Continue')} →
+                </button>
               </div>
             ) : (
               <div className="stack-sm">
@@ -87,10 +111,9 @@ export function CruiseScreen() {
                 ))}
               </div>
             )}
-            <span className="tiny dim">💡 {t(step.learn)}</span>
           </div>
         ) : (
-          <div className="panel panel-pad stack fade-in" style={{ width: 'min(520px, 92vw)', textAlign: 'center' }}>
+          <div className="panel panel-pad stack fade-in" style={{ textAlign: 'center' }}>
             <span className="eyebrow">{t('Arriving at the Moon')}</span>
             <h3 style={{ fontSize: 22 }}>{t('The crew is ready for landing')}</h3>
             <div className="row" style={{ justifyContent: 'center' }}>
@@ -102,10 +125,6 @@ export function CruiseScreen() {
             </button>
           </div>
         )}
-      </section>
-
-      <section className="side panel panel-pad stack scroll fade-in" aria-label={t('Crew health')}>
-        <CrewPanel crew={mission.crew ?? []} vitals={crew.vitals} />
       </section>
     </main>
   );

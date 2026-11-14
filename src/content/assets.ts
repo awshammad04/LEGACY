@@ -20,6 +20,7 @@ export const ASSETS: AssetCredit[] = [
   { file: 'assets/models/astronaut.glb', title: 'Rigged Astronaut (3D model)', credit: 'J-Toastie, via Poly Pizza', url: 'https://poly.pizza/m/0oBRDJ9Zl9', license: 'CC-BY 3.0', modified: 'Materials retuned (gold visor, suit roughness); poses animated procedurally in code' },
   { file: 'legacy-visuals/assets/sand-color.jpg', title: 'Aerial Sand (diffuse, normal, roughness — 1K)', credit: 'Rob Tuytel / Poly Haven', url: 'https://polyhaven.com/a/aerial_sand', license: 'CC0', modified: 'Used on fictional Mars terrain via the LEGACY graphics kit' },
   { file: 'legacy-visuals/assets/rock-color.jpg', title: 'Rock Boulder Dry (diffuse, normal, roughness — 1K)', credit: 'Dimitrios Savva, Rico Cilliers / Poly Haven', url: 'https://polyhaven.com/a/rock_boulder_dry', license: 'CC0', modified: 'Used on fictional Mars rocks via the LEGACY graphics kit' },
+  { file: 'assets/stories/', title: 'Narrated site stories (English and Arabic)', credit: 'Script written for LEGACY from NASA mission records; voice generated with Google Gemini text-to-speech', url: 'https://ai.google.dev/gemini-api/docs/speech-generation', license: 'AI-generated audio for this project', modified: 'Encoded to 48 kbps MP3' },
 ];
 
 export const assetCredit = (file: string | undefined) => ASSETS.find((a) => a.file === file);

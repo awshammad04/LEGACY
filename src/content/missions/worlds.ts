@@ -15,6 +15,8 @@ const DUST_EVENT = {
   message: L('A regional dust storm is moving in. Dust in the sky will block sunlight for a few sols.'),
   cause: L("Martian dust storms reduce the sunlight reaching solar panels. A 2018 planet-wide storm ended Opportunity's mission. Radioisotope power is not affected the same way. This is different from a solar radiation storm."),
   concept: L('Power systems must match the environment. Solar is cheaper and lighter; radioisotope power keeps working through dust.'),
+  best: 'wait',
+  why: L("Solar panels make little power in a dust storm. Waiting protects the battery — a dust storm ended Opportunity's mission in 2018."),
   options: [
     { id: 'wait', label: L('Park and wait it out'), effects: L('Lose 2 sols. The storm passes before you continue.') },
     { id: 'continue', label: L('Keep exploring through the storm'), effects: L('No delay, but solar panels make only about a third of their power for 3 sols.') },
@@ -119,6 +121,8 @@ export const M1_WORLD: WorldPart = {
       message: L('Leo is breathing hard and his heart rate is rising. He is getting tired on this moonwalk.'),
       cause: L('Moonwalks are hard physical work in a stiff, pressurized suit. Earlier sleep, food and exercise choices affect how long the crew can safely work.'),
       concept: L('Crew safety comes first: plans change when an astronaut needs rest.'),
+      best: 'end',
+      why: L("Tired people make more mistakes. Ending the moonwalk early keeps the whole crew safe."),
       options: [
         { id: 'end', label: L('End the moonwalk and return to the lander'), effects: L('Safest choice. The day ends and the crew recovers.') },
         { id: 'reorganize', label: L('Reorganize: Rana takes the hard tasks'), effects: L('Shorter moonwalk, less strain on Leo.') },
@@ -132,6 +136,8 @@ export const M1_WORLD: WorldPart = {
       message: L('Solar activity has increased. Energetic particles will reach the Moon soon. Review radiation precautions now.'),
       cause: L('The Moon has no thick atmosphere or magnetic field to block solar particles, so astronauts outside are exposed.'),
       concept: L('Follow the hazard plan: protect the crew first, science can wait.'),
+      best: 'shelter',
+      why: L("The lander shields the crew from radiation much better than a spacesuit can."),
       options: [
         { id: 'shelter', label: L('Return to the lander shelter now'), effects: L('Crew protected. Half a day lost.') },
         { id: 'postpone', label: L('Pause outside work and wait in the rover'), effects: L('Some exposure; uses suit time.') },
@@ -185,6 +191,8 @@ export const M3_WORLD: WorldPart = {
       message: L('Battery telemetry shows a cell imbalance. Usable battery capacity has dropped. How should we respond?'),
       cause: L('Battery cells age unevenly. One weak cell limits how deeply the whole battery can be discharged.'),
       concept: L('Engineers protect mission-critical functions first: power for heaters, computers and communication comes before optional science.'),
+      best: 'shed',
+      why: L("Switching off what you don't need costs the least and keeps the protected reserve for bigger emergencies."),
       options: [
         { id: 'shed', label: L('Shed non-essential loads'), effects: L('Battery capacity −10%. Optional sensors switch off.') },
         { id: 'reserve', label: L('Spend $40M of the protected reserve on an engineering fix'), effects: L('Engineers upload new battery-management software. Capacity −3%, costs 1 sol.') },
@@ -234,6 +242,8 @@ export const M4_WORLD: WorldPart = {
       message: L('A burst of energetic particles is coming. Sensitive detectors can be damaged.'),
       cause: L('Energetic solar particles can create false signals or damage electronics in orbit.'),
       concept: L('Protect the instrument: safing it for a while costs observing time but avoids damage.'),
+      best: 'safe',
+      why: L("Energetic particles can damage a detector. Losing two hours is better than losing the camera."),
       options: [
         { id: 'safe', label: L('Safe the detector for 2 hours'), effects: L('Lose 2 hours of tonight\'s observing time.') },
         { id: 'continue', label: L('Keep observing'), effects: L('Risk detector damage — a safety violation.'), unsafe: true },

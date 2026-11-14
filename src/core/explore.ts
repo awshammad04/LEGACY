@@ -49,10 +49,16 @@ export function effectiveSpeedMPerH(m: DesignMetrics) {
   return Math.max(1, m.maxSpeedMPerH * (0.5 + 0.5 * m.autonomy));
 }
 
+/**
+ * Game-feel scale on driving energy (fictional): the open world compresses hours of real driving
+ * into seconds, so without it the battery emptied in under a minute of play.
+ */
+export const DRIVE_ENERGY_SCALE = 0.3;
+
 /** Energy and game time for a driven stretch. */
 export function driveCost(m: DesignMetrics, dist: number, slopeAvg: number, boostFrac: number) {
   const hours = (dist * UNIT_M) / effectiveSpeedMPerH(m) / (1 + boostFrac * 0.4);
-  const energyWh = hours * m.drivePowerW * (1 + slopeAvg / 25) * (1 + boostFrac * 0.25) * (1 + boostFrac * 0.4);
+  const energyWh = DRIVE_ENERGY_SCALE * hours * m.drivePowerW * (1 + slopeAvg / 25) * (1 + boostFrac * 0.25) * (1 + boostFrac * 0.4);
   return { hours, energyWh };
 }
 

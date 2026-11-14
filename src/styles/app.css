@@ -420,3 +420,28 @@ details summary { cursor: pointer; }
   .mtab-name { display: none; }
 }
 .prompt-hint { max-width: 460px; text-align: center; color: var(--text-2); }
+
+/* Day in space: compact panels around the 3D cabin view */
+.cruise-hud { position: relative; display: block; padding: 0; }
+.cruise-hud > .panel, .cruise-card { position: absolute; }
+.cruise-schedule { top: 8px; inset-inline-end: 16px; width: 250px; padding: 12px 14px; background: rgba(6, 11, 22, 0.62); backdrop-filter: blur(8px); display: flex; flex-direction: column; gap: 6px; }
+.cruise-schedule h2 { font-size: 17px; }
+.cruise-steps { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 2px; }
+.cruise-steps .cruise-step { padding: 5px 8px; font-size: 12.5px; }
+.cruise-crew { top: 8px; inset-inline-start: 16px; width: 330px; max-height: calc(100% - 16px); overflow-y: auto; overflow-x: hidden; padding: 12px; background: rgba(6, 11, 22, 0.62); backdrop-filter: blur(8px); }
+.cruise-card { bottom: 14px; left: 50%; transform: translateX(-50%); width: min(520px, 92vw); }
+.cruise-card > .panel { background: rgba(6, 11, 22, 0.8); backdrop-filter: blur(10px); }
+@media (max-width: 1100px) { .cruise-crew { width: 240px; } .cruise-schedule { width: 210px; } }
+@media (max-width: 800px) { .cruise-crew { display: none; } }
+.best-note { display: flex; flex-direction: column; gap: 3px; padding: 9px 11px; border-radius: 9px; border-inline-start: 3px solid var(--amber); background: rgba(255, 181, 71, 0.08); }
+.best-note.good { border-inline-start-color: var(--green); background: rgba(74, 222, 128, 0.08); }
+.best-note strong { font-size: 14px; }
+
+/* Narrated site story */
+.story-card { position: absolute; top: 250px; inset-inline-start: 16px; width: min(380px, calc(100vw - 32px)); max-height: calc(100% - 400px); min-height: 180px; overflow: auto; padding: 14px 16px; display: flex; flex-direction: column; gap: 10px; background: rgba(6, 11, 22, 0.86); backdrop-filter: blur(10px); border-top: 2px solid var(--amber); z-index: 3; }
+.story-card h3 { font-size: 17px; }
+.story-text { margin: 0; font-size: 14px; line-height: 1.6; color: var(--text); }
+.story-bar { flex: 1; height: 4px; border-radius: 99px; background: rgba(255, 255, 255, 0.1); overflow: hidden; }
+.story-bar span { display: block; height: 100%; background: var(--amber); transition: width 0.25s linear; }
+@media (max-width: 760px) { .story-card { top: auto; bottom: 90px; max-height: 45vh; } }
+.choice-card { max-width: 440px; display: flex; flex-direction: column; gap: 6px; }

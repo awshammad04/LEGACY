@@ -119,6 +119,21 @@ The full plan, requirements matrix and roadmap are in [`docs/ARCHITECTURE_AND_RO
 7. **Debrief** — *What your choices changed* explains the consequences. Open the **What-If machine**, switch to the low-gain antenna and re-run: fewer data products arrive and the science score falls. This is a real recomputation.
 8. **Final check** — before/after scores built only from your real answers.
 
+## Narrated site stories
+
+When you reach a historic place, its story is narrated in English or Arabic. Press **T** near a site to hear it again. The stories cover:
+- Mission 01: the Apollo 15 site, Hadley Rille, Earth View Ridge and the fresh crater.
+- Mission 02: Cheyava Falls, the Jezero delta, the Three Forks sample depot and the dust devils.
+- Mission 03: Opportunity, Perseverance Valley, Endeavour Crater and Purgatory Dune.
+
+The scripts are in `src/content/stories.json`. The voices were generated ahead of time with Google Gemini text-to-speech:
+
+```bash
+node scripts/generate-stories.mjs
+```
+
+The script reads `GEMINI_API_KEY` from `.env.local`, which git ignores. The game only loads the resulting MP3 files from `public/assets/stories/`, so no API key ever reaches the browser.
+
 ## Credits
 
 The **Sources & credits** screen in the game lists every fact source and image. NASA images are used under NASA media guidelines, as follows:

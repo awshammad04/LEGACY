@@ -1611,5 +1611,21 @@
  "Climb aboard the lunar rover": "اصعد إلى المركبة القمرية الجوالة",
  "Step off and walk": "انزل وامشِ",
  "Parked lunar rover": "المركبة القمرية الجوالة المتوقفة",
- "On foot — walking is slower and uses more suit oxygen. Walk back to the rover (yellow on the map) to drive again.": "سيرًا على الأقدام — المشي أبطأ ويستهلك أكسجين البدلة أكثر. عُد إلى المركبة (باللون الأصفر على الخريطة) لتقودها من جديد."
+ "On foot — walking is slower and uses more suit oxygen. Walk back to the rover (yellow on the map) to drive again.": "سيرًا على الأقدام — المشي أبطأ ويستهلك أكسجين البدلة أكثر. عُد إلى المركبة (باللون الأصفر على الخريطة) لتقودها من جديد.",
+ "Switching off what you don't need costs the least and keeps the protected reserve for bigger emergencies.": "إطفاء ما لا تحتاجه هو الأقل كلفة، ويحفظ الاحتياطي المحمي لحالات الطوارئ الأكبر.",
+ "Solar panels make little power in a dust storm. Waiting protects the battery — a dust storm ended Opportunity's mission in 2018.": "الألواح الشمسية تنتج طاقة قليلة أثناء العاصفة الترابية. الانتظار يحمي البطارية — فقد أنهت عاصفة ترابية مهمة أوبورتشونيتي عام 2018.",
+ "Safe mode shields the electronics from energetic particles. A short delay is better than damaged hardware.": "الوضع الآمن يحمي الإلكترونيات من الجسيمات عالية الطاقة. تأخير قصير أفضل من أجهزة متضررة.",
+ "Tired people make more mistakes. Ending the moonwalk early keeps the whole crew safe.": "المتعبون يرتكبون أخطاء أكثر. إنهاء السير على القمر مبكرًا يحافظ على سلامة الطاقم كله.",
+ "The lander shields the crew from radiation much better than a spacesuit can.": "المركبة الهابطة تحمي الطاقم من الإشعاع أفضل بكثير من البدلة الفضائية.",
+ "Energetic particles can damage a detector. Losing two hours is better than losing the camera.": "قد تتلف الجسيمات عالية الطاقة الكاشف. خسارة ساعتين أفضل من خسارة الكاميرا.",
+ "Best choice!": "أفضل اختيار!",
+ "The best choice was: {label}": "كان أفضل اختيار: {label}",
+ "Why": "السبب",
+ "Story": "القصة",
+ "Story of this place": "قصة هذا المكان",
+ "Listen": "استمع",
+ "Pause": "إيقاف مؤقت",
+ "Resume": "متابعة الاستماع",
+ "Narration voiced with Gemini text-to-speech (AI voice). Facts from NASA mission records.": "السرد بصوت مُولَّد بتقنية Gemini لتحويل النص إلى كلام (صوت ذكاء اصطناعي). المعلومات من سجلات مهمات ناسا.",
+ "Narrated site stories (English and Arabic)": "قصص المواقع المسرودة (بالإنجليزية والعربية)"
 }

@@ -2,7 +2,7 @@ import { Component, Suspense, useEffect, type ReactNode } from 'react';
 import { Canvas } from '@react-three/fiber';
 import { Bloom, EffectComposer, Vignette } from '@react-three/postprocessing';
 import { useGame } from './game/store';
-import { CruiseScene, HQScene, LaunchScene, MarsOrbitScene, ObserveScene, OrbitScene, WorkshopScene } from './scenes/scenes';
+import { HQScene, LaunchScene, MarsOrbitScene, ObserveScene, OrbitScene, WorkshopScene } from './scenes/scenes';
 import { SurfaceScene } from './scenes/surface';
 import { ExploreScene } from './scenes/explore';
 import { getMission } from './content/missions';
@@ -13,6 +13,7 @@ import { SettingsModal } from './ui/SettingsModal';
 import { MissionPreviewModal } from './ui/HomeScreen';
 import { MenuScreen } from './ui/MenuScreen';
 import { MenuScene } from './scenes/menu';
+import { CabinScene } from './scenes/cabin';
 import { MissionScreens } from './ui/MissionScreens';
 import { ArchiveScreen, ArchiveMemoryModal } from './ui/ArchiveScreen';
 import { CreditsScreen } from './ui/CreditsScreen';
@@ -60,7 +61,7 @@ function SceneRouter() {
     case 'report':
       return <SurfaceScene focusRock />;
     case 'cruise':
-      return <CruiseScene />;
+      return <CabinScene />;
     case 'observe':
       return <ObserveScene />;
     case 'opsPreview':

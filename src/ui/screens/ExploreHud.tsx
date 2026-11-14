@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
-import type { ExploreSite, ObservationDef } from '../../core/types';
+import type { ExploreSite, MissionEventDef, ObservationDef } from '../../core/types';
 import { getMission } from '../../content/missions';
 import { computeMetrics } from '../../core/evaluate';
 import { batteryFloor, hasBuggy, WORLD_LIMIT } from '../../core/explore';
@@ -14,6 +14,7 @@ import { Figure } from '../Figure';
 import { EvidenceBoard } from './EvidenceScreens';
 import { EquipmentPanel } from './SurfaceScreen';
 import { CrewPanel, StatusChip } from '../CrewPanel';
+import { SiteStories, hasStory, replayStory } from './StoryCard';
 import type { MissionState, MissionDefinition as MDef, Objective as Obj } from '../../core/types';
 
 function objectiveDone(o: Obj, state: MissionState, mission: MDef) {
@@ -391,19 +392,30 @@ export function EventCard() {
   const { state, mission } = useMissionBits();
   const dispatch = useGame((s) => s.dispatch);
   const ev = mission.events.find((e) => e.id === state.pendingEvent);
+  const [fb, setFb] = useState<{ ev: MissionEventDef; opt: string } | null>(null);
+  const pick = (e: MissionEventDef, optId: string) => {
+    if (dispatch({ type: 'EVENT_CHOICE', eventId: e.id, optionId: optId })) setFb({ ev: e, opt: optId });
+  };
   useEffect(() => {
     if (!ev) return;
+    setFb(null);
     sfx('alert');
     say(ev.message, ev.from);
     const onKey = (e: KeyboardEvent) => {
       const n = Number(e.key);
       const opt = ev.options[n - 1];
-      if (opt && !(ev.id === 'ev-power' && opt.id === 'reserve' && state.ops.opsReserveM < 40)) dispatch({ type: 'EVENT_CHOICE', eventId: ev.id, optionId: opt.id });
+      if (opt && !(ev.id === 'ev-power' && opt.id === 'reserve' && state.ops.opsReserveM < 40)) pick(ev, opt.id);
     };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [ev, dispatch, state.ops.opsReserveM]);
-  if (!ev) return null;
+  useEffect(() => {
+    if (!fb) return;
+    const id = setTimeout(() => setFb(null), 14000);
+    return () => clearTimeout(id);
+  }, [fb]);
+  if (!ev) return fb ? <ChoiceFeedback ev={fb.ev} chosen={fb.opt} onClose={() => setFb(null)} /> : null;
   return (
     <div className="hud-card event-card fade-in" role="alertdialog" aria-labelledby="ev-t">
       <span className="eyebrow" style={{ color: 'var(--amber)' }}>
@@ -419,7 +431,7 @@ export function EventCard() {
         {ev.options.map((o, i) => {
           const disabled = ev.id === 'ev-power' && o.id === 'reserve' && state.ops.opsReserveM < 40;
           return (
-            <button key={o.id} className="action-row" disabled={disabled} onClick={() => (sfx(o.unsafe ? 'warn' : 'confirm'), dispatch({ type: 'EVENT_CHOICE', eventId: ev.id, optionId: o.id }))}>
+            <button key={o.id} className="action-row" disabled={disabled} onClick={() => (sfx(o.unsafe ? 'warn' : 'confirm'), pick(ev, o.id))}>
               <span className="key">{i + 1}</span>
               <span className="grow stack-sm" style={{ gap: 2 }}>
                 <span>{t(o.label)}</span>
@@ -429,6 +441,35 @@ export function EventCard() {
           );
         })}
       </div>
+    </div>
+  );
+}
+
+/** After a decision: which choice was best, and why — in one simple line. */
+export function BestChoiceNote({ best, chosen, label, why }: { best: boolean; chosen?: string; label: string; why: string }) {
+  const t = useT();
+  return (
+    <div className={`best-note ${best ? 'good' : 'tip'}`} role="status">
+      <strong>{best ? `✓ ${t('Best choice!')}` : `💡 ${t('The best choice was: {label}', { label })}`}</strong>
+      {chosen && !best && <span className="tiny dim">{chosen}</span>}
+      <span className="small">{why}</span>
+    </div>
+  );
+}
+
+function ChoiceFeedback({ ev, chosen, onClose }: { ev: MissionEventDef; chosen: string; onClose: () => void }) {
+  const t = useT();
+  const bestId = ev.best ?? ev.options.find((o) => !o.unsafe)?.id;
+  const best = ev.options.find((o) => o.id === bestId);
+  const picked = ev.options.find((o) => o.id === chosen);
+  if (!best) return null;
+  return (
+    <div className="hud-card choice-card fade-in" style={{ position: 'relative' }}>
+      <button className="btn btn-ghost icon-btn" style={{ position: 'absolute', insetInlineEnd: 6, top: 6 }} onClick={onClose} aria-label={t('Close')}>
+        ✕
+      </button>
+      <span className="eyebrow">{t(ev.title)}</span>
+      <BestChoiceNote best={best.id === chosen} label={t(best.label)} chosen={picked ? t(picked.effects) : undefined} why={t(ev.why ?? ev.concept)} />
     </div>
   );
 }
@@ -809,6 +850,11 @@ export function ExploreHud() {
             <button className="hud-card prompt fade-in" onClick={() => setLive({ panel: 'actions' })}>
               <kbd>E</kbd> {t('Investigate {site}', { site: nearSite.name })}
             </button>
+            {hasStory(nearSite.id) && (
+              <button className="hud-card prompt fade-in" onClick={() => replayStory(nearSite.id)}>
+                <kbd>T</kbd> 📖 {t('Story')}
+              </button>
+            )}
             <BuggyPrompt keyLabel="B" />
           </div>
         ) : (
@@ -821,6 +867,7 @@ export function ExploreHud() {
       <div className="hud-br">
         <Minimap />
       </div>
+      <SiteStories />
       <TouchControls />
       {panel === 'journal' && <Journal onClose={() => setLive({ panel: 'none' })} onReport={() => setLive({ panel: 'report' })} />}
       {panel === 'report' && <ReportCard onClose={() => setLive({ panel: 'none' })} />}

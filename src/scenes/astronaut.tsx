@@ -12,7 +12,7 @@ import { asset } from './models';
  */
 export const ASTRONAUT_URL = asset('assets/models/astronaut.glb');
 
-export type AstroPose = 'idle' | 'wave' | 'walk' | 'float' | 'interact' | 'drive';
+export type AstroPose = 'idle' | 'wave' | 'walk' | 'float' | 'interact' | 'drive' | 'cycle' | 'huddle' | 'sleep';
 
 /** Live motion input (no re-render): speed in units/s drives the walk cycle. */
 export interface AstroMotion {
@@ -86,6 +86,47 @@ function poseOffsets(pose: AstroPose, t: number, phase: number, speed: number, l
       lift = -0.06;
       break;
     }
+    case 'cycle': {
+      // Seated on an exercise device, pedalling
+      const c = Math.sin(t * 5);
+      o.LeftUpLeg = [1.25 + c * 0.35, 0, 0.08];
+      o.RightUpLeg = [1.25 - c * 0.35, 0, -0.08];
+      o.LeftLeg = [-1.3 - Math.max(0, -c) * 0.5, 0, 0];
+      o.RightLeg = [-1.3 - Math.max(0, c) * 0.5, 0, 0];
+      o.LeftArm = [0.6, 0, 0.9];
+      o.RightArm = [0.6, 0, -0.9];
+      o.LeftForeArm = [0, 0, 0.9];
+      o.RightForeArm = [0, 0, -0.9];
+      addOff(o, 'Spine', 0.15 + c * 0.02, 0, 0);
+      break;
+    }
+    case 'huddle':
+      // Curled up in the storm shelter
+      o.LeftUpLeg = [1.7, 0, 0.1];
+      o.RightUpLeg = [1.7, 0, -0.1];
+      o.LeftLeg = [-2.0, 0, 0];
+      o.RightLeg = [-2.0, 0, 0];
+      o.LeftArm = [0.9, 0, 1.1];
+      o.RightArm = [0.9, 0, -1.1];
+      o.LeftForeArm = [0, 0, 1.2];
+      o.RightForeArm = [0, 0, -1.2];
+      addOff(o, 'Spine', 0.35, 0, 0);
+      addOff(o, 'Head', 0.3, 0, 0);
+      break;
+    case 'sleep': {
+      // Relaxed microgravity sleep posture: arms float up, knees soft
+      const b = Math.sin(t * 0.9) * 0.03;
+      o.LeftArm = [0.15 + b, 0, 0.55];
+      o.RightArm = [0.15 - b, 0, -0.55];
+      o.LeftForeArm = [0, 0, 0.7];
+      o.RightForeArm = [0, 0, -0.7];
+      o.LeftUpLeg = [0.35, 0, 0.05];
+      o.RightUpLeg = [0.3, 0, -0.05];
+      o.LeftLeg = [-0.6, 0, 0];
+      o.RightLeg = [-0.55, 0, 0];
+      addOff(o, 'Head', 0.25, 0, 0);
+      break;
+    }
     case 'drive':
       o.LeftUpLeg = [1.45, 0, 0.08];
       o.RightUpLeg = [1.45, 0, -0.08];
@@ -134,8 +175,9 @@ export function Astronaut({
   pose = 'idle',
   motion,
   castShadow = true,
+  suit: suitProp,
   ...group
-}: { pose?: AstroPose; motion?: MutableRefObject<AstroMotion>; castShadow?: boolean } & ThreeElements['group']) {
+}: { pose?: AstroPose; motion?: MutableRefObject<AstroMotion>; castShadow?: boolean; suit?: 'eva' | 'flight' } & ThreeElements['group']) {
   const { scene } = useGLTF(ASTRONAUT_URL);
   const model = useMemo(() => {
     const c = cloneSkinned(scene) as THREE.Group;
@@ -148,7 +190,8 @@ export function Astronaut({
       const mats = (Array.isArray(m.material) ? m.material : [m.material]).map((src) => {
         const mat = (src as THREE.MeshStandardMaterial).clone();
         if (mat.name === 'white') {
-          mat.color.set('#eceae4');
+          // EVA suit is white; inside the spacecraft the crew wear orange launch-and-entry suits
+          mat.color.set(suitProp === 'flight' ? '#e8742c' : '#eceae4');
           mat.roughness = 0.82;
           mat.metalness = 0;
         } else if (mat.name === 'gray') {
@@ -156,7 +199,7 @@ export function Astronaut({
           mat.metalness = 0.35;
         } else if (mat.name === 'transparent_mask') {
           // Gold-coated visor
-          mat.color.set('#d99a3a');
+          mat.color.set(suitProp === 'flight' ? '#4a5560' : '#d99a3a');
           mat.metalness = 1;
           mat.roughness = 0.18;
           mat.envMapIntensity = 1.6;
@@ -168,7 +211,7 @@ export function Astronaut({
       m.material = Array.isArray(m.material) ? mats : mats[0];
     });
     return c;
-  }, [scene, castShadow]);
+  }, [scene, castShadow, suitProp]);
 
   const bones = useMemo(() => {
     const map: Partial<Record<BoneKey, { b: THREE.Bone; rest: THREE.Quaternion; restPos: THREE.Vector3 }>> = {};

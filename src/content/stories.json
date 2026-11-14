@@ -1,0 +1,78 @@
+{
+  "voice": "Charon",
+  "model": "gemini-3.8-flash-tts",
+  "stories": [
+    {
+      "siteId": "m1-heritage",
+      "title": { "en": "Apollo 15 — the first lunar rover", "ar": "أبولو 15 — أول مركبة جوالة على القمر" },
+      "en": "July 1971. Apollo 15's lunar module, Falcon, set down on a plain at the foot of the Apennine Mountains, close to a winding canyon called Hadley Rille. Commander David Scott and pilot James Irwin stayed three days on the Moon, while Al Worden circled above. For the first time, astronauts brought a car: the Lunar Roving Vehicle. They drove almost twenty-eight kilometres, farther than any crew before them. Near Spur crater they found a pale, ancient rock that became known as the Genesis Rock, a piece of the Moon's early crust. Their descent stage and rover are still here, surrounded by footprints and tyre tracks. That is why we photograph this place from outside the boundary, and never drive across the tracks.",
+      "ar": "يوليو 1971. هبطت الوحدة القمرية لأبولو 15، واسمها فالكون، على سهل عند سفح جبال الأبينيني، قرب وادٍ متعرّج يُدعى أخدود هادلي. بقي القائد ديفيد سكوت والطيار جيمس إروين ثلاثة أيام على القمر، بينما كان آل وردن يدور فوقهما. ولأول مرة، أحضر روّاد الفضاء معهم سيارة: المركبة القمرية الجوالة. قطعوا بها نحو ثمانية وعشرين كيلومترًا، أبعد من أي طاقم قبلهم. وقرب فوهة سبير وجدوا صخرة فاتحة اللون قديمة جدًا عُرفت باسم صخرة التكوين، وهي قطعة من القشرة الأولى للقمر. ما زالت المرحلة السفلية لمركبتهم ومركبتهم الجوالة هنا، تحيط بهما آثار الأقدام والعجلات. لهذا نصوّر هذا المكان من خارج الحدود، ولا نعبر فوق تلك الآثار أبدًا."
+    },
+    {
+      "siteId": "m1-rille",
+      "title": { "en": "Hadley Rille — a river of lava", "ar": "أخدود هادلي — نهر من الحمم" },
+      "en": "This winding valley is Hadley Rille. It is about a kilometre and a half wide and, in places, around three hundred metres deep, snaking for roughly eighty kilometres across the plain. Scientists think it was carved more than three billion years ago by a river of molten lava, or by the roof of a lava tube collapsing. In 1971, the Apollo 15 astronauts drove to its edge and photographed layers in its walls, clues that this plain was built by one lava flow after another. Look along the far wall: every layer is a page in the Moon's volcanic history.",
+      "ar": "هذا الوادي المتعرّج هو أخدود هادلي. يبلغ عرضه نحو كيلومتر ونصف، ويصل عمقه في بعض المواضع إلى نحو ثلاثمئة متر، ويمتد قرابة ثمانين كيلومترًا عبر السهل. يعتقد العلماء أنه نُحت قبل أكثر من ثلاثة مليارات سنة بفعل نهر من الحمم المنصهرة، أو بانهيار سقف نفق من الحمم. وفي عام 1971 قاد روّاد أبولو 15 مركبتهم إلى حافته، وصوّروا طبقات في جدرانه، وهي أدلة على أن هذا السهل تكوّن من تدفّق حمم تلو الآخر. انظر إلى الجدار البعيد: كل طبقة صفحة من تاريخ القمر البركاني."
+    },
+    {
+      "siteId": "m1-view",
+      "title": { "en": "Earth in the lunar sky", "ar": "الأرض في سماء القمر" },
+      "en": "On Christmas Eve 1968, the crew of Apollo 8 became the first people to watch Earth rise over the Moon's horizon, and Bill Anders took the famous photograph called Earthrise. Standing on the surface is different. Because the Moon always turns the same face toward us, Earth hangs almost still in the sky, changing from full to new and back again over about a month. Every ocean, every city and every person you have ever known is on that small blue world. Many astronauts say this view changed how they see our planet: no borders, just one fragile home.",
+      "ar": "في ليلة عيد الميلاد عام 1968، أصبح طاقم أبولو 8 أول بشر يشاهدون الأرض وهي تشرق فوق أفق القمر، والتقط بيل أندرز الصورة الشهيرة المسمّاة شروق الأرض. أما الوقوف على السطح فمختلف. فلأن القمر يوجّه إلينا دائمًا الوجه نفسه، تبدو الأرض شبه ثابتة في السماء، وتتغيّر من بدر إلى محاق ثم تعود خلال نحو شهر. كل محيط، وكل مدينة، وكل إنسان عرفته يومًا، موجود على ذلك العالم الأزرق الصغير. يقول كثير من روّاد الفضاء إن هذا المنظر غيّر نظرتهم إلى كوكبنا: لا حدود، بل بيت واحد هشّ."
+    },
+    {
+      "siteId": "m1-crater",
+      "title": { "en": "A young crater and a quaking Moon", "ar": "فوهة حديثة وقمر يرتجف" },
+      "en": "Young craters look bright. Their fresh, pale soil has not yet been darkened by billions of years of sunlight, solar wind and tiny meteorite impacts. Older craters slowly fade into the grey plain. The Moon is not completely silent, either. Apollo astronauts left seismometers on the surface, and until 1977 they recorded thousands of moonquakes and the thuds of meteorites hitting the ground. Those signals let scientists look inside the Moon, much like doctors use sound to look inside the body.",
+      "ar": "تبدو الفوهات الحديثة ساطعة. فتربتها الفاتحة الجديدة لم تُعتّمها بعد مليارات السنين من ضوء الشمس والرياح الشمسية وارتطام النيازك الصغيرة. أما الفوهات الأقدم فتتلاشى ببطء في السهل الرمادي. والقمر ليس صامتًا تمامًا أيضًا. فقد ترك روّاد أبولو أجهزة لرصد الزلازل على سطحه، وسجّلت حتى عام 1977 آلاف الزلازل القمرية وارتطامات النيازك بالأرض. وقد سمحت تلك الإشارات للعلماء بالنظر إلى داخل القمر، كما يستخدم الأطباء الصوت للنظر داخل الجسم."
+    },
+    {
+      "siteId": "site-rock",
+      "title": { "en": "Cheyava Falls — the leopard-spot rock", "ar": "شيافا فولز — صخرة بقع الفهد" },
+      "en": "In July 2024, Perseverance drilled into an arrowhead-shaped rock nicknamed Cheyava Falls, in an ancient river valley inside Jezero Crater. Its surface was speckled with tiny leopard spots: pale centres with dark rims, rich in iron and phosphate. On Earth, reactions like these can be powered by microbes. In September 2025, NASA announced that the sample, named Sapphire Canyon, contains a potential biosignature, one of the strongest hints so far. But potential is the key word. Chemistry without life might also make these patterns. To be sure, scientists want to study the sample in laboratories on Earth.",
+      "ar": "في يوليو 2024 حفرت المركبة برسيفيرانس في صخرة على شكل رأس سهم أُطلق عليها اسم شيافا فولز، في وادي نهر قديم داخل فوهة جيزيرو. كان سطحها منقّطًا ببقع صغيرة تشبه بقع الفهد: مراكز فاتحة وحواف داكنة غنية بالحديد والفوسفات. على الأرض، يمكن للميكروبات أن تكون مصدر طاقة لتفاعلات كهذه. وفي سبتمبر 2025 أعلنت ناسا أن العيّنة، واسمها سافاير كانيون، تحتوي على بصمة حيوية محتملة، وهي من أقوى الإشارات حتى الآن. لكن كلمة محتملة هي المفتاح. فقد تصنع كيمياء بلا حياة هذه الأنماط أيضًا. ولكي يتأكد العلماء، يريدون دراسة العيّنة في مختبرات على الأرض."
+    },
+    {
+      "siteId": "site-layers",
+      "title": { "en": "Jezero's delta — a lake that dried", "ar": "دلتا جيزيرو — بحيرة جفّت" },
+      "en": "Billions of years ago, a river flowed into Jezero Crater and filled it with a lake. Where the river slowed down, it dropped sand and mud, building a fan-shaped delta layer upon layer, just like river deltas on Earth. These cliffs are that delta, now dry and frozen in time. Perseverance landed nearby in February 2021 because places where water once pooled are among the best places to search for signs of ancient life. Each layer records a moment when water was here.",
+      "ar": "قبل مليارات السنين، جرى نهر إلى فوهة جيزيرو فملأها بحيرة. وحيث تباطأ النهر، ترسّبت الرمال والطين، فبنت دلتا على شكل مروحة، طبقة فوق طبقة، تمامًا مثل دلتا الأنهار على الأرض. هذه المنحدرات هي تلك الدلتا، وقد جفّت وتجمّدت في الزمن. هبطت برسيفيرانس بالقرب منها في فبراير 2021، لأن الأماكن التي تجمّعت فيها المياه يومًا من أفضل الأماكن للبحث عن آثار حياة قديمة. كل طبقة تسجّل لحظة كان فيها الماء هنا."
+    },
+    {
+      "siteId": "site-depot",
+      "title": { "en": "Three Forks — a depot on another world", "ar": "ثري فوركس — مستودع على عالم آخر" },
+      "en": "Perseverance carries sealed tubes about the size of a marker pen. Between December 2022 and January 2023, it set ten of them down on the crater floor at a place called Three Forks, creating the first sample depot on another planet. It is a backup plan: if the rover could no longer deliver its own samples, a future mission could still collect these. Each tube holds a piece of Mars that might one day be opened in a laboratory on Earth. How and when they come home is still being planned.",
+      "ar": "تحمل برسيفيرانس أنابيب محكمة الإغلاق بحجم قلم التحديد تقريبًا. وبين ديسمبر 2022 ويناير 2023 وضعت عشرة منها على أرض الفوهة في مكان يُدعى ثري فوركس، فأنشأت أول مستودع للعيّنات على كوكب آخر. إنها خطة احتياطية: إذا لم تعد المركبة قادرة على تسليم عيّناتها، يمكن لمهمة مستقبلية أن تجمع هذه الأنابيب. يحمل كل أنبوب قطعة من المريخ قد تُفتح يومًا في مختبر على الأرض. أما كيف ومتى تعود، فما زال قيد التخطيط."
+    },
+    {
+      "siteId": "site-weather",
+      "title": { "en": "Dust devils — Mars's whirlwinds", "ar": "الشياطين الترابية — زوابع المريخ" },
+      "en": "Mars has whirlwinds called dust devils, some of them many kilometres tall. Perseverance's weather station measures them as they pass, and in 2021 its microphone recorded one: the first time anyone had heard a dust devil on Mars. For solar-powered rovers like Spirit and Opportunity, dust devils were sometimes friends. Their gusts swept dust off the solar panels and gave the rovers a welcome boost of power.",
+      "ar": "على المريخ زوابع تُسمّى الشياطين الترابية، يبلغ ارتفاع بعضها عدة كيلومترات. تقيسها محطة الطقس في برسيفيرانس عندما تمرّ، وفي عام 2021 سجّل ميكروفونها واحدة منها، فكانت المرة الأولى التي يسمع فيها أحد صوت زوبعة ترابية على المريخ. أما للمركبات التي تعمل بالطاقة الشمسية مثل سبيريت وأوبورتشونيتي، فكانت هذه الزوابع أحيانًا صديقة. فقد كانت هبّاتها تزيل الغبار عن الألواح الشمسية، فتمنح المركبات دفعة من الطاقة."
+    },
+    {
+      "siteId": "m3-opportunity",
+      "title": { "en": "Opportunity — a 90-day mission that lasted 15 years", "ar": "أوبورتشونيتي — مهمة 90 يومًا دامت 15 عامًا" },
+      "en": "Opportunity landed on Mars in January 2004. It was built to work for about ninety Martian days and drive about one kilometre. Instead, it explored for almost fifteen years and drove more than forty-five kilometres, longer than a marathon. It found clear evidence that liquid water once soaked these rocks. In June 2018, a dust storm wrapped the whole planet. The sunlight faded, its solar panels went dark, and Opportunity fell silent. Engineers sent more than a thousand commands, hoping to wake it. In February 2019, the mission was declared complete. It rests here, in Perseverance Valley. We document it from a distance, and leave it exactly as it is.",
+      "ar": "هبطت أوبورتشونيتي على المريخ في يناير 2004. صُمّمت لتعمل نحو تسعين يومًا مريخيًا وتقطع نحو كيلومتر واحد. لكنها استكشفت قرابة خمسة عشر عامًا، وقطعت أكثر من خمسة وأربعين كيلومترًا، أي أطول من سباق الماراثون. وجدت أدلة واضحة على أن الماء السائل غمر هذه الصخور يومًا. وفي يونيو 2018 لفّت عاصفة ترابية الكوكب كله. خفت ضوء الشمس، وأظلمت ألواحها الشمسية، وصمتت أوبورتشونيتي. أرسل المهندسون أكثر من ألف أمر على أمل إيقاظها. وفي فبراير 2019 أُعلن انتهاء المهمة. إنها ترقد هنا، في وادي برسيفيرانس. نوثّقها من بعيد، ونتركها كما هي تمامًا."
+    },
+    {
+      "siteId": "m3-valley",
+      "title": { "en": "Perseverance Valley — the last road", "ar": "وادي برسيفيرانس — الطريق الأخير" },
+      "en": "This shallow valley runs down the inner rim of Endeavour Crater. Scientists wondered what carved it: flowing water, wind, or slides of mud and rock. Opportunity was exploring it, driving down from the top, when the dust storm of 2018 arrived. Its final panorama shows this very landscape. And here is a fun fact: this valley was called Perseverance years before NASA gave the same name to its newest rover.",
+      "ar": "يمتد هذا الوادي الضحل نزولًا على الحافة الداخلية لفوهة إنديفور. تساءل العلماء عمّا نحته: ماء جارٍ، أم رياح، أم انزلاقات من الطين والصخور. كانت أوبورتشونيتي تستكشفه، نازلة من أعلاه، عندما وصلت العاصفة الترابية عام 2018. وتُظهر آخر صورة بانورامية التقطتها هذا المنظر نفسه. وإليك معلومة طريفة: سُمّي هذا الوادي برسيفيرانس قبل سنوات من إطلاق ناسا الاسم نفسه على أحدث مركباتها."
+    },
+    {
+      "siteId": "m3-rim",
+      "title": { "en": "Endeavour Crater — worth the three-year drive", "ar": "فوهة إنديفور — تستحق رحلة ثلاث سنوات" },
+      "en": "Endeavour Crater is about twenty-two kilometres wide. Opportunity spent three years driving across the plains to reach it, arriving in August 2011. Why go so far? Its rim exposes rocks much older than the plains around it. There, Opportunity found bright veins of gypsum, a mineral that forms when water flows through cracks in rock. It was some of the clearest evidence of liquid water that the rover ever found.",
+      "ar": "يبلغ عرض فوهة إنديفور نحو اثنين وعشرين كيلومترًا. قضت أوبورتشونيتي ثلاث سنوات تقطع السهول لتصل إليها، فبلغتها في أغسطس 2011. لماذا كل هذه المسافة؟ لأن حافتها تكشف صخورًا أقدم بكثير من السهول المحيطة بها. وهناك وجدت أوبورتشونيتي عروقًا لامعة من الجبس، وهو معدن يتكوّن عندما يتدفّق الماء عبر شقوق الصخور. وكانت من أوضح الأدلة على الماء السائل التي وجدتها المركبة على الإطلاق."
+    },
+    {
+      "siteId": "m3-ripples",
+      "title": { "en": "Purgatory Dune — five weeks stuck in sand", "ar": "كثيب المطهر — خمسة أسابيع عالقة في الرمل" },
+      "en": "In April 2005, Opportunity drove into a sand ripple only about thirty centimetres tall. Its wheels dug in and spun in place. The ripple was nicknamed Purgatory Dune. For about five weeks, engineers practised escape moves with a test rover in a sandbox on Earth, then reversed Opportunity out a few centimetres at a time. Since then, rover drivers check soft sand very carefully, and strong, wide wheels have become an important design choice.",
+      "ar": "في أبريل 2005 دخلت أوبورتشونيتي تموّجًا رمليًا لا يتجاوز ارتفاعه نحو ثلاثين سنتيمترًا. غاصت عجلاتها وظلّت تدور في مكانها. أُطلق على هذا التموّج اسم كثيب المطهر. وعلى مدى نحو خمسة أسابيع تدرّب المهندسون على حركات الخروج بمركبة اختبار في صندوق رمل على الأرض، ثم أعادوا أوبورتشونيتي إلى الخلف بضعة سنتيمترات في كل مرة. ومنذ ذلك الحين يفحص سائقو المركبات الرمال الناعمة بعناية شديدة، وأصبحت العجلات القوية العريضة خيارًا مهمًا في التصميم."
+    }
+  ]
+}
