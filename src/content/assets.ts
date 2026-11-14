@@ -18,6 +18,8 @@ export const ASSETS: AssetCredit[] = [
   { file: 'assets/img/pixl-mineral-map.jpg', title: "Perseverance's PIXL Finds Vivianite, Greigite in Cheyava Falls Sample (PIA26640)", credit: 'NASA/JPL-Caltech', url: 'https://science.nasa.gov/photojournal/perseverances-pixl-finds-vivianite-greigite-in-cheyava-falls-sample', license: 'NASA media — not copyrighted' },
   { file: 'assets/img/perseverance.jpg', title: "Perseverance's Selfie with Cheyava Falls (PIA26344)", credit: 'NASA/JPL-Caltech/MSSS', url: 'https://science.nasa.gov/resource/perseverances-selfie-with-cheyava-falls/', license: 'NASA media — not copyrighted' },
   { file: 'assets/models/astronaut.glb', title: 'Rigged Astronaut (3D model)', credit: 'J-Toastie, via Poly Pizza', url: 'https://poly.pizza/m/0oBRDJ9Zl9', license: 'CC-BY 3.0', modified: 'Materials retuned (gold visor, suit roughness); poses animated procedurally in code' },
+  { file: 'assets/models/apollo-lm.glb', title: 'Apollo Lunar Module (3D model)', credit: 'NASA 3D Resources', url: 'https://github.com/nasa/NASA-3D-Resources/tree/master/3D%20Models/Apollo%20Lunar%20Module', license: 'NASA media — not copyrighted', modified: 'Only the descent stage is shown (the ascent stage left the Moon)' },
+  { file: 'assets/models/mer-opportunity.glb', title: 'Mars Exploration Rover — Opportunity (MER-B) (3D model)', credit: 'NASA 3D Resources', url: 'https://github.com/nasa/NASA-3D-Resources/tree/master/3D%20Models/Mars%20Exploration%20Rover%20-%20Opportunity%20(MER-B)', license: 'NASA media — not copyrighted' },
 ];
 
 export const assetCredit = (file: string | undefined) => ASSETS.find((a) => a.file === file);

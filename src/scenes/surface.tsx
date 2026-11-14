@@ -117,11 +117,13 @@ const SKY_VERT = `varying vec3 vDir; void main(){ vDir = normalize(position); gl
 const SKY_FRAG = `varying vec3 vDir; uniform vec3 uSun;
 void main(){
   float h = clamp(vDir.y, -0.1, 1.0);
-  vec3 horizon = vec3(0.86, 0.66, 0.47);
-  vec3 zenith = vec3(0.55, 0.36, 0.25);
+  // Butterscotch haze at the horizon, deeper brown overhead; tuned for filmic tone mapping
+  vec3 horizon = vec3(0.62, 0.37, 0.21);
+  vec3 zenith = vec3(0.30, 0.16, 0.09);
   vec3 col = mix(horizon, zenith, pow(max(h,0.0), 0.55));
   float s = max(dot(normalize(vDir), normalize(uSun)), 0.0);
-  col += vec3(0.75, 0.82, 0.95) * pow(s, 60.0) * 0.6 + vec3(1.0, 0.97, 0.9) * pow(s, 900.0) * 2.0;
+  // Mars scatters blue light forward: a cool halo around the small, bright Sun
+  col += vec3(0.45, 0.6, 0.85) * pow(s, 40.0) * 0.55 + vec3(1.0, 0.97, 0.9) * pow(s, 1400.0) * 3.0;
   gl_FragColor = vec4(col, 1.0);
 }`;
 

@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef } from 'react';
+import { Suspense, useEffect, useMemo, useRef } from 'react';
 import * as THREE from 'three';
 import { useFrame, useThree } from '@react-three/fiber';
 import { Environment, Lightformer, OrbitControls } from '@react-three/drei';
@@ -14,6 +14,7 @@ import { sfx } from '../game/audio';
 import { MarsSky, Terrain, TargetRock } from './surface';
 import { Earth, RoverModel } from './models';
 import { DescentStageModel, LanderModel, LrvModel, MerModel } from './craft';
+import { ApolloDescentStage, OpportunityRover } from './nasaModels';
 import { CraterRim, DustMotes, Pebbles, VariedRocks } from './terrainfx';
 import { Astronaut, type AstroMotion } from './astronaut';
 import type { VehicleMotion } from './roverfx';
@@ -143,14 +144,18 @@ function HeritageProp({ site, mission }: { site: ExploreSite; mission: MissionDe
     <group position={[site.pos[0], y, site.pos[1]]}>
       {moon ? (
         <>
-          <DescentStageModel />
+          <Suspense fallback={<DescentStageModel />}>
+            <ApolloDescentStage scale={1.3} rotation={[0, 0.4, 0]} />
+          </Suspense>
           <group position={[7, 0, 4]} rotation={[0, 0.8, 0]}>
             <LrvModel />
           </group>
         </>
       ) : (
         <group rotation={[0, 0.6, 0]}>
-          <MerModel />
+          <Suspense fallback={<MerModel />}>
+            <OpportunityRover scale={0.25} />
+          </Suspense>
         </group>
       )}
       <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.3, 0]}>

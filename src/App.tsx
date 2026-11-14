@@ -1,6 +1,5 @@
 import { Component, Suspense, useEffect, type ReactNode } from 'react';
 import { Canvas } from '@react-three/fiber';
-import { Bloom, EffectComposer, Vignette } from '@react-three/postprocessing';
 import { useGame } from './game/store';
 import { CruiseScene, HQScene, LaunchScene, MarsOrbitScene, ObserveScene, OrbitScene, WorkshopScene } from './scenes/scenes';
 import { SurfaceScene } from './scenes/surface';
@@ -13,6 +12,7 @@ import { SettingsModal } from './ui/SettingsModal';
 import { MissionPreviewModal } from './ui/HomeScreen';
 import { MenuScreen } from './ui/MenuScreen';
 import { MenuScene } from './scenes/menu';
+import { PostFX } from './scenes/PostFX';
 import { MissionScreens } from './ui/MissionScreens';
 import { ArchiveScreen, ArchiveMemoryModal } from './ui/ArchiveScreen';
 import { CreditsScreen } from './ui/CreditsScreen';
@@ -94,10 +94,7 @@ export function App() {
             </Suspense>
           </SceneBoundary>
           {quality === 'high' && (
-            <EffectComposer multisampling={4}>
-              <Bloom intensity={0.55} luminanceThreshold={0.82} luminanceSmoothing={0.2} mipmapBlur />
-              <Vignette offset={0.32} darkness={0.45} />
-            </EffectComposer>
+            <PostFX />
           )}
         </Canvas>
       </div>
