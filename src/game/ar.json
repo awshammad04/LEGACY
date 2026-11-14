@@ -1678,5 +1678,15 @@
  "Send your crew and lunar equipment toward the Moon.": "أرسل طاقمك والمعدات القمرية نحو القمر.",
  "Send your rover to investigate Jezero Crater on Mars.": "أرسل مركبتك الجوالة لاستكشاف فوهة جيزيرو على المريخ.",
  "Place your compact observatory in Earth orbit to capture a supernova.": "ضع مرصدك الصغير في مدار الأرض لتصوير مستعر أعظم.",
- "Send an uncrewed expedition to document Opportunity’s final site on Mars.": "أرسل بعثة غير مأهولة لتوثيق الموقع الأخير لأوبورتشونيتي على المريخ."
+ "Send an uncrewed expedition to document Opportunity’s final site on Mars.": "أرسل بعثة غير مأهولة لتوثيق الموقع الأخير لأوبورتشونيتي على المريخ.",
+ "Lunar EVA · On foot": "نشاط قمري خارج المركبة · سيرًا على الأقدام",
+ "Lunar Roving Vehicle": "المركبة القمرية الجوالة",
+ "WASD: walk relative to camera · Drag: look · Space: lunar hop · Shift: brisk walk": "WASD: حركة حسب اتجاه النظر · اسحب للنظر · Space: وثبة قمرية · Shift: مشي سريع",
+ "WASD: drive · Drag: look · Scroll: zoom · Space: brake": "WASD: قيادة · اسحب للنظر · عجلة الفأرة: تقريب · Space: فرامل",
+ "E: investigate · B: board / step off · J: journal · R: rest at lander": "E: استكشاف · B: صعود أو نزول · J: السجل · R: راحة عند مركبة الهبوط",
+ "WASD / arrows: move · Drag: rotate camera · Scroll: zoom · Shift: brisk walk / faster drive · Space: hop on foot / brake aboard · E: interact · B: board / step off · R: rest · F: report · J: journal": "WASD أو الأسهم: حركة · اسحب لتدوير الكاميرا · عجلة الفأرة: تقريب · Shift: مشي أو قيادة أسرع · Space: وثبة أثناء المشي أو فرامل أثناء القيادة · E: تفاعل · B: صعود أو نزول · R: راحة · F: تقرير · J: السجل",
+ "walk / drive": "مشي أو قيادة",
+ "rest at lander": "الراحة عند مركبة الهبوط",
+ "Illustrative lunar terrain — not to scale.": "تضاريس قمرية توضيحية — ليست بمقياس حقيقي.",
+ "Touchdown confirmed. Explore the Moon on foot or aboard your lunar rover. Protect the Apollo 15 site and watch your suit oxygen.": "تم تأكيد الهبوط. استكشف القمر سيرًا أو بمركبتك الجوالة. احمِ موقع أبولو 15 وراقب أكسجين البدلة."
 }

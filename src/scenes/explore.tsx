@@ -22,6 +22,8 @@ import { Astronaut, type AstroMotion } from './astronaut';
 import type { VehicleMotion } from './roverfx';
 import { Stars } from '@react-three/drei';
 import { tierOf } from '../core/evaluate';
+import { advanceLunarMotion, angleDelta, lunarDirection, lunarSurfaceStep, newLunarMotion, type SurfaceCollider } from '../core/lunarMovement';
+import { LUNAR_CREW_SCALE } from './lunarRover';
 
 /* ------------------------------------------------------------------ */
 /* Keyboard input                                                      */
@@ -245,10 +247,10 @@ function ScanBeam({ mission }: { mission: MissionDefinition }) {
 /* Drivable rover + follow camera                                      */
 /* ------------------------------------------------------------------ */
 
-function buildGrid(rocks: Rock[]) {
+function buildGrid(rocks: Rock[], moon = false) {
   const grid = new Map<string, Rock[]>();
   for (const r of rocks) {
-    if (!isObstacle(r)) continue;
+    if (moon ? r.s < 0.5 : !isObstacle(r)) continue;
     const k = `${Math.floor(r.x / 20)},${Math.floor(r.z / 20)}`;
     if (!grid.has(k)) grid.set(k, []);
     grid.get(k)!.push(r);
@@ -262,7 +264,12 @@ function DrivableRover({ mission, rocks }: { mission: MissionDefinition; rocks: 
   const dispatch = useGame((s) => s.dispatch);
   const reduced = useGame((s) => s.settings.reducedMotion);
   const m = useMemo(() => computeMetrics(mission, state.design), [mission, state.design]);
-  const grid = useMemo(() => buildGrid(rocks), [rocks]);
+  const moon = mission.world?.theme === 'moon';
+  const grid = useMemo(() => buildGrid(rocks, moon), [rocks, moon]);
+  const fixedColliders = useMemo<SurfaceCollider[]>(() => (mission.sites ?? []).flatMap(site =>
+    site.kind === 'lander' ? [{x:site.pos[0],z:site.pos[1],radius:2.7}] :
+    site.kind === 'heritage' ? [{x:site.pos[0],z:site.pos[1],radius:2.7},{x:site.pos[0]+7,z:site.pos[1]+4,radius:1.7}] : []), [mission]);
+  const walkDirection = useMemo(() => new THREE.Vector3(), []);
   const g = useRef<THREE.Group>(null);
   const controls = useThree((s) => s.controls) as unknown as { target: THREE.Vector3 } | null;
   const { camera } = useThree();
@@ -299,6 +306,8 @@ function DrivableRover({ mission, rocks }: { mission: MissionDefinition; rocks: 
     initialized: false,
     lastUser: 0,
     committed: [state.ops.pos[0], state.ops.pos[1]] as [number, number],
+    walk: newLunarMotion(),
+    wasWalking: false,
   });
 
   // Snap to reducer position when it changes outside driving (load, rewind, replay).
@@ -306,13 +315,15 @@ function DrivableRover({ mission, rocks }: { mission: MissionDefinition; rocks: 
     const s = sim.current;
     const external = Math.hypot(s.committed[0] - state.ops.pos[0], s.committed[1] - state.ops.pos[1]) > 0.5;
     if (external) {
+      const teleported = Math.hypot(s.x-state.ops.pos[0],s.z-state.ops.pos[1])>25;
       s.x = state.ops.pos[0];
       s.z = state.ops.pos[1];
       s.h = state.ops.heading;
       s.v = 0;
       s.pending = { dist: 0, slope: 0, boost: 0, bumps: 0 };
       s.committed = [state.ops.pos[0], state.ops.pos[1]];
-      s.initialized = false;
+      s.walk = newLunarMotion();
+      if (!moon || teleported) s.initialized = false;
     }
   }, [state.ops.pos, state.ops.heading]);
 
@@ -359,6 +370,8 @@ function DrivableRover({ mission, rocks }: { mission: MissionDefinition; rocks: 
     const right = !paused && (keys.has('KeyD') || keys.has('ArrowRight') || t.right);
     const boost = !paused && (keys.has('ShiftLeft') || keys.has('ShiftRight') || t.boost);
     const brake = keys.has('Space');
+    const walking = moon && (!hasBuggy(mission, st.design) || !!st.ops.onFoot);
+    if(walking !== s.wasWalking){s.v=0;s.walk=newLunarMotion();s.wasWalking=walking;}
 
     // Battery check (reducer battery minus energy not yet committed)
     const mob = mobilityMetrics(mission, m, st.ops);
@@ -369,15 +382,44 @@ function DrivableRover({ mission, rocks }: { mission: MissionDefinition; rocks: 
 
     const top = roverTopSpeed(mob, st.ops.wheelHealth) * (boost ? 1.5 : 1);
     const throttle = empty ? 0 : (fwd ? 1 : 0) - (back ? 0.6 : 0);
+    const steer = (left ? 1 : 0) - (right ? 1 : 0);
+    let blocked: 'slope' | 'battery' | null = empty && (fwd || back) ? 'battery' : null;
+    let turn = 0;
+    let cameraBlockers: SurfaceCollider[] = [];
+    if(walking) {
+      camera.getWorldDirection(walkDirection);
+      const direction=lunarDirection(Number(fwd)-Number(back),Number(right)-Number(left),walkDirection.x,walkDirection.z);
+      advanceLunarMotion(s.walk,direction,dt,boost,brake,paused);
+      const colliders:SurfaceCollider[]=fixedColliders.map(c=>({...c,top:heightAt(c.x,c.z)+3.2}));
+      const gx=Math.floor(s.x/20),gz=Math.floor(s.z/20);
+      for(let ix=gx-1;ix<=gx+1;ix++) for(let iz=gz-1;iz<=gz+1;iz++)
+        for(const r of grid.get(`${ix},${iz}`)??[]) colliders.push({x:r.x,z:r.z,radius:r.s*1.12,top:r.y+r.s*r.sy*1.5});
+      if(st.ops.onFoot&&st.ops.buggyPos) {
+        const [bx,bz]=st.ops.buggyPos,bh=st.ops.buggyHeading??0;
+        for(const offset of [-0.85,0.85])colliders.push({x:bx+Math.cos(bh)*offset,z:bz-Math.sin(bh)*offset,radius:1.08,top:heightAt(bx,bz)+1.5});
+      }
+      cameraBlockers=colliders;
+      if(!paused) {
+        const move=lunarSurfaceStep(s.x,s.z,s.walk.vx*dt,s.walk.vz*dt,colliders,heightAt,mob.slopeLimitDeg);
+        s.x=move.x;s.z=move.z;s.pending.dist+=move.distance;s.pending.slope+=move.slope*move.distance;
+        if(boost)s.pending.boost+=move.distance;
+        s.v=move.distance/dt;
+        if(move.blocked){blocked='slope';s.walk.vx=0;s.walk.vz=0;}
+        if(direction.x||direction.z) {
+          const desired=Math.atan2(-direction.z,direction.x);
+          const delta=angleDelta(s.h,desired);
+          turn=THREE.MathUtils.clamp(delta*2,-1,1);
+          s.h+=delta*(1-Math.exp(-dt*10));
+        }
+      } else {s.v=0;if(s.pending.dist>0)commit();}
+    } else {
     if (throttle !== 0) s.v += throttle * (Math.sign(throttle) !== Math.sign(s.v) && s.v !== 0 ? 30 : 16) * dt;
     else s.v *= Math.pow(0.04, dt);
     if (brake) s.v *= Math.pow(0.001, dt);
+    if(moon&&paused)s.v=0;
     s.v = Math.max(-top * 0.5, Math.min(top, s.v));
     if (Math.abs(s.v) < 0.02) s.v = 0;
-    const steer = (left ? 1 : 0) - (right ? 1 : 0);
-    s.h += steer * dt * (2.2 - Math.min(0.9, Math.abs(s.v) * 0.04)) * (s.v < -0.1 ? -1 : 1);
-
-    let blocked: 'slope' | 'battery' | null = empty && (fwd || back) ? 'battery' : null;
+    s.h += steer * dt * (2.2 - Math.min(0.9, Math.abs(s.v) * 0.04)) * (s.v < -0.1 ? -1 : 1) * (moon ? Math.min(1,Math.abs(s.v)/2.5) : 1);
     if (s.v !== 0) {
       const dx = Math.cos(s.h) * s.v * dt;
       const dz = -Math.sin(s.h) * s.v * dt;
@@ -398,6 +440,7 @@ function DrivableRover({ mission, rocks }: { mission: MissionDefinition; rocks: 
         for (let ix = gx - 1; ix <= gx + 1; ix++)
           for (let iz = gz - 1; iz <= gz + 1; iz++)
             for (const r of grid.get(`${ix},${iz}`) ?? []) {
+              if(moon&&!isObstacle(r))continue;
               const rr = r.s * 0.9 + 1.5;
               const ddx = nx - r.x;
               const ddz = nz - r.z;
@@ -421,6 +464,7 @@ function DrivableRover({ mission, rocks }: { mission: MissionDefinition; rocks: 
         s.z = nz;
       }
     }
+    }
     s.bumpCooldown -= dt;
 
     // Commit drive segments to the deterministic simulation
@@ -429,6 +473,7 @@ function DrivableRover({ mission, rocks }: { mission: MissionDefinition; rocks: 
 
     // Rover pose
     vehicleMotion.current.v = s.v;
+    vehicleMotion.current.steer = steer;
     const kv = kitRover.current;
     if (kv) {
       // Pose adapter: our (x, z, h: 0 = +X, counter-clockwise) → kit (heading 0 = -Z, positive toward +X).
@@ -438,31 +483,36 @@ function DrivableRover({ mission, rocks }: { mission: MissionDefinition; rocks: 
       else kv.update(pose, dt);
       kitLast.current = [s.x, s.z];
     }
-    astroMotion.current.speed = Math.abs(s.v) / 3;
-    astroMotion.current.pose = Math.abs(s.v) > 0.4 ? 'walk' : 'idle';
+    astroMotion.current.speed = Math.abs(s.v);
+    astroMotion.current.pose = !s.walk.grounded ? 'hop' : Math.abs(turn)>0.3&&s.v<0.6 ? 'turn' : s.v>0.1 ? 'walk' : live.panel==='actions' ? 'interact' : 'idle';
+    astroMotion.current.grounded = s.walk.grounded;
+    astroMotion.current.paused = paused && live.panel !== 'actions';
+    astroMotion.current.turn = turn;
     if (g.current) {
       const y = heightAt(s.x, s.z);
-      g.current.position.set(s.x, y, s.z);
+      g.current.position.set(s.x, y+(walking?s.walk.lift:0), s.z);
       const e = 1.5;
       const n = new THREE.Vector3(heightAt(s.x - e, s.z) - heightAt(s.x + e, s.z), 2 * e, heightAt(s.x, s.z - e) - heightAt(s.x, s.z + e)).normalize();
-      const tilt = new THREE.Quaternion().setFromUnitVectors(up, n);
+      // An EVA astronaut stays upright; only the vehicle follows the full terrain normal.
+      const tilt = new THREE.Quaternion().setFromUnitVectors(up, walking ? n.lerp(up,0.9).normalize() : n);
       const yaw = new THREE.Quaternion().setFromAxisAngle(up, s.h);
       g.current.quaternion.slerp(tilt.multiply(yaw), Math.min(1, dt * 8));
     }
 
     // Follow camera: carry the camera with the rover; drift behind it while driving
     if (controls?.target) {
-      const target = new THREE.Vector3(s.x, heightAt(s.x, s.z) + 2.2, s.z);
+      const target = new THREE.Vector3(s.x, heightAt(s.x, s.z) + (moon ? 1.05 : 2.2), s.z);
       if (!s.initialized) {
         controls.target.copy(target);
-        const camD = useKitRover ? 12 : 20;
-        camera.position.set(s.x - Math.cos(s.h) * camD, target.y + (useKitRover ? 3.6 : 6.5), s.z + Math.sin(s.h) * camD);
+        const camD = moon ? walking?6:8.5 : useKitRover ? 12 : 20;
+        camera.position.set(s.x - Math.cos(s.h) * camD, target.y + (moon?2.7:useKitRover ? 3.6 : 6.5), s.z + Math.sin(s.h) * camD);
         s.initialized = true;
       }
       const delta = target.clone().sub(controls.target);
+      if(moon)delta.multiplyScalar(1-Math.exp(-dt*10));
       controls.target.add(delta);
       camera.position.add(delta);
-      if (Math.abs(s.v) > 1 && now - s.lastUser > 1500 && !reduced) {
+      if (!walking && Math.abs(s.v) > 1 && now - s.lastUser > 1500 && !reduced) {
         const off = camera.position.clone().sub(controls.target);
         const r = Math.hypot(off.x, off.z);
         const cur = Math.atan2(off.z, off.x);
@@ -472,6 +522,17 @@ function DrivableRover({ mission, rocks }: { mission: MissionDefinition; rocks: 
         while (da < -Math.PI) da += 2 * Math.PI;
         const na = cur + da * Math.min(1, dt * 1.2);
         camera.position.set(controls.target.x + Math.cos(na) * r, camera.position.y, controls.target.z + Math.sin(na) * r);
+      }
+      if(moon) {
+        // Keep the orbit above ridges; OrbitControls remains the only mouse camera controller.
+        const eye=camera.position.clone();
+        for(let i=1;i<=16;i++) {
+          const p=controls.target.clone().lerp(eye,i/16);
+          if(p.y<heightAt(p.x,p.z)+0.4 || cameraBlockers.some(c=>p.y<(c.top??0)+0.2&&Math.hypot(p.x-c.x,p.z-c.z)<c.radius+0.2)) {
+            camera.position.lerpVectors(controls.target,eye,Math.max(0.18,(i-1)/16));break;
+          }
+        }
+        camera.position.y=Math.max(camera.position.y,heightAt(camera.position.x,camera.position.z)+0.55);
       }
     }
 
@@ -483,7 +544,8 @@ function DrivableRover({ mission, rocks }: { mission: MissionDefinition; rocks: 
       if (blocked && now - s.lastWarn > 1500) s.lastWarn = now;
       const bp = st.ops.buggyPos;
       const buggyNear = !!st.ops.onFoot && !!bp && Math.hypot(bp[0] - s.x, bp[1] - s.z) <= BOARD_RADIUS;
-      useLive.getState().set({ pos: [s.x, s.z], heading: s.h, speed: Math.abs(s.v), pendingWh, nearSiteId, buggyNear, blocked, moved: live.moved || s.pending.dist > 0 || st.ops.distanceU > 0 });
+      useLive.getState().set({ pos: [s.x, s.z], heading: s.h, speed: Math.abs(s.v), pendingWh, nearSiteId, buggyNear, blocked, moved: live.moved || s.pending.dist > 0 || st.ops.distanceU > 0,
+        locomotion:walking?astroMotion.current.pose as 'idle'|'walk'|'turn'|'hop':'rover',grounded:walking?s.walk.grounded:true,altitude:walking?s.walk.lift:0 });
     }
   });
 
@@ -497,6 +559,7 @@ function DrivableRover({ mission, rocks }: { mission: MissionDefinition; rocks: 
       const ui = useUi.getState();
       if (st.pendingEvent || live.panel !== 'none' || ui.settingsOpen || ui.learnCard) return;
       const s = sim.current;
+      if(!s.walk.grounded)return;
       if (!st.ops.onFoot) {
         if (Math.abs(s.v) > 0.8) return;
         s.v = 0;
@@ -521,8 +584,11 @@ function DrivableRover({ mission, rocks }: { mission: MissionDefinition; rocks: 
     };
   }, [buggy]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // Commit anything pending when leaving the stage
-  useEffect(() => () => commit(), []); // eslint-disable-line react-hooks/exhaustive-deps
+  // Flush before UI actions and on exit so movement, interactions and saves use one position.
+  useEffect(() => {
+    useLive.getState().set({flushMovement:commit});
+    return () => {commit();useLive.getState().set({flushMovement:undefined});};
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   const lrv = mission.world?.vehicle === 'lrv';
   const walking = lrv && (tierOf(mission, state.design, 'chassis') === 'basic' || !!state.ops.onFoot);
@@ -532,7 +598,7 @@ function DrivableRover({ mission, rocks }: { mission: MissionDefinition; rocks: 
     <group ref={g}>
       {lrv ? (
         walking ? (
-          <Astronaut motion={astroMotion} scale={1.4} rotation={[0, Math.PI / 2, 0]} />
+          <Astronaut motion={astroMotion} scale={LUNAR_CREW_SCALE} rotation={[0, Math.PI / 2, 0]} />
         ) : (
           <LrvModel crew motion={vehicleMotion} />
         )
@@ -618,7 +684,7 @@ export function ExploreScene() {
       ))}
       <ScanBeam mission={mission} />
       <DrivableRover mission={mission} rocks={rocks} />
-      <OrbitControls makeDefault enablePan={false} minDistance={kit ? 6 : 10} maxDistance={70} maxPolarAngle={Math.PI / 2.08} minPolarAngle={0.25} enableDamping dampingFactor={0.12} />
+      <OrbitControls makeDefault enablePan={false} minDistance={moon?3.6:kit ? 6 : 10} maxDistance={moon?40:70} maxPolarAngle={Math.PI / 2.08} minPolarAngle={0.25} enableDamping dampingFactor={0.12} />
     </>
   );
 }

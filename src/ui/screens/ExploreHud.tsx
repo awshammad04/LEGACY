@@ -288,6 +288,7 @@ function ActionPanel({ site, onClose }: { site: ExploreSite; onClose: () => void
   const dispatch = useGame((s) => s.dispatch);
   const obsList = site.observations.map((id) => mission.observations.find((o) => o.id === id)!).filter(Boolean);
   const run = (o: ObservationDef) => {
+    useLive.getState().flushMovement?.();
     const ok = dispatch({ type: 'INVESTIGATE', siteId: site.id, observationId: o.id });
     if (ok) {
       sfx('select');
@@ -625,8 +626,8 @@ function Journal({ onClose, onReport }: { onClose: () => void; onReport: () => v
           {mission.type !== 'crewed' && <EquipmentPanel />}
           <div className="divider" />
           <h4>{t('Controls')}</h4>
-          <p className="small muted">{t('W A S D or arrow keys: drive · Shift: faster (more wear and energy) · Space: brake · Drag: look around · Scroll: zoom · E: investigate · R: rest · F: report · J: journal')}</p>
-          <p className="tiny dim">{t('Gameplay simplification: real Mars rovers cannot be driven live from Earth — commands take many minutes to arrive, so rovers drive themselves between commands.')}</p>
+          <p className="small muted">{t(mission.world?.theme === 'moon' ? 'WASD / arrows: move · Drag: rotate camera · Scroll: zoom · Shift: brisk walk / faster drive · Space: hop on foot / brake aboard · E: interact · B: board / step off · R: rest · F: report · J: journal' : 'W A S D or arrow keys: drive · Shift: faster (more wear and energy) · Space: brake · Drag: look around · Scroll: zoom · E: investigate · R: rest · F: report · J: journal')}</p>
+          {mission.world?.theme !== 'moon' && <p className="tiny dim">{t('Gameplay simplification: real Mars rovers cannot be driven live from Earth — commands take many minutes to arrive, so rovers drive themselves between commands.')}</p>}
         </div>
         <div className="stack">
           <h3>{t('Findings')}</h3>
@@ -686,7 +687,16 @@ function TouchControls() {
 
 function ControlsHint() {
   const t = useT();
+  const {mission,state}=useMissionBits();
   const moved = useLive((s) => s.moved);
+  if(mission.world?.theme === 'moon') {
+    const walking=!hasBuggy(mission,state.design)||!!state.ops.onFoot;
+    return <div className="hud-card lunar-controls small">
+      <strong>{t(walking?'Lunar EVA · On foot':'Lunar Roving Vehicle')}</strong>
+      <span>{t(walking?'WASD: walk relative to camera · Drag: look · Space: lunar hop · Shift: brisk walk':'WASD: drive · Drag: look · Scroll: zoom · Space: brake')}</span>
+      <span className="tiny muted">{t('E: investigate · B: board / step off · J: journal · R: rest at lander')}</span>
+    </div>;
+  }
   if (moved) return null;
   return (
     <div className="hud-card controls-hint fade-in">
@@ -754,13 +764,13 @@ function MissionIntro({ onGo }: { onGo: () => void }) {
             <kbd>W</kbd>
             <kbd>A</kbd>
             <kbd>S</kbd>
-            <kbd>D</kbd> {t('drive')}
+            <kbd>D</kbd> {t(mission.world?.theme === 'moon' ? 'walk / drive' : 'drive')}
           </span>
           <span>
             <kbd>E</kbd> {t('investigate')}
           </span>
           <span>
-            <kbd>R</kbd> {t('recharge')}
+            <kbd>R</kbd> {t(mission.world?.theme === 'moon' ? 'rest at lander' : 'recharge')}
           </span>
         </div>
         <button className="btn btn-primary" style={{ fontSize: 17, padding: '12px 20px' }} onClick={onGo}>
@@ -785,7 +795,7 @@ export function ExploreHud() {
   const canReport = state.evidence.observations.length > 0;
 
   useEffect(() => {
-    say({ en: 'Touchdown confirmed! The rover is yours, Commander. Find the leopard-spot rock — and explore anything that looks interesting.' });
+    say({ en: mission.world?.theme === 'moon' ? 'Touchdown confirmed. Explore the Moon on foot or aboard your lunar rover. Protect the Apollo 15 site and watch your suit oxygen.' : 'Touchdown confirmed! The rover is yours, Commander. Find the leopard-spot rock — and explore anything that looks interesting.' });
     useUi.getState().set({ waypoints: [] });
     document.documentElement.classList.add('exploring');
     const st = useGame.getState().state;
@@ -802,8 +812,10 @@ export function ExploreHud() {
       if (useUi.getState().settingsOpen || useUi.getState().learnCard) return;
       const k = e.key.toLowerCase();
       const cur = useLive.getState().panel;
+      if(['e','j','f','r'].includes(k))useLive.getState().flushMovement?.();
       if (k === 'escape' && cur !== 'none') setLive({ panel: 'none' });
       if (busy) return;
+      if(k === 'e' && useLive.getState().grounded === false)return;
       if (k === 'e' && cur === 'none' && useLive.getState().nearSiteId) setLive({ panel: 'actions' });
       if (k === 'j') setLive({ panel: cur === 'journal' ? 'none' : 'journal' });
       if (k === 'f' && canReport && cur === 'none') setLive({ panel: 'report' });
@@ -842,7 +854,7 @@ export function ExploreHud() {
         <AlertCard />
         {!busy && <FindingToast />}
       </div>
-      <div className="hud-bottom-center">
+      <div className={`hud-bottom-center ${mission.world?.theme === 'moon'?'lunar-controls-stack':''}`}>
         {panel === 'actions' && nearSite && !busy ? (
           <ActionPanel site={nearSite} onClose={() => setLive({ panel: 'none' })} />
         ) : nearSite && !busy ? (
@@ -872,7 +884,7 @@ export function ExploreHud() {
       {panel === 'journal' && <Journal onClose={() => setLive({ panel: 'none' })} onReport={() => setLive({ panel: 'report' })} />}
       {panel === 'report' && <ReportCard onClose={() => setLive({ panel: 'none' })} />}
       {panel === 'intro' && <MissionIntro onGo={() => setLive({ panel: 'none' })} />}
-      <span className="scene-label explore-note">{t('Illustrative terrain inspired by Jezero Crater — not to scale.')}</span>
+      <span className="scene-label explore-note">{t(mission.world?.theme === 'moon' ? 'Illustrative lunar terrain — not to scale.' : 'Illustrative terrain inspired by Jezero Crater — not to scale.')}</span>
     </main>
   );
 }
@@ -886,7 +898,6 @@ function BuggyPrompt({ keyLabel = 'E' }: { keyLabel?: string }) {
   const onFoot = useGame((s) => !!s.state?.ops.onFoot);
   const near = useLive((s) => !!s.buggyNear);
   const stopped = useLive((s) => s.speed < 0.3);
-  const moved = useLive((s) => s.moved);
   if (!missionId || !design || !hasBuggy(getMission(missionId), design)) return null;
   const go = () => window.dispatchEvent(new Event('legacy:buggy'));
   if (onFoot && near)
@@ -897,7 +908,7 @@ function BuggyPrompt({ keyLabel = 'E' }: { keyLabel?: string }) {
     );
   if (onFoot && keyLabel === 'E')
     return <div className="hud-card prompt-hint small">{t('On foot — walking is slower and uses more suit oxygen. Walk back to the rover (yellow on the map) to drive again.')}</div>;
-  if (stopped && (moved || keyLabel === 'B'))
+  if (stopped)
     return (
       <button className="hud-card prompt fade-in" onClick={go}>
         <kbd>{keyLabel}</kbd> {t('Step off and walk')}

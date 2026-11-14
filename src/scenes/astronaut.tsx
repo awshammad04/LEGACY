@@ -4,6 +4,7 @@ import { useFrame, type ThreeElements } from '@react-three/fiber';
 import { useGLTF } from '@react-three/drei';
 import { clone as cloneSkinned } from 'three/examples/jsm/utils/SkeletonUtils.js';
 import { asset } from './models';
+import { heightAt } from '../core/terrain';
 
 /**
  * Rigged astronaut ("Rigged Astronaut" by J-Toastie, CC-BY 3.0, via Poly Pizza).
@@ -12,13 +13,16 @@ import { asset } from './models';
  */
 export const ASTRONAUT_URL = asset('assets/models/astronaut.glb');
 
-export type AstroPose = 'idle' | 'wave' | 'walk' | 'float' | 'interact' | 'drive' | 'cycle' | 'huddle' | 'sleep';
+export type AstroPose = 'idle' | 'wave' | 'walk' | 'turn' | 'hop' | 'float' | 'interact' | 'drive' | 'cycle' | 'huddle' | 'sleep';
 
 /** Live motion input (no re-render): speed in units/s drives the walk cycle. */
 export interface AstroMotion {
   pose?: AstroPose;
   speed?: number;
   lowGravity?: boolean;
+  grounded?: boolean;
+  paused?: boolean;
+  turn?: number;
 }
 
 type BoneKey =
@@ -63,6 +67,17 @@ function poseOffsets(pose: AstroPose, t: number, phase: number, speed: number, l
     case 'idle':
       addOff(o, 'LeftArm', Math.sin(t * 0.8) * 0.03, 0, 0);
       addOff(o, 'RightArm', Math.sin(t * 0.8 + 1) * 0.03, 0, 0);
+      break;
+    case 'turn':
+      o.LeftUpLeg=[Math.sin(phase)*0.13,0,0];
+      o.RightUpLeg=[-Math.sin(phase)*0.13,0,0];
+      o.LeftLeg=[-Math.max(0,Math.cos(phase))*0.2,0,0];
+      o.RightLeg=[-Math.max(0,-Math.cos(phase))*0.2,0,0];
+      break;
+    case 'hop':
+      o.LeftUpLeg=[0.23,0,0.08];o.RightUpLeg=[0.18,0,-0.08];
+      o.LeftLeg=[-0.45,0,0];o.RightLeg=[-0.4,0,0];
+      addOff(o,'LeftArm',-0.13,0,0.1);addOff(o,'RightArm',-0.13,0,-0.1);
       break;
     case 'wave': {
       const w = Math.sin(t * 6);
@@ -212,6 +227,13 @@ export function Astronaut({
     });
     return c;
   }, [scene, castShadow, suitProp]);
+  useEffect(() => () => {
+    // Skeleton clones own their materials; geometry and source textures belong to the GLTF cache.
+    model.traverse(node => {
+      const mesh=node as THREE.Mesh;
+      if(mesh.isMesh)(Array.isArray(mesh.material)?mesh.material:[mesh.material]).forEach(material=>material.dispose());
+    });
+  },[model]);
 
   const bones = useMemo(() => {
     const map: Partial<Record<BoneKey, { b: THREE.Bone; rest: THREE.Quaternion; restPos: THREE.Vector3 }>> = {};
@@ -223,20 +245,23 @@ export function Astronaut({
     return map;
   }, [model]);
 
-  const st = useRef({ phase: 0, cur: {} as Offsets, lift: 0 });
+  const st = useRef({ phase: 0, cur: {} as Offsets, lift: 0, time: 0, ground: 0 });
+  const footScratch=useMemo(()=>new THREE.Vector3(),[]);
   useEffect(() => {
     st.current.cur = {};
   }, [model]);
 
   useFrame(({ clock }, dtRaw) => {
-    const dt = Math.min(dtRaw, 0.1);
     const m = motion?.current;
+    const dt = m?.paused ? 0 : Math.min(dtRaw, 0.1);
     const p = m?.pose ?? pose;
     const speed = m?.speed ?? 0;
     const lowG = !!m?.lowGravity;
     const s = st.current;
+    s.time+=dt;
     s.phase += dt * (lowG ? 5.2 : 7.5) * Math.min(1.6, 0.35 + speed * 0.4);
-    const { o, lift } = poseOffsets(p, clock.elapsedTime, s.phase, speed, lowG);
+    const { o, lift } = poseOffsets(p, m?.grounded === undefined ? clock.elapsedTime : s.time, s.phase, speed, lowG);
+    if(m?.turn) {addOff(o,'Spine',0,m.turn*0.06,0);addOff(o,'Head',0,m.turn*0.11,0);}
     // Smoothly blend toward the target pose so pose changes never pop
     const k = 1 - Math.exp(-dt * 10);
     for (const key of KEYS) {
@@ -253,6 +278,23 @@ export function Astronaut({
     s.lift += (lift - s.lift) * k;
     const hips = bones.Hips;
     if (hips) hips.b.position.y = hips.restPos.y + s.lift;
+    // Plant the supporting boot on the same analytic terrain used by the controller.
+    // The physical hop is applied to the parent; only grounded EVA uses this correction.
+    if(m?.grounded !== undefined && dt>0) {
+      let desired=0;
+      if(m.grounded && bones.LeftFoot && bones.RightFoot) {
+        model.updateWorldMatrix(true,true);
+        let correction=-Infinity;
+        for(const key of ['LeftFoot','RightFoot'] as const) {
+          bones[key]!.b.getWorldPosition(footScratch);
+          correction=Math.max(correction,heightAt(footScratch.x,footScratch.z)+0.08-footScratch.y);
+        }
+        const scale=model.getWorldScale(footScratch).y || 1;
+        desired=THREE.MathUtils.clamp(s.ground+correction/scale,-0.22,0.24);
+      }
+      s.ground+=(desired-s.ground)*(1-Math.exp(-dt*18));
+      model.position.y=s.ground;
+    }
   });
 
   return (

@@ -164,6 +164,7 @@ function RockInstances({ geo, rocks, theme, seed }: { geo: THREE.BufferGeometry;
       m.setColorAt(i, c);
     });
     m.instanceMatrix.needsUpdate = true;
+    m.computeBoundingSphere();
     if (m.instanceColor) m.instanceColor.needsUpdate = true;
   }, [rocks, theme, seed]);
   const { normal } = groundTextures(theme);
@@ -200,6 +201,7 @@ export function Pebbles({ theme, count = 2600, radius = 260 }: { theme: Theme; c
       m.setColorAt(i, c);
     }
     m.instanceMatrix.needsUpdate = true;
+    m.computeBoundingSphere();
     if (m.instanceColor) m.instanceColor.needsUpdate = true;
   }, [theme, count, radius]);
   return (

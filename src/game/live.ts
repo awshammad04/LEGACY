@@ -11,6 +11,11 @@ interface LiveStore {
   buggyNear?: boolean;
   blocked?: 'slope' | 'battery' | null;
   moved: boolean;
+  /** Commit the current movement segment before interaction, save or leaving the scene. */
+  flushMovement?: () => void;
+  locomotion?: 'rover' | 'idle' | 'walk' | 'turn' | 'hop';
+  grounded?: boolean;
+  altitude?: number;
   /** Visual scan beam: site id + start time */
   scan?: { siteId: string; at: number };
   /** Touch / on-screen controls */

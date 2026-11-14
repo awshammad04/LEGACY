@@ -6,6 +6,7 @@ import { heightAt } from '../core/terrain';
 /** Live vehicle motion shared with models (signed speed in world units/s). */
 export interface VehicleMotion {
   v: number;
+  steer?: number;
 }
 
 const WHEEL = '#b9bec6';

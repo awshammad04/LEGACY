@@ -3,6 +3,7 @@ import type { Action, Lang, LearnCard, MissionId, MissionState, LText } from '..
 import { getMission } from '../content/missions';
 import { newSeed, replay, step } from '../core/reducer';
 import { applyDocumentLang, localize } from './i18n';
+import { useLive } from './live';
 
 /* ------------------------------------------------------------------ */
 /* Persistence (localStorage, versioned, failure-tolerant)             */
@@ -148,7 +149,7 @@ export const useGame = create<GameStore>((set, get) => ({
     set({ state, actions, saves: { ...get().saves, [missionId]: slot } });
   },
 
-  exitToHome: () => set({ view: 'home' }),
+  exitToHome: () => { useLive.getState().flushMovement?.(); set({ view: 'home' }); },
   setView: (view) => set({ view }),
 
   setSettings: (s) => {
