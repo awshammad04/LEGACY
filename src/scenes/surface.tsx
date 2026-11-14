@@ -11,6 +11,7 @@ import { isTestMode, useGame, useT, useUi } from '../game/store';
 import { sfx } from '../game/audio';
 import { RoverModel } from './models';
 import { groundTextures } from './terrainfx';
+import { softenTerrainColors, useKitMaterials } from '../legacy-visuals/MarsKit';
 
 const SEG = 240;
 
@@ -101,15 +102,22 @@ export function Terrain({ onPick, theme = 'mars' }: { onPick: (p: [number, numbe
     return g;
   }, [theme]);
   const ground = useMemo(() => groundTextures(theme), [theme]);
+  const kit = useKitMaterials();
+  const kitGeo = useMemo(() => (kit && theme === 'mars' ? softenTerrainColors(geo) : null), [kit, theme, geo]);
+  useEffect(() => () => kitGeo?.dispose(), [kitGeo]);
   const click = (e: ThreeEvent<MouseEvent>) => {
     if (e.delta > 6) return;
     e.stopPropagation();
     onPick([e.point.x, e.point.z]);
   };
   return (
-    <mesh geometry={geo} receiveShadow onClick={click}>
-      <meshStandardMaterial vertexColors map={ground.map} normalMap={ground.normal} normalScale={new THREE.Vector2(0.85, 0.85)} roughness={0.96} metalness={0} />
-    </mesh>
+    kit && kitGeo ? (
+      <mesh geometry={kitGeo} material={kit.ground} receiveShadow onClick={click} />
+    ) : (
+      <mesh geometry={geo} receiveShadow onClick={click}>
+        <meshStandardMaterial vertexColors map={ground.map} normalMap={ground.normal} normalScale={new THREE.Vector2(0.85, 0.85)} roughness={0.96} metalness={0} />
+      </mesh>
+    )
   );
 }
 

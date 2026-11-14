@@ -1,4 +1,4 @@
-import { Suspense, useEffect, useMemo, useRef } from 'react';
+import { Suspense, useEffect, useMemo, useRef, type ReactNode } from 'react';
 import * as THREE from 'three';
 import { useFrame, useThree } from '@react-three/fiber';
 import { Environment, Lightformer, OrbitControls } from '@react-three/drei';
@@ -18,6 +18,8 @@ import { ApolloDescentStage, OpportunityRover } from './nasaModels';
 import { CraterRim, DustMotes, Pebbles, VariedRocks } from './terrainfx';
 import { Astronaut, type AstroMotion } from './astronaut';
 import type { VehicleMotion } from './roverfx';
+import { kitVisualsEnabled } from '../legacy-visuals/flag';
+import { ContactShadow, MarsKitLighting, MarsKitMaterials } from '../legacy-visuals/MarsKit';
 import { Stars } from '@react-three/drei';
 import { tierOf } from '../core/evaluate';
 
@@ -269,7 +271,7 @@ function DrivableRover({ mission, rocks }: { mission: MissionDefinition; rocks: 
   const controls = useThree((s) => s.controls) as unknown as { target: THREE.Vector3 } | null;
   const { camera } = useThree();
   const up = useMemo(() => new THREE.Vector3(0, 1, 0), []);
-  const vehicleMotion = useRef<VehicleMotion>({ v: 0 });
+  const vehicleMotion = useRef<VehicleMotion>({ v: 0, x: state.ops.pos[0], z: state.ops.pos[1], h: state.ops.heading, steer: 0, paused: false, reset: 0 });
   const astroMotion = useRef<AstroMotion>({ pose: 'idle', speed: 0, lowGravity: true });
 
   const sim = useRef({
@@ -299,6 +301,8 @@ function DrivableRover({ mission, rocks }: { mission: MissionDefinition; rocks: 
       s.pending = { dist: 0, slope: 0, boost: 0, bumps: 0 };
       s.committed = [state.ops.pos[0], state.ops.pos[1]];
       s.initialized = false;
+      // Discontinuity (load, rewind, boarding): wheels must not spin through the jump
+      vehicleMotion.current.reset = (vehicleMotion.current.reset ?? 0) + 1;
     }
   }, [state.ops.pos, state.ops.heading]);
 
@@ -412,7 +416,13 @@ function DrivableRover({ mission, rocks }: { mission: MissionDefinition; rocks: 
     if (s.pending.dist > 0 && (now - s.lastCommit > 1100 || (s.v === 0 && now - s.lastCommit > 250))) commit();
 
     // Rover pose
-    vehicleMotion.current.v = s.v;
+    const vm = vehicleMotion.current;
+    vm.v = s.v;
+    vm.x = s.x;
+    vm.z = s.z;
+    vm.h = s.h;
+    vm.steer = steer;
+    vm.paused = paused;
     astroMotion.current.speed = Math.abs(s.v) / 3;
     astroMotion.current.pose = Math.abs(s.v) > 0.4 ? 'walk' : 'idle';
     if (g.current) {
@@ -511,7 +521,10 @@ function DrivableRover({ mission, rocks }: { mission: MissionDefinition; rocks: 
           <LrvModel crew motion={vehicleMotion} />
         )
       ) : (
-        <RoverModel mission={mission} design={state.design} scale={1.4} motion={vehicleMotion} />
+        <>
+          <RoverModel mission={mission} design={state.design} scale={1.4} motion={vehicleMotion} />
+          {kitVisualsEnabled() && mission.world?.theme !== 'moon' && <ContactShadow length={5.2} width={4.4} />}
+        </>
       )}
     </group>
     </>
@@ -559,9 +572,14 @@ export function ExploreScene() {
     }
   });
   const done = (site: ExploreSite) => site.observations.every((id) => state.evidence.observations.some((o) => o.id === id));
+  const kit = !moon && kitVisualsEnabled();
   return (
-    <>
+    <MaybeKitMaterials on={kit}>
       {moon ? <MoonSky /> : <MarsSky sun={sun} />}
+      {kit ? (
+        <MarsKitLighting storm={storm} lowQuality={quality !== 'high'} />
+      ) : (
+        <>
       {moon ? <fog attach="fog" args={['#000000', 500, 1400]} /> : <fog attach="fog" args={[storm ? '#9a6a48' : '#c9946b', storm ? 40 : 140, storm ? 260 : 700]} />}
       <hemisphereLight args={moon ? ['#cfd6e6', '#111111', 0.18] : ['#f0c9a0', '#3a2015', storm ? 0.35 : 0.55]} />
       <directionalLight
@@ -576,9 +594,11 @@ export function ExploreScene() {
         shadow-camera-bottom={-70}
         shadow-camera-far={600}
       />
+        </>
+      )}
       <primitive object={shadowTarget.current} />
       {/* Image-based light for metal and foil (procedural, no download) */}
-      <Environment resolution={64} frames={1}>
+      <Environment resolution={64} frames={1} environmentIntensity={kit ? 0.35 : 1}>
         <color attach="background" args={[moon ? '#050505' : '#b98560']} />
         <Lightformer form="rect" intensity={moon ? 3 : 2.2} color={moon ? '#ffffff' : '#ffe2c0'} position={[-6, 6, -4]} scale={[6, 3, 1]} />
         <Lightformer form="rect" intensity={moon ? 0.15 : 0.8} color={moon ? '#8a8a8a' : '#8a4a2a'} position={[0, -5, 0]} rotation={[Math.PI / 2, 0, 0]} scale={[20, 20, 1]} />
@@ -604,6 +624,10 @@ export function ExploreScene() {
       <ScanBeam mission={mission} />
       <DrivableRover mission={mission} rocks={rocks} />
       <OrbitControls makeDefault enablePan={false} minDistance={10} maxDistance={70} maxPolarAngle={Math.PI / 2.08} minPolarAngle={0.25} enableDamping dampingFactor={0.12} />
-    </>
+    </MaybeKitMaterials>
   );
+}
+
+function MaybeKitMaterials({ on, children }: { on: boolean; children: ReactNode }) {
+  return on ? <MarsKitMaterials>{children}</MarsKitMaterials> : <>{children}</>;
 }

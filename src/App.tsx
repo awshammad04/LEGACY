@@ -1,6 +1,6 @@
 import { Component, Suspense, useEffect, type ReactNode } from 'react';
-import { Canvas } from '@react-three/fiber';
-import { useGame } from './game/store';
+import { Canvas, useThree } from '@react-three/fiber';
+import { isTestMode, useGame } from './game/store';
 import { CruiseScene, HQScene, LaunchScene, MarsOrbitScene, ObserveScene, OrbitScene, WorkshopScene } from './scenes/scenes';
 import { SurfaceScene } from './scenes/surface';
 import { ExploreScene } from './scenes/explore';
@@ -32,6 +32,15 @@ class SceneBoundary extends Component<{ children: ReactNode; resetKey: string },
   render() {
     return this.state.failed ? null : this.props.children;
   }
+}
+
+/** Test mode only: lets end-to-end checks count scene lights and read the camera. */
+function TestHooks() {
+  const get = useThree((s) => s.get);
+  useEffect(() => {
+    (window as unknown as Record<string, unknown>).__legacyR3F = get;
+  }, [get]);
+  return null;
 }
 
 function SceneRouter() {
@@ -88,6 +97,7 @@ export function App() {
           camera={{ fov: 45, near: 0.1, far: 4000, position: [0, 0.3, 8.5] }}
           gl={{ antialias: quality === 'high', powerPreference: 'high-performance' }}
         >
+          {isTestMode() && <TestHooks />}
           <SceneBoundary resetKey={sceneKey}>
             <Suspense fallback={null}>
               <SceneRouter />

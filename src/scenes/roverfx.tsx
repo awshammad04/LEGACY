@@ -2,11 +2,27 @@ import { useMemo, useRef, type MutableRefObject } from 'react';
 import * as THREE from 'three';
 import { useFrame } from '@react-three/fiber';
 import { heightAt } from '../core/terrain';
+import { smoothSteering, steeringAngle, wheelTravel } from '../legacy-visuals/portable/wheel-motion.js';
+import { kitVisualsEnabled } from '../legacy-visuals/flag';
+import { isTestMode } from '../game/store';
 
 /** Live vehicle motion shared with models (signed speed in world units/s). */
 export interface VehicleMotion {
   v: number;
+  /** Read-only pose snapshot from the game's controller (world units; forward = (cos h, 0, -sin h)). */
+  x?: number;
+  z?: number;
+  h?: number;
+  /** Steering input, +1 = left (game convention). */
+  steer?: number;
+  paused?: boolean;
+  /** Incremented by the controller after any discontinuity (load, rewind, teleport). */
+  reset?: number;
 }
+
+/** Curvature limits in world units (this rover is larger than the reference one). */
+const MAX_CURVATURE = 0.5;
+const PARKED_CURVATURE = 0.3;
 
 const WHEEL = '#b9bec6';
 const HUB = '#3b3f46';
@@ -22,6 +38,9 @@ export function RockerBogie({ bodyL, bodyW, wheelR, size, motion }: { bodyL: num
   const sides = [-1, 1];
   const wheels = useRef<(THREE.Group | null)[]>([]);
   const spinners = useRef<(THREE.Group | null)[]>([]);
+  const steerers = useRef<(THREE.Group | null)[]>([]);
+  const kin = useRef({ init: false, x: 0, z: 0, h: 0, reset: -1, steer: new Float32Array(6), rollAcc: new Float32Array(6) });
+  const kitMotion = useMemo(() => kitVisualsEnabled(), []);
   const rockers = useRef<(THREE.Group | null)[]>([]);
   const st = useRef({ spin: 0, off: new Float32Array(6) });
   const tmp = useMemo(() => new THREE.Vector3(), []);
@@ -31,9 +50,53 @@ export function RockerBogie({ bodyL, bodyW, wheelR, size, motion }: { bodyL: num
     const dt = Math.min(dtRaw, 0.1);
     const s = st.current;
     const worldScale = root.current.getWorldScale(tmp).x || 1;
-    // Roll: arc length / radius (local units)
-    s.spin += ((motion.current.v * dt) / worldScale) / wheelR;
-    spinners.current.forEach((w) => w && (w.rotation.z = -s.spin));
+    const mv = motion.current;
+    if (kitMotion && mv.x !== undefined && mv.z !== undefined && mv.h !== undefined) {
+      // Kit kinematics: four corner wheels steer (rear counter-steers), middle axle straight,
+      // each wheel rolls by its own travel from the actual displacement and turning radius.
+      const k = kin.current;
+      const jump = Math.hypot(mv.x - k.x, mv.z - k.z) > 8;
+      if (!k.init || mv.reset !== k.reset || jump) {
+        k.init = true;
+        k.reset = mv.reset ?? 0;
+        k.x = mv.x;
+        k.z = mv.z;
+        k.h = mv.h;
+      } else if (!mv.paused) {
+        const dhGame = Math.atan2(Math.sin(mv.h - k.h), Math.cos(mv.h - k.h));
+        const mid = k.h + dhGame * 0.5;
+        const dist = Math.hypot(mv.x - k.x, mv.z - k.z);
+        // Signed travel along the body's forward axis (reverse is negative)
+        const ds = dist * Math.sign((mv.x - k.x) * Math.cos(mid) - (mv.z - k.z) * Math.sin(mid));
+        // Kit frame: x right, -z forward, heading positive to the right → negate the game's heading delta
+        const dh = -dhGame;
+        const raw = Math.abs(ds) > 1e-6 ? dh / ds : -(mv.steer ?? 0) * PARKED_CURVATURE;
+        const curvature = THREE.MathUtils.clamp(raw, -MAX_CURVATURE, MAX_CURVATURE);
+        sides.forEach((side, si) => {
+          const zLocal = side * (bodyW / 2 + 0.22);
+          wheelX.forEach((xLocal, wi) => {
+            const i = si * 3 + wi;
+            const kx = zLocal * worldScale; // right
+            const kz = -xLocal * worldScale; // forward is -z
+            k.steer[i] = smoothSteering(k.steer[i], steeringAngle(curvature, kx, kz), dt);
+            const st = steerers.current[i];
+            if (st) st.rotation.y = -k.steer[i];
+            const rolled = wheelTravel(ds, dh, kx, kz, k.steer[i]);
+            k.rollAcc[i] -= rolled / (wheelR * worldScale);
+            const sp = spinners.current[i];
+            if (sp) sp.rotation.z = THREE.MathUtils.euclideanModulo(sp.rotation.z - rolled / (wheelR * worldScale), Math.PI * 2);
+          });
+        });
+        k.x = mv.x;
+        k.z = mv.z;
+        k.h = mv.h;
+      }
+      if (isTestMode()) (window as unknown as Record<string, unknown>).__legacyWheels = { steer: Array.from(k.steer), roll: Array.from(k.rollAcc), resets: k.reset };
+    } else {
+      // Classic: roll every wheel by the vehicle speed
+      s.spin += ((mv.v * dt) / worldScale) / wheelR;
+      spinners.current.forEach((w) => w && (w.rotation.z = -s.spin));
+    }
     // Suspension: sample the terrain under each wheel in the rover's local frame
     root.current.updateWorldMatrix(true, false);
     const k = 1 - Math.exp(-dt * 12);
@@ -68,6 +131,7 @@ export function RockerBogie({ bodyL, bodyW, wheelR, size, motion }: { bodyL: num
         <group key={side} position={[0, wheelR, side * (bodyW / 2 + 0.22)]}>
           {wheelX.map((x, wi) => (
             <group key={wi} position={[x, 0, 0]} ref={(el) => (wheels.current[si * 3 + wi] = el)}>
+              <group ref={(el) => (steerers.current[si * 3 + wi] = el)}>
               <group ref={(el) => (spinners.current[si * 3 + wi] = el)}>
                 {/* Machined aluminium wheel with cleats (grousers) */}
                 <mesh rotation={[Math.PI / 2, 0, 0]} castShadow>
@@ -91,6 +155,7 @@ export function RockerBogie({ bodyL, bodyW, wheelR, size, motion }: { bodyL: num
                     <meshStandardMaterial color={HUB} metalness={0.6} roughness={0.4} />
                   </mesh>
                 ))}
+              </group>
               </group>
             </group>
           ))}

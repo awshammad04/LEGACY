@@ -4,6 +4,7 @@ import { useFrame, useThree } from '@react-three/fiber';
 import { mulberry32 } from '../core/rng';
 import { heightAt, TERRAIN_SIZE } from '../core/terrain';
 import type { Rock } from '../core/explore';
+import { useKitMaterials } from '../legacy-visuals/MarsKit';
 
 /* ------------------------------------------------------------------ */
 /* Planetary surface detail: varied rocks, pebbles, ground textures,    */
@@ -147,6 +148,8 @@ export function VariedRocks({ rocks, theme }: { rocks: Rock[]; theme: Theme }) {
 
 function RockInstances({ geo, rocks, theme, seed }: { geo: THREE.BufferGeometry; rocks: Rock[]; theme: Theme; seed: number }) {
   const ref = useRef<THREE.InstancedMesh>(null);
+  const kit = useKitMaterials();
+  const kitMat = kit && theme === 'mars' ? kit.rocks[seed % kit.rocks.length] : null;
   useEffect(() => {
     const m = ref.current;
     if (!m) return;
@@ -160,15 +163,19 @@ function RockInstances({ geo, rocks, theme, seed }: { geo: THREE.BufferGeometry;
       o.scale.set(r.s, r.s * r.sy, r.s * r.sz);
       o.updateMatrix();
       m.setMatrixAt(i, o.matrix);
-      c.set(pal[Math.floor(rnd() * pal.length)]).offsetHSL(0, (rnd() - 0.5) * 0.06, (rnd() - 0.5) * 0.06);
+      // Kit materials carry their own colour: keep only a gentle per-rock brightness variation
+      if (kitMat) c.setScalar(0.82 + rnd() * 0.3);
+      else c.set(pal[Math.floor(rnd() * pal.length)]).offsetHSL(0, (rnd() - 0.5) * 0.06, (rnd() - 0.5) * 0.06);
       m.setColorAt(i, c);
     });
     m.instanceMatrix.needsUpdate = true;
     if (m.instanceColor) m.instanceColor.needsUpdate = true;
-  }, [rocks, theme, seed]);
+  }, [rocks, theme, seed, kitMat]);
   const { normal } = groundTextures(theme);
-  return (
-    <instancedMesh ref={ref} args={[geo, undefined, rocks.length]} castShadow receiveShadow>
+  return kitMat ? (
+    <instancedMesh key="kit" ref={ref} args={[geo, kitMat, rocks.length]} castShadow receiveShadow />
+  ) : (
+    <instancedMesh key="classic" ref={ref} args={[geo, undefined, rocks.length]} castShadow receiveShadow>
       <meshStandardMaterial roughness={0.9} metalness={0.02} normalMap={normal} normalScale={new THREE.Vector2(0.6, 0.6)} flatShading={false} />
     </instancedMesh>
   );
