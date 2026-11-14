@@ -5,7 +5,7 @@ import { Environment, Lightformer, OrbitControls } from '@react-three/drei';
 import { TextSprite } from './TextSprite';
 import { getMission } from '../content/missions';
 import { computeMetrics } from '../core/evaluate';
-import { BOARD_RADIUS, batteryFloor, driveCost, hasBuggy, isObstacle, mobilityMetrics, rockField, roverTopSpeed, siteDistance, WORLD_LIMIT, type Rock } from '../core/explore';
+import { BOARD_RADIUS, DRIVE_SOLAR_SHARE, SOL_HOURS, batteryFloor, driveCost, netPerSol, hasBuggy, isObstacle, mobilityMetrics, rockField, roverTopSpeed, siteDistance, WORLD_LIMIT, type Rock } from '../core/explore';
 import { heightAt } from '../core/terrain';
 import type { ExploreSite, MissionDefinition } from '../core/types';
 import { useGame, useT, useUi } from '../game/store';
@@ -362,7 +362,9 @@ function DrivableRover({ mission, rocks }: { mission: MissionDefinition; rocks: 
 
     // Battery check (reducer battery minus energy not yet committed)
     const mob = mobilityMetrics(mission, m, st.ops);
-    const pendingWh = driveCost(mob, s.pending.dist, s.pending.dist ? s.pending.slope / s.pending.dist : 0, s.pending.dist ? s.pending.boost / s.pending.dist : 0).energyWh;
+    // Same net as the reducer will apply on commit: drive energy minus the solar charge credited while moving
+    const pc = driveCost(mob, s.pending.dist, s.pending.dist ? s.pending.slope / s.pending.dist : 0, s.pending.dist ? s.pending.boost / s.pending.dist : 0);
+    const pendingWh = mission.type === 'crewed' ? pc.energyWh : pc.energyWh - (netPerSol(m, st.ops) * pc.hours * DRIVE_SOLAR_SHARE) / SOL_HOURS;
     const empty = mission.type !== 'crewed' && st.ops.batteryWh - pendingWh <= batteryFloor(st.ops) + 1;
 
     const top = roverTopSpeed(mob, st.ops.wheelHealth) * (boost ? 1.5 : 1);

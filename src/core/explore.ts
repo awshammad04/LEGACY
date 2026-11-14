@@ -53,7 +53,14 @@ export function effectiveSpeedMPerH(m: DesignMetrics) {
  * Game-feel scale on driving energy (fictional): the open world compresses hours of real driving
  * into seconds, so without it the battery emptied in under a minute of play.
  */
-export const DRIVE_ENERGY_SCALE = 0.3;
+export const DRIVE_ENERGY_SCALE = 0.04;
+
+/**
+ * Share of the solar day's net charge credited while driving (fictional). Rovers drive at midday but
+ * spend most of their power on wheels and avionics, so the battery falls slowly on the move and
+ * recovers when parked (rest).
+ */
+export const DRIVE_SOLAR_SHARE = 0;
 
 /** Energy and game time for a driven stretch. */
 export function driveCost(m: DesignMetrics, dist: number, slopeAvg: number, boostFrac: number) {

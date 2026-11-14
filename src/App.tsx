@@ -17,6 +17,8 @@ import { CabinScene } from './scenes/cabin';
 import { MissionScreens } from './ui/MissionScreens';
 import { ArchiveScreen, ArchiveMemoryModal } from './ui/ArchiveScreen';
 import { CreditsScreen } from './ui/CreditsScreen';
+import { CinematicLaunch, type LaunchController } from './launch';
+import { useMission03Launch } from './launch/legacyHost';
 
 /** Keeps a 3D scene error from taking down the whole game; resets when the stage changes. */
 class SceneBoundary extends Component<{ children: ReactNode; resetKey: string }, { failed: boolean }> {
@@ -35,7 +37,7 @@ class SceneBoundary extends Component<{ children: ReactNode; resetKey: string },
   }
 }
 
-function SceneRouter() {
+function SceneRouter({ launch }: { launch: LaunchController | null }) {
   const view = useGame((s) => s.view);
   const stage = useGame((s) => s.state?.stage);
   const missionId = useGame((s) => s.missionId);
@@ -50,7 +52,8 @@ function SceneRouter() {
     case 'review':
       return <WorkshopScene />;
     case 'launch':
-      return <LaunchScene />;
+      // Mission 03: teammate's Pioneer 03 cinematic (starts only after the host authorised launch)
+      return missionId === 'm3-lost-rover' ? launch && <CinematicLaunch launch={launch} /> : <LaunchScene />;
     case 'orbit':
       return <OrbitScene />;
     case 'landingSite':
@@ -72,6 +75,7 @@ function SceneRouter() {
 }
 
 export function App() {
+  const launch = useMission03Launch();
   const view = useGame((s) => s.view);
   const quality = useGame((s) => s.settings.quality);
   const reduced = useGame((s) => s.settings.reducedMotion);
@@ -91,10 +95,10 @@ export function App() {
         >
           <SceneBoundary resetKey={sceneKey}>
             <Suspense fallback={null}>
-              <SceneRouter />
+              <SceneRouter launch={launch} />
             </Suspense>
           </SceneBoundary>
-          {quality === 'high' && (
+          {quality === 'high' && !launch && (
             <EffectComposer multisampling={4}>
               <Bloom intensity={0.55} luminanceThreshold={0.82} luminanceSmoothing={0.2} mipmapBlur />
               <Vignette offset={0.32} darkness={0.45} />
@@ -106,7 +110,7 @@ export function App() {
       <div className="overlay">
         {view !== 'home' && <TopBar />}
         {view === 'home' && <MenuScreen />}
-        {view === 'mission' && <MissionScreens />}
+        {view === 'mission' && <MissionScreens launch={launch} />}
         {view === 'archive' && <ArchiveScreen />}
         {view === 'credits' && <CreditsScreen />}
       </div>

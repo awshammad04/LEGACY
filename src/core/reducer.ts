@@ -6,7 +6,7 @@ import { observationAvailability, observationDataMb, observationPowerW, observat
 import { computeOutcome } from './outcome';
 import { PUZZLE_CLUES } from '../content/puzzle';
 import { round } from './rng';
-import { BOARD_RADIUS, DISCOVER_RADIUS, SOL_HOURS, batteryFloor, driveCost, hasBuggy, mobilityMetrics, netPerSol, siteDistance, stepOffPoint } from './explore';
+import { BOARD_RADIUS, DISCOVER_RADIUS, DRIVE_SOLAR_SHARE, SOL_HOURS, batteryFloor, driveCost, hasBuggy, mobilityMetrics, netPerSol, siteDistance, stepOffPoint } from './explore';
 import { OBS_VALUE } from './science';
 
 /**
@@ -503,7 +503,7 @@ export function step(mission: MissionDefinition, prev: MissionState, action: Act
         spendEva(mission, s, idx, cost.hours);
       } else {
       s.ops.sol += cost.hours / SOL_HOURS;
-      s.ops.batteryWh = Math.min(s.ops.batteryCapWh, s.ops.batteryWh - cost.energyWh + (netPerSol(metrics, s.ops) * cost.hours) / SOL_HOURS);
+      s.ops.batteryWh = Math.min(s.ops.batteryCapWh, s.ops.batteryWh - cost.energyWh + (netPerSol(metrics, s.ops) * cost.hours * DRIVE_SOLAR_SHARE) / SOL_HOURS);
       let forced = 0;
       while (s.ops.batteryWh < floor && forced < 10) {
         // Replays with a smaller battery: the rover must stop and recharge.

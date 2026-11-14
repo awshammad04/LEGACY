@@ -1,4 +1,6 @@
-import { useGame } from '../game/store';
+import { useGame, useT } from '../game/store';
+import { LaunchHud, type LaunchController } from '../launch';
+import { proceedFromLaunch } from '../launch/legacyHost';
 import { QuizScreen } from './screens/QuizScreen';
 import { BriefingScreen } from './screens/BriefingScreen';
 import { ReviewScreen, WorkshopScreen } from './screens/WorkshopScreen';
@@ -12,7 +14,9 @@ import { CruiseScreen } from './screens/CruiseScreen';
 import { ObserveScreen } from './screens/ObserveScreen';
 import { getMission } from '../content/missions';
 
-export function MissionScreens() {
+export function MissionScreens({ launch }: { launch: LaunchController | null }) {
+  const t = useT();
+  const subtitles = useGame((s) => s.settings.subtitles);
   const stage = useGame((s) => s.state?.stage);
   const missionId = useGame((s) => s.missionId);
   switch (stage) {
@@ -25,7 +29,7 @@ export function MissionScreens() {
     case 'review':
       return <ReviewScreen />;
     case 'launch':
-      return <LaunchScreen />;
+      return missionId === 'm3-lost-rover' ? launch && <LaunchHud launch={launch} subtitles={subtitles} translate={t} onRecover={proceedFromLaunch} /> : <LaunchScreen />;
     case 'orbit':
       return <OrbitScreen />;
     case 'landingSite':

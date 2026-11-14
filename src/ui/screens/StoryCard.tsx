@@ -125,7 +125,7 @@ function StoryCard({ story, onClose }: { story: Story; onClose: () => void }) {
       <div className="row" style={{ gap: 10, alignItems: 'center' }}>
         {!failed && (
           <button className="btn btn-sm btn-primary" onClick={toggle}>
-            {playing ? `⏸ ${t('Pause')}` : progress > 0 && progress < 1 ? `▶ ${t('Resume')}` : `▶ ${t('Listen')}`}
+            {playing ? `⏸ ${t('Pause')}` : progress > 0 && progress < 1 ? `▶ ${t('Resume listening')}` : `▶ ${t('Listen')}`}
           </button>
         )}
         <div className="story-bar" aria-hidden="true">

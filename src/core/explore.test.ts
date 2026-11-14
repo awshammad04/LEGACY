@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { M2 } from '../content/missions/m2';
-import { replay, whatIfDesign } from './reducer';
+import { replay, step, whatIfDesign } from './reducer';
 import { consequences } from './outcome';
 import { rockField, isObstacle } from './explore';
 import type { Action, Design } from './types';
@@ -120,7 +120,12 @@ describe('Open-world Mars (Mission 02)', () => {
     const stormy = replay(M2, 7, [...base, { type: 'EVENT_CHOICE', eventId: 'ev-dust', optionId: 'continue' }, { type: 'DRIVE', dist: 200, slopeAvg: 0, boostFrac: 0, bumps: 0, pos: [0, -200], heading: 0 }, { type: 'REST' }]);
     const clear = replay(M2, 7, [...base, { type: 'EVENT_CHOICE', eventId: 'ev-dust', optionId: 'wait' }, { type: 'DRIVE', dist: 200, slopeAvg: 0, boostFrac: 0, bumps: 0, pos: [0, -200], heading: 0 }, { type: 'REST' }]);
     expect(stormy.ops.dustUntil).toBeGreaterThan(stormy.ops.sol - 1);
-    expect(stormy.ops.batteryWh).toBeLessThan(clear.ops.batteryWh);
+    // From the same low battery, one rest recharges less while the storm lasts
+    const low = (st: typeof stormy) => ({ ...st, pendingEvent: undefined, ops: { ...st.ops, batteryWh: st.ops.batteryCapWh * 0.25 } });
+    const s2 = step(M2, low(stormy), { type: 'REST' }, 999);
+    const c2 = step(M2, low(clear), { type: 'REST' }, 999);
+    expect(stormy.ops.sol).toBeLessThan(stormy.ops.dustUntil);
+    expect(s2.ops.batteryWh).toBeLessThan(c2.ops.batteryWh);
   });
 
   it('debrief consequences explain the player\'s own choices', () => {
