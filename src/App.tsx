@@ -68,6 +68,7 @@ function SceneRouter({ launch }: { launch: LaunchController | null }) {
     case 'report':
       return <SurfaceScene focusRock />;
     case 'cruise':
+    case 'interior':
       return <CabinScene />;
     case 'observe':
       return <ObserveScene />;

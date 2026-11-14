@@ -1,6 +1,7 @@
 import ORIGINAL from '../content/stories.json';
 import MOMENTS from '../content/narration.json';
 import MANIFEST from '../content/story-recordings.json';
+import { INTERIORS, interiorStoryId } from '../content/interior';
 import type { Lang, LText, MissionId } from '../core/types';
 
 export interface Story {
@@ -12,7 +13,8 @@ export interface Story {
   sourceIds?: string[];
 }
 interface Recording { text: string; sha256: string; voice: string; model: string }
-export const STORIES: Story[] = [...ORIGINAL.stories, ...MOMENTS.stories];
+const interiorStories:Story[]=INTERIORS.flatMap(m=>m.topics.map(topic=>({siteId:interiorStoryId(m.missionId,topic.id),missionId:m.missionId,title:topic.title,en:topic.learn.en,ar:topic.learn.ar,sourceIds:[topic.sourceId]})));
+export const STORIES: Story[] = [...ORIGINAL.stories, ...MOMENTS.stories,...interiorStories];
 export const BY_STORY = new Map(STORIES.map(story => [story.siteId, story]));
 const recordings = MANIFEST.assets as Record<string, Recording>;
 export const isSiteStory = (id: string) => ORIGINAL.stories.some(story => story.siteId === id);

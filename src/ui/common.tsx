@@ -102,7 +102,7 @@ export function LearnCardModal() {
         <ProvenanceBadge p={card.provenance} />
       </div>
       <div className="stack" style={{ marginTop: 14 }}>
-        {rows.map(([k, v]) => (
+        {(card.compact?[rows[0],rows[3]]:rows).map(([k, v]) => (
           <div key={k} className="stack-sm">
             <h4 className="muted">{k}</h4>
             <p>{t(v)}</p>

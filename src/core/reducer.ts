@@ -8,6 +8,7 @@ import { PUZZLE_CLUES } from '../content/puzzle';
 import { round } from './rng';
 import { BOARD_RADIUS, DISCOVER_RADIUS, DRIVE_SOLAR_SHARE, SOL_HOURS, batteryFloor, driveCost, hasBuggy, mobilityMetrics, netPerSol, siteDistance, stepOffPoint } from './explore';
 import { OBS_VALUE } from './science';
+import { interiorFor } from '../content/interior';
 
 /**
  * GameState = reduce(initialState, actions). Pure and deterministic:
@@ -18,7 +19,8 @@ import { OBS_VALUE } from './science';
 const ALLOWED: Partial<Record<StageId, StageId[]>> = {
   briefing: ['workshop'],
   review: ['workshop'],
-  launch: ['orbit', 'opsPreview', 'observe'],
+  // Direct legacy handoffs remain replayable for version-1 saves and the What-If Machine.
+  launch: ['interior', 'orbit', 'opsPreview', 'observe'],
   orbit: ['landingSite', 'cruise', 'surface'],
   cruise: ['surface'],
   surface: ['evidence'],
@@ -196,6 +198,10 @@ export function step(mission: MissionDefinition, prev: MissionState, action: Act
       const ok = ALLOWED[s.stage]?.includes(action.to);
       if (!ok) return prev;
       if (s.stage === 'briefing' && !s.sciencePriority) return prev;
+      if (action.to === 'interior') {
+        if(!s.launched)return prev;
+        s.interior={index:0,answers:{},examined:[]};
+      }
       if (s.stage === 'surface' && (!s.ops.arrived || s.pendingEvent)) return prev;
       if (s.stage === 'evidence' && (s.evidence.observations.length === 0 || (s.evidence.alertShown && !s.evidence.alertChoice))) return prev;
       if (s.stage === 'cruise' && s.crew && s.crew.step < (mission.cruise?.length ?? 0)) return prev;
@@ -209,6 +215,40 @@ export function step(mission: MissionDefinition, prev: MissionState, action: Act
         log(s, idx, { kind: 'science', title: t('Science priority chosen'), detail: t('Main question: {h}', { h: h?.name ?? '' }) });
       }
       s.stage = action.to;
+      return s;
+    }
+    case 'INTERIOR_VIEW': {
+      if(s.stage!=='interior'||!s.interior||!['console','earth','destination'].includes(action.view)||s.interior.view===action.view)return prev;
+      s.interior.view=action.view;return s;
+    }
+    case 'INTERIOR_EXAMINE': {
+      if(s.stage!=='interior'||!s.interior||!interiorFor(mission.id).topics.some(t=>t.id===action.topicId))return prev;
+      if(s.interior.focus===action.topicId&&s.interior.examined.includes(action.topicId))return prev;
+      s.interior.focus=action.topicId;
+      if(!s.interior.examined.includes(action.topicId))s.interior.examined.push(action.topicId);
+      return s;
+    }
+    case 'INTERIOR_ANSWER': {
+      const topic=interiorFor(mission.id).topics[s.interior?.index??0];
+      if(s.stage!=='interior'||!s.interior||topic?.id!==action.topicId||s.interior.answers[topic.id]||!topic.options.some(o=>o.id===action.optionId))return prev;
+      s.interior.answers[topic.id]=action.optionId;
+      return s;
+    }
+    case 'INTERIOR_NEXT': {
+      const topics=interiorFor(mission.id).topics, i=s.interior;
+      if(s.stage!=='interior'||!i||!topics[i.index]||!i.answers[topics[i.index].id])return prev;
+      i.index++;
+      return s;
+    }
+    case 'FINISH_INTERIOR': {
+      const i=s.interior;
+      if(s.stage!=='interior'||!i||(!action.skip&&i.index<interiorFor(mission.id).topics.length))return prev;
+      i.finished=true;i.skipped=!!action.skip;
+      const next=mission.stages[mission.stages.indexOf('interior')+1];
+      if(next==='observe'){
+        s.scope={night:1,hoursLeft:mission.telescope?.hoursPerNight??6,pointed:false,images:[]};s.ops.sol=1;
+      }
+      s.stage=next;
       return s;
     }
     case 'SELECT_COMPONENT': {

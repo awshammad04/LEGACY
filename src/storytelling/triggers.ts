@@ -1,9 +1,11 @@
 import type { Action, MissionDefinition, MissionState } from '../core/types';
 import { missionStoryId } from './catalog';
+import { interiorStoryId } from '../content/interior';
 
 /** Only accepted gameplay changes generate narrative cues; no invented results or polling loop. */
 export function storyForChange(mission: MissionDefinition, before: MissionState, after: MissionState, action?: Action): string | undefined {
   if(before===after)return;
+  if(after.stage==='interior'&&(action?.type==='INTERIOR_ANSWER'||action?.type==='INTERIOR_EXAMINE'))return interiorStoryId(mission.id,action.topicId);
   if(after.stage==='debrief'&&before.stage!=='debrief')return missionStoryId(mission.id,'ending');
   if(after.stage==='launch'&&before.stage!=='launch'&&after.launched)return 'mission-launch';
   if(after.pendingEvent&&after.pendingEvent!==before.pendingEvent)return 'control-warning';

@@ -12,6 +12,7 @@ import { DebriefScreen, ResultsScreen } from './screens/DebriefScreens';
 import { OpsPreviewScreen } from './screens/OpsPreviewScreen';
 import { ExploreHud } from './screens/ExploreHud';
 import { CruiseScreen } from './screens/CruiseScreen';
+import { InteriorScreen } from './screens/InteriorScreen';
 import { ObserveScreen } from './screens/ObserveScreen';
 import { getMission } from '../content/missions';
 
@@ -53,6 +54,8 @@ export function MissionScreens({ launch }: { launch: LaunchController | null }) 
       return <OpsPreviewScreen />;
     case 'cruise':
       return <CruiseScreen />;
+    case 'interior':
+      return <InteriorScreen />;
     case 'observe':
       return <ObserveScreen />;
     default:

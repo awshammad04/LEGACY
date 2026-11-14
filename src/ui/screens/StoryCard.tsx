@@ -15,7 +15,7 @@ export function StoryCard() {
   const {story,lang,status,progress,muted,volume}=state;
   if(!story)return null;
   const site=isSiteStory(story.siteId);
-  return <aside className={`story-card panel fade-in ${site?'':'story-milestone'} ${stage==='surface'?'story-surface':''} ${stage==='launch'?'story-launch':''}`} aria-labelledby="story-title" dir={lang==='ar'?'rtl':'ltr'} data-story-id={story.siteId} data-playback={status}>
+  return <aside className={`story-card panel fade-in ${site?'':'story-milestone'} ${stage==='surface'?'story-surface':''} ${stage==='interior'?'story-interior':''} ${stage==='launch'?'story-launch':''}`} aria-labelledby="story-title" dir={lang==='ar'?'rtl':'ltr'} data-story-id={story.siteId} data-playback={status}>
     <div className="row between" style={{alignItems:'flex-start',gap:8}}>
       <div className="stack-sm" style={{gap:2}}>
         <span className="eyebrow">📖 {t(site?'Story of this place':'Mission story')}</span>

@@ -9,7 +9,7 @@ import { narration } from './player';
 import { storyForChange } from './triggers';
 
 type Game = ReturnType<typeof useGame.getState>;
-const context = (game: Game) => `${game.view}:${game.missionId??''}:${game.seed}:${game.state?.stage??''}`;
+const context = (game: Game) => `${game.view}:${game.missionId??''}:${game.seed}:${game.state?.stage??''}:${game.state?.stage==='interior'?game.state.interior?.index??0:''}`;
 const HEARD = 'legacy.v1.storiesHeard';
 const SEEN = 'legacy.v1.narrationSeen';
 const history = (key: string): string[] => {
@@ -33,6 +33,7 @@ export function StorytellingHost() {
       if(!story||game.view!=='mission'||!game.state||!game.missionId)return;
       const owner=storyMission(story);
       if(owner&&owner!==game.missionId)return;
+      if(id.includes('-interior-')&&game.state.stage!=='interior')return;
       const site=isSiteStory(id);
       if(site&&(game.state.stage!=='surface'||!getMission(game.missionId).sites?.some(s=>s.id===id)))return;
       const stamp=site?id:`${game.missionId}:${game.seed}:${id}`;

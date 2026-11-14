@@ -448,7 +448,7 @@ details summary { cursor: pointer; }
 .story-card { position: fixed; top: 300px; max-height: calc(100% - 365px); }
 .story-milestone { top: 68px; inset-inline-start: auto; inset-inline-end: 16px; width: 314px; min-height: 0; max-height: calc(100% - 92px); padding: 12px; gap: 8px; }
 /* Reserve space for narration in menu-like stages so it cannot obscure a question or control. */
-.app:has(.story-milestone:not(.story-launch):not(.story-surface)) .overlay > main { margin-inline-end: 330px; }
+.app:has(.story-milestone:not(.story-launch):not(.story-surface):not(.story-interior)) .overlay > main { margin-inline-end: 330px; }
 .story-surface { top: 300px; inset-inline-start: 16px; inset-inline-end: auto; width: min(380px,calc(100vw - 32px)); max-height: calc(100% - 365px); }
 .story-milestone .story-text { font-size: 13px; line-height: 1.5; }
 .story-options { font-size: 12px; }
@@ -458,8 +458,21 @@ details summary { cursor: pointer; }
 .story-volume input { width: 135px; }
 .story-launch { width: min(314px,calc(100vw - 32px)); max-height: calc(100% - 290px); }
 @media (max-width: 1000px) {
-  .app:has(.story-milestone:not(.story-launch):not(.story-surface)) .overlay > main { margin-inline-end: 0; margin-bottom: 248px; }
-  .story-milestone:not(.story-launch):not(.story-surface) { top: auto; bottom: 16px; inset-inline: 16px; width: auto; max-height: 232px; }
+  .app:has(.story-milestone:not(.story-launch):not(.story-surface):not(.story-interior)) .overlay > main { margin-inline-end: 0; margin-bottom: 248px; }
+  .story-milestone:not(.story-launch):not(.story-surface):not(.story-interior) { top: auto; bottom: 16px; inset-inline: 16px; width: auto; max-height: 232px; }
 }
 @media (max-width: 760px) { .story-card.story-surface, .story-card:not(.story-milestone) { top: auto; bottom: 90px; max-height: 45vh; } }
 .choice-card { max-width: 440px; display: flex; flex-direction: column; gap: 6px; }
+
+/* Shared post-launch cabin: keep the scene draggable between the information panels. */
+.cruise-hud { pointer-events: none !important; }
+.cruise-hud > * { pointer-events: auto; }
+.interior-context { position:absolute; top:8px; inset-inline-start:16px; width:320px; max-height:45%; overflow:auto; padding:14px; background:rgba(6,11,22,.82); }
+.interior-context h2 { font-size:19px; }
+.interior-question { left:auto; transform:none; inset-inline-start:16px; width:min(520px,calc(100vw - 32px)); max-height:51%; overflow:auto; }
+.story-interior { top:auto; bottom:16px; max-height:42%; }
+@media(max-width:900px) { .interior-context { width:270px; max-height:38%; } .interior-question { width:min(500px,calc(100vw - 32px)); max-height:48%; } .story-interior { top:68px; bottom:auto; max-height:38%; width:270px; } }
+@media(max-width:600px) { .interior-context { max-height:28%; width:calc(100% - 32px); } .interior-question { max-height:48%; } .story-interior { top:auto; bottom:16px; max-height:40%; width:calc(100% - 32px); } }
+
+.interior-views { position:absolute; top:8px; left:50%; transform:translateX(-20%); padding:6px; background:rgba(6,11,22,.75); max-width:calc(100% - 380px); }
+@media(max-width:900px) { .interior-views { top:39%; left:auto; inset-inline-end:16px; transform:none; max-width:55%; } }

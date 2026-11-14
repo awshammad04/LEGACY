@@ -425,6 +425,97 @@
       "seconds": 14.170958333333333,
       "model": "gemini-2.5-flash-preview-tts",
       "voice": "Charon"
+    },
+    "m2-interior-instruments-en": {
+      "text": "Images show context, while chemistry instruments test composition. Independent measurements help test possible explanations. A potential biosignature is not proof of ancient life.",
+      "sha256": "c4708e68046971c67dff2a7659ac1c0cb37d2256c0089a049c2ef23421aa2403",
+      "seconds": 12.8,
+      "model": "gemini-3.8-flash-lite-tts",
+      "voice": "Charon"
+    },
+    "m2-interior-instruments-ar": {
+      "text": "تُظهر الصور السياق، وتفحص الأجهزة الكيميائية التركيب. تساعد القياسات المستقلة على اختبار التفسيرات المحتملة. البصمة الحيوية المحتملة ليست دليلًا قاطعًا على حياة قديمة.",
+      "sha256": "cf4b6f10221a9df8e00c0af65e64b81a7a39bc9d77b0aaa86c6056bd1d1fc062",
+      "seconds": 16.92,
+      "model": "gemini-3.8-flash-lite-tts",
+      "voice": "Charon"
+    },
+    "m2-interior-power-en": {
+      "text": "A rover is a complete system. Instruments, power, thermal control, communication and landing capacity must fit together. Your launch review checks the simplified limits of the design you selected.",
+      "sha256": "99fb36ae09496d9d8fa13b17f545b3da5560fc334a209fca20ce9341a77680e9",
+      "seconds": 14.570958333333333,
+      "model": "gemini-2.5-flash-preview-tts",
+      "voice": "Charon"
+    },
+    "m2-interior-power-ar": {
+      "text": "المركبة الجوالة منظومة متكاملة. يجب أن تتوافق الأجهزة والطاقة والتحكم الحراري والاتصال وقدرة الهبوط. يفحص تقييم الإطلاق الحدود المبسطة للتصميم الذي اخترته.",
+      "sha256": "3e8a9500aa88a9572e64c35d918277ccf5d42162965137031614dde166d194e6",
+      "seconds": 15.490958333333333,
+      "model": "gemini-2.5-flash-preview-tts",
+      "voice": "Charon"
+    },
+    "m2-interior-data-en": {
+      "text": "A rover stores data before sending it to Earth. Storage and communication capacity are different limits. Prioritizing useful measurements helps scientists receive the evidence behind a report.",
+      "sha256": "b4a8e2a911244468cb1f781deb5a2f78baf70e3fff3988ff49dbfb4e7cb4dffa",
+      "seconds": 13.250958333333333,
+      "model": "gemini-2.5-flash-preview-tts",
+      "voice": "Charon"
+    },
+    "m2-interior-data-ar": {
+      "text": "تخزّن المركبة البيانات قبل إرسالها إلى الأرض. سعة التخزين وقدرة الاتصال حدّان مختلفان. يساعد ترتيب القياسات حسب أهميتها العلماء على استلام أدلة التقرير.",
+      "sha256": "64ff7214f4a5020b46a8e7670aa4ae8ef3e1fe83b0ad349879458f331758b754",
+      "seconds": 16.090958333333333,
+      "model": "gemini-2.5-flash-preview-tts",
+      "voice": "Charon"
+    },
+    "m3-interior-power-en": {
+      "text": "Dust in the Martian sky reduces sunlight reaching solar panels. A planet-wide storm ended Opportunity's mission in 2018. The game lets you compare how different power systems respond to this hazard.",
+      "sha256": "bef6f5e5002cd819542784ce9bcfa4d8d2a84e316658f304c9037239e6343005",
+      "seconds": 15.450958333333332,
+      "model": "gemini-2.5-flash-preview-tts",
+      "voice": "Charon"
+    },
+    "m3-interior-power-ar": {
+      "text": "يقلّل الغبار في سماء المريخ ضوء الشمس الذي يصل إلى الألواح. أنهت عاصفة شملت الكوكب مهمة أوبورتشونيتي عام 2018. تتيح اللعبة مقارنة استجابة مصادر طاقة مختلفة لهذا الخطر.",
+      "sha256": "7f901db817fdba3310e2c13c2a944e707e56341061df730e96cad6245ef98f1f",
+      "seconds": 18.49095833333333,
+      "model": "gemini-2.5-flash-preview-tts",
+      "voice": "Charon"
+    },
+    "m3-interior-instruments-en": {
+      "text": "Opportunity explored Mars for almost fifteen years instead of its planned ninety Martian days. Its images and instruments revealed a history of water. Documenting its final site preserves a scientific legacy without disturbing the hardware.",
+      "sha256": "a1ac36741bf544be0190c545030b561926585ac55dcc1993c35e7ff1c9fe0716",
+      "seconds": 16.730958333333334,
+      "model": "gemini-2.5-flash-preview-tts",
+      "voice": "Charon"
+    },
+    "m3-interior-instruments-ar": {
+      "text": "استكشفت أوبورتشونيتي المريخ قرابة خمسة عشر عامًا بدل تسعين يومًا مريخيًا. كشفت صورها وأجهزتها تاريخًا للماء. يحفظ توثيق موقعها الأخير إرثًا علميًا دون المساس بالمعدات.",
+      "sha256": "e02d64715cedc64069e1bc4e178a80e1864bc2267e5c14f2151f4f1084594174",
+      "seconds": 16.090958333333333,
+      "model": "gemini-2.5-flash-preview-tts",
+      "voice": "Charon"
+    },
+    "m3-interior-data-en": {
+      "text": "Photographs and remote measurements can document Opportunity and its surroundings without touching the rover. Preserve the hardware and tracks. A careful report separates observations from conclusions that the instruments cannot support.",
+      "sha256": "2a8a0540c243e8b7784c4dc611df44de3f382f6c8d8b5e58479946fdfa5e80ec",
+      "seconds": 14.770958333333333,
+      "model": "gemini-2.5-flash-preview-tts",
+      "voice": "Charon"
+    },
+    "m3-interior-data-ar": {
+      "text": "توثّق الصور والقياسات عن بُعد أوبورتشونيتي ومحيطها دون لمسها. احفظ المعدات والآثار. يفصل التقرير الدقيق الملاحظات عن الاستنتاجات التي لا تدعمها الأجهزة.",
+      "sha256": "f4dae89aaa9973b32b58294b2cc89c8b649788f47c56ca121d9f7dc309f4dbf5",
+      "seconds": 14.610958333333333,
+      "model": "gemini-2.5-flash-preview-tts",
+      "voice": "Charon"
+    },
+    "m4-interior-instruments-en": {
+      "text": "Repeated telescope measurements record brightness over time as a light curve. Different filters collect different parts of the light. This observatory stays near Earth in the game; viewing a distant galaxy does not mean traveling to it.",
+      "sha256": "c5290de782afd32800e4e9519febd7693c7426ba8fa4912bfabaa1030f3a6f8d",
+      "seconds": 16.76,
+      "model": "gemini-3.1-flash-tts-preview",
+      "voice": "Charon"
     }
   }
 }

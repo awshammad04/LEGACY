@@ -4,9 +4,13 @@ import { useFrame, useThree } from '@react-three/fiber';
 import { OrbitControls, Stars } from '@react-three/drei';
 import { getMission } from '../content/missions';
 import { useGame } from '../game/store';
-import { Earth } from './models';
+import { Earth, MarsGlobe } from './models';
 import { ProceduralMoon } from './scenes';
 import { Astronaut, type AstroPose } from './astronaut';
+import { interiorFor } from '../content/interior';
+import { examineInterior } from '../game/interior';
+import { computeMetrics } from '../core/evaluate';
+import type { DesignMetrics, Lang } from '../core/types';
 
 /* ------------------------------------------------------------------ */
 /* Inside the crew capsule on the way to the Moon (Mission 01 cruise).  */
@@ -219,7 +223,27 @@ function FloatingItems({ step }: { step: string }) {
   );
 }
 
-function CabinShell({ k, alert, night }: { k: number; alert: boolean; night: boolean }) {
+function drawTrainingConsole(ctx:CanvasRenderingContext2D,k:number,virtual:boolean,destination:string,lang:Lang,metrics:DesignMetrics) {
+  const ar=lang==='ar',w=ctx.canvas.width/3;
+  ctx.fillStyle='#05090f';ctx.fillRect(0,0,ctx.canvas.width,ctx.canvas.height);
+  ctx.direction=ar?'rtl':'ltr';ctx.textAlign=ar?'right':'left';
+  const panels=ar?[
+    ['تدريب افتراضي',destination==='mars'?'الهدف: المريخ':destination==='moon'?'الهدف: القمر':'الهدف: مدار الأرض',`${Math.round(k*100)}%`],
+    [virtual?'أنظمة آلية':'أنظمة المركبة',virtual?'لا رواد على المتن':'تدريب مقصورة الطاقم',`الطاقة: ${Math.round(metrics.generationWhPerSol)} Wh/${destination==='mars'?'sol':'day'}`],
+    ['المعدات المختارة',`التخزين: ${metrics.storageMb} MB`,'نموذج توضيحي للتعلّم'],
+  ]:[
+    ['ORIENTATION',destination==='mars'?'MARS':destination==='moon'?'MOON':'EARTH ORBIT',`${Math.round(k*100)}% REVIEWED`],
+    [virtual?'ROBOTIC SYSTEMS':'SPACECRAFT SYSTEMS',virtual?'NO CREW ABOARD':'CABIN TRAINING',`ENERGY: ${Math.round(metrics.generationWhPerSol)} Wh/${destination==='mars'?'sol':'day'}`],
+    ['SELECTED EQUIPMENT',`STORAGE: ${metrics.storageMb} MB`,'ILLUSTRATIVE TRAINING'],
+  ];
+  panels.forEach((lines,i)=>{
+    ctx.strokeStyle='#2f7fb8';ctx.lineWidth=3;ctx.strokeRect(i*w+8,8,w-16,ctx.canvas.height-16);
+    lines.forEach((line,row)=>{ctx.fillStyle=row===0?'#8fd3ff':'#c2e6d2';ctx.font=`${row===0?'bold ':''}22px "IBM Plex Sans Arabic", monospace`;ctx.fillText(line,i*w+(ar?w-22:22),50+row*82,w-44);});
+  });
+}
+
+function CabinShell({ k, alert, night, training=false, virtual=false }: { k: number; alert: boolean; night: boolean; training?:boolean;virtual?:boolean }) {
+  const missionId=useGame(s=>s.missionId)!,design=useGame(s=>s.state!.design),lang=useGame(s=>s.settings.lang);
   const textures = useMemo(() => Array.from({ length: 6 }, (_, i) => lockerTexture(i * 7 + 3)), []);
   useEffect(() => () => textures.forEach((t) => t.dispose()), [textures]);
   const panelGeo = useMemo(() => {
@@ -238,9 +262,12 @@ function CabinShell({ k, alert, night }: { k: number; alert: boolean; night: boo
     return t;
   }, [consoleCanvas]);
   useEffect(() => {
-    drawConsole(consoleCanvas.getContext('2d')!, k, alert);
+    const ctx=consoleCanvas.getContext('2d')!;
+    if(training)drawTrainingConsole(ctx,k,virtual,interiorFor(missionId).destination,lang,computeMetrics(getMission(missionId),design));
+    else drawConsole(ctx, k, alert);
     consoleTex.needsUpdate = true;
-  }, [k, alert, consoleCanvas, consoleTex]);
+  }, [k, alert, consoleCanvas, consoleTex,training,virtual,missionId,design,lang]);
+  useEffect(()=>()=>panelGeo.dispose(),[panelGeo]);
   useEffect(() => () => consoleTex.dispose(), [consoleTex]);
 
   const panels: ReactElement[] = [];
@@ -347,6 +374,7 @@ function CabinShell({ k, alert, night }: { k: number; alert: boolean; night: boo
         <meshStandardMaterial color="#8d9196" metalness={0.5} roughness={0.4} />
       </mesh>
       {/* Exercise flywheel device and crew seats near the floor */}
+      {!virtual&&<>
       <mesh position={[1.25, -H / 2 + 0.2, -1.25]} castShadow>
         <boxGeometry args={[0.55, 0.4, 0.45]} />
         <meshStandardMaterial color="#3b4048" metalness={0.5} roughness={0.45} />
@@ -370,6 +398,11 @@ function CabinShell({ k, alert, night }: { k: number; alert: boolean; night: boo
         <meshStandardMaterial color="#c5c8cc" metalness={0.3} roughness={0.4} />
       </mesh>
       {/* Ceiling LED strips (emissive) + matching lights */}
+      </>}
+      {virtual&&[-1,1].map((side)=><group key={side} position={[side*1.6,-0.8,-0.9]}>
+        <mesh castShadow><boxGeometry args={[0.6,1.1,0.65]} /><meshStandardMaterial color="#46505c" metalness={0.55} roughness={0.4} /></mesh>
+        {[-0.3,0,0.3].map(y=><mesh key={y} position={[0,y,0.34]}><boxGeometry args={[0.48,0.08,0.02]} /><meshStandardMaterial color="#939eaa" metalness={0.6} roughness={0.4} /></mesh>)}
+      </group>)}
       {[0, 1, 2, 3].map((i) => {
         const a = (i / 4) * Math.PI * 2 + Math.PI / 4;
         return (
@@ -387,12 +420,12 @@ function CabinShell({ k, alert, night }: { k: number; alert: boolean; night: boo
 }
 
 /** Earth and Moon seen through the windows; the Moon grows as the day goes on. */
-function OutsideView({ k }: { k: number }) {
+function OutsideView({ k, destination='moon',training=false }: { k: number; destination?:'moon'|'mars'|'orbit';training?:boolean }) {
   const moon = useRef<THREE.Group>(null);
   const earth = useRef<THREE.Group>(null);
   useFrame((_, dt) => {
-    if (moon.current) moon.current.scale.setScalar(THREE.MathUtils.lerp(moon.current.scale.x, 0.7 + k * 2.4, Math.min(1, dt * 1.2)));
-    if (earth.current) earth.current.scale.setScalar(THREE.MathUtils.lerp(earth.current.scale.x, 2.2 - k * 1.3, Math.min(1, dt * 1.2)));
+    if (moon.current) moon.current.scale.setScalar(THREE.MathUtils.lerp(moon.current.scale.x, training?1.6:0.7+k*2.4, Math.min(1, dt * 1.2)));
+    if (earth.current) earth.current.scale.setScalar(THREE.MathUtils.lerp(earth.current.scale.x, training?2.2:2.2-k*1.3, Math.min(1, dt * 1.2)));
   });
   // Place Moon and Earth on the line from the default viewpoint through a window, so they are framed by it.
   const cam = new THREE.Vector3(0.15, 0.25, 2.1);
@@ -401,19 +434,20 @@ function OutsideView({ k }: { k: number }) {
     return new THREE.Vector3(Math.sin(a) * R, -H / 2 + (row + 0.5) * (H / ROWS), -Math.cos(a) * R);
   };
   const along = (p: THREE.Vector3, d: number) => cam.clone().add(p.clone().sub(cam).normalize().multiplyScalar(d));
-  const moonPos = along(windowCenter(2.6, 1), 45);
-  const earthPos = along(windowCenter(2.1, 2), 70);
+  const moonPos = along(windowCenter(training?3:2.6, 1), 45);
+  const earthPos = along(windowCenter(training?2:2.1, 2), 70);
   const dir = windowCenter(2.5, 1.5).normalize();
   return (
     <>
-      <group ref={moon} position={moonPos}>
-        <ProceduralMoon radius={2} />
+      <group ref={moon} position={moonPos} scale={training?1.6:1}>
+        {destination==='moon'?<ProceduralMoon radius={2} />:destination==='mars'?<MarsGlobe radius={2} spin={0.01} />:<mesh><sphereGeometry args={[0.09,16,16]} /><meshBasicMaterial color="#d0e6ff" toneMapped={false} /></mesh>}
       </group>
-      <group ref={earth} position={earthPos}>
+      <group ref={earth} position={earthPos} scale={training?2.2:1}>
         <Earth radius={2.4} spin={0.02} />
       </group>
       {/* Sunlight streaming in through the windows */}
       <directionalLight position={dir.clone().multiplyScalar(10).add(new THREE.Vector3(0, 3, 0))} intensity={2.2} color="#fff1dc" />
+      {training&&<directionalLight position={[0,5,15]} intensity={1} color="#e2ecff" />}
     </>
   );
 }
@@ -422,9 +456,11 @@ export function CabinScene() {
   const stepIdx = useGame((s) => s.state?.crew?.step ?? 0);
   const missionId = useGame((s) => s.missionId);
   const reduced = useGame((s) => s.settings.reducedMotion);
+  const interior=useGame(s=>s.state?.interior),training=useGame(s=>s.state?.stage==='interior');
+  const virtual=training&&!!missionId&&getMission(missionId).type!=='crewed';
   const steps = missionId ? getMission(missionId).cruise ?? [] : [];
-  const stepId = steps[stepIdx]?.id ?? 'done';
-  const k = Math.min(1, stepIdx / Math.max(1, steps.length));
+  const stepId = training?'checkin':steps[stepIdx]?.id ?? 'done';
+  const k = training?Math.min(1,(interior?.index??0)/3):Math.min(1, stepIdx / Math.max(1, steps.length));
   const alert = stepId === 'flare';
   const night = stepId === 'sleep';
   const blocking = BLOCKING[stepId] ?? BLOCKING.done;
@@ -433,23 +469,39 @@ export function CabinScene() {
       <color attach="background" args={['#000000']} />
       <Stars radius={140} depth={60} count={4000} factor={4} saturation={0} fade speed={0.2} />
       <hemisphereLight args={[alert ? '#ff9a8a' : night ? '#6f86ff' : '#e9eef5', '#3a3f46', alert ? 0.35 : night ? 0.18 : 0.55]} />
-      <CabinShell k={k} alert={alert} night={night} />
+      <CabinShell k={k} alert={alert} night={night} training={training} virtual={virtual} />
       <Suspense fallback={null}>
-        <OutsideView k={k} />
+        <OutsideView k={k} training={training} destination={training&&missionId?interiorFor(missionId).destination:'moon'} />
       </Suspense>
       <Suspense fallback={null}>
-        {blocking.map((spot, i) => (
+        {!virtual&&blocking.map((spot, i) => (
           <CrewMember key={i} idx={i} spot={spot} />
         ))}
       </Suspense>
-      <FloatingItems step={stepId} />
-      <CabinCamera reduced={reduced} />
+      {!virtual&&<FloatingItems step={stepId} />}
+      {training&&missionId&&<CabinHotspots missionId={missionId} />}
+      <CabinCamera reduced={reduced} view={training?interior?.view:undefined} />
     </>
   );
 }
 
+function CabinHotspots({missionId}:{missionId:Parameters<typeof interiorFor>[0]}) {
+  const labels=useMemo(()=>[1,2,3].map(n=>{
+    const canvas=document.createElement('canvas');canvas.width=canvas.height=64;
+    const ctx=canvas.getContext('2d')!;ctx.fillStyle='#0e273c';ctx.beginPath();ctx.arc(32,32,30,0,Math.PI*2);ctx.fill();
+    ctx.fillStyle='#5ad1ff';ctx.font='bold 42px sans-serif';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText(String(n),32,34);
+    const texture=new THREE.CanvasTexture(canvas);texture.colorSpace=THREE.SRGBColorSpace;return texture;
+  }),[]);
+  useEffect(()=>()=>labels.forEach(texture=>texture.dispose()),[labels]);
+  const points:[[number,number,number],[number,number,number],[number,number,number]]=[[0,0.1,-2.35],[-1.8,0,-0.45],[1.65,0,-0.45]];
+  return <group>{interiorFor(missionId).topics.map((topic,i)=><group key={topic.id} position={points[i]} onClick={e=>{e.stopPropagation();examineInterior(topic.id);}}>
+    <mesh><torusGeometry args={[0.13,0.018,8,24]} /><meshStandardMaterial color="#5ad1ff" emissive="#2aa8e0" emissiveIntensity={2} /></mesh>
+    <mesh position={[0,0,0.01]}><circleGeometry args={[0.12,24]} /><meshBasicMaterial map={labels[i]} toneMapped={false} /></mesh>
+  </group>)}</group>;
+}
+
 /** Look around inside the cabin (drag); the view gently floats like a camera held in microgravity. */
-function CabinCamera({ reduced }: { reduced: boolean }) {
+function CabinCamera({ reduced,view }: { reduced: boolean; view?:'console'|'earth'|'destination' }) {
   const camera = useThree((st) => st.camera) as THREE.PerspectiveCamera;
   const controls = useThree((st) => st.controls) as unknown as { target: THREE.Vector3 } | null;
   useEffect(() => {
@@ -463,10 +515,18 @@ function CabinCamera({ reduced }: { reduced: boolean }) {
       camera.updateProjectionMatrix();
     };
   }, [camera]);
+  useEffect(()=>{
+    if(!view||!controls)return;
+    camera.position.set(0.15,0.25,2.1);
+    const col=view==='earth'?2:3,a=angleOf(col);
+    controls.target.set(view==='console'?0:Math.sin(a)*R,view==='earth'?0.375:view==='destination'?-0.375:0.05,view==='console'?-0.6:-Math.cos(a)*R);
+    camera.lookAt(controls.target);
+  },[camera,controls,view]);
   useFrame(({ clock }) => {
     if (reduced || !controls) return;
     const t = clock.elapsedTime;
-    controls.target.set(Math.sin(t * 0.13) * 0.05, 0.05 + Math.sin(t * 0.17) * 0.04, -0.6);
+    const col=view==='earth'?2:3,a=angleOf(col),windowView=view==='earth'||view==='destination';
+    controls.target.set((windowView?Math.sin(a)*R:0)+Math.sin(t*0.13)*0.05,(view==='earth'?0.375:view==='destination'?-0.375:0.05)+Math.sin(t*0.17)*0.04,windowView?-Math.cos(a)*R:-0.6);
     camera.up.set(Math.sin(t * 0.11) * 0.03, 1, 0).normalize();
   });
   return (

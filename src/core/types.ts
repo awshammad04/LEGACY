@@ -28,6 +28,7 @@ export interface Source {
 }
 
 export interface LearnCard {
+  compact?: boolean;
   id: string;
   name: LText;
   what: LText;
@@ -185,6 +186,7 @@ export type StageId =
   | 'workshop'
   | 'review'
   | 'launch'
+  | 'interior'
   | 'orbit'
   | 'landingSite'
   | 'surface'
@@ -437,6 +439,8 @@ export interface MissionState {
   reviewAttempts: number;
   failedReviews: number;
   launched: boolean;
+  /** Optional post-launch orientation; independent of assessed quizzes and crew-health decisions. */
+  interior?: { index:number; answers:Record<string,string>; examined:string[]; focus?:string; view?:'console'|'earth'|'destination'; skipped?:boolean; finished?:boolean };
   orbit: { matched: string[]; mistakes: number; explored: string[] };
   landingSite?: string;
   ops: OpsState;
@@ -466,6 +470,11 @@ export type Action =
   | { type: 'TOGGLE_ADDON'; optionId: string }
   | { type: 'REQUEST_REVIEW' }
   | { type: 'CONFIRM_LAUNCH' }
+  | { type: 'INTERIOR_EXAMINE'; topicId:string }
+  | { type: 'INTERIOR_VIEW'; view:'console'|'earth'|'destination' }
+  | { type: 'INTERIOR_ANSWER'; topicId:string; optionId:string }
+  | { type: 'INTERIOR_NEXT' }
+  | { type: 'FINISH_INTERIOR'; skip?:boolean }
   | { type: 'EXPLORE'; cardId: string }
   | { type: 'PUZZLE_MATCH'; clueId: string; missionKey: string }
   | { type: 'CHOOSE_LANDING_SITE'; siteId: string }

@@ -9,6 +9,7 @@ const STAGE_LABEL: Partial<Record<StageId, string>> = {
   workshop: 'Build',
   review: 'Review',
   launch: 'Launch',
+  interior: 'Interior',
   orbit: 'Orbit',
   landingSite: 'Landing',
   surface: 'Surface',

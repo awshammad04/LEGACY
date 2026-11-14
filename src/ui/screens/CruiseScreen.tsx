@@ -3,7 +3,7 @@ import { getMission } from '../../content/missions';
 import { useGame, useT } from '../../game/store';
 import { say, sfx } from '../../game/audio';
 import { CrewPanel, StatusChip } from '../CrewPanel';
-import { BestChoiceNote } from './ExploreHud';
+import { ChoiceCard } from '../ChoiceCard';
 
 /** A short, live "day aboard" on the way to the Moon: five quick choices that change crew health. */
 export function CruiseScreen() {
@@ -58,8 +58,6 @@ export function CruiseScreen() {
     return () => window.removeEventListener('keydown', onKey);
   });
 
-  const pickedOpt = step?.options.find((o) => o.id === picked);
-  const bestOpt = step ? step.options.find((o) => o.id === (step.best ?? step.options[0].id)) : undefined;
 
   return (
     <main className="stage-body cruise-hud" id="main">
@@ -87,30 +85,7 @@ export function CruiseScreen() {
             <span className="eyebrow">
               {t(step.time)} · {t('Mission Control')}
             </span>
-            <h3 id="step-t" style={{ fontSize: 20 }}>
-              {t(step.title)}
-            </h3>
-            <p>{t(step.prompt)}</p>
-            {pickedOpt && bestOpt ? (
-              <div className="stack-sm">
-                <div className={`feed-item ${pickedOpt.unsafe ? 'bad' : ''}`} role="status">
-                  {t(pickedOpt.result)}
-                </div>
-                <BestChoiceNote best={pickedOpt.id === bestOpt.id} label={t(bestOpt.label)} why={t(step.learn)} />
-                <button className="btn btn-primary" onClick={next} autoFocus>
-                  {t('Continue')} →
-                </button>
-              </div>
-            ) : (
-              <div className="stack-sm">
-                {step.options.map((o, i) => (
-                  <button key={o.id} className="action-row" onClick={() => choose(o.id)}>
-                    <span className="key">{i + 1}</span>
-                    <span className="grow">{t(o.label)}</span>
-                  </button>
-                ))}
-              </div>
-            )}
+            <ChoiceCard step={step} picked={picked} onChoose={choose} onContinue={next} />
           </div>
         ) : (
           <div className="panel panel-pad stack fade-in" style={{ textAlign: 'center' }}>

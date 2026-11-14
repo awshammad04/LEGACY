@@ -1,0 +1,532 @@
+{
+  "missions": [
+    {
+      "missionId": "m2-martian-mystery",
+      "destination": "mars",
+      "topics": [
+        {
+          "id": "instruments",
+          "title": {
+            "en": "Science instruments",
+            "ar": "الأجهزة العلمية"
+          },
+          "prompt": {
+            "en": "A camera finds unusual spots in a Jezero rock. What should the rover do next?",
+            "ar": "ترصد الكاميرا بقعًا غير مألوفة في صخرة بجيزيرو. ما الخطوة التالية؟"
+          },
+          "learn": {
+            "en": "Images show context, while chemistry instruments test composition. Independent measurements help test possible explanations. A potential biosignature is not proof of ancient life.",
+            "ar": "تُظهر الصور السياق، وتفحص الأجهزة الكيميائية التركيب. تساعد القياسات المستقلة على اختبار التفسيرات المحتملة. البصمة الحيوية المحتملة ليست دليلًا قاطعًا على حياة قديمة."
+          },
+          "sourceId": "nasa-biosignature-2025",
+          "options": [
+            {
+              "id": "best",
+              "label": {
+                "en": "Compare images with chemical measurements",
+                "ar": "قارن الصور بالقياسات الكيميائية"
+              },
+              "result": {
+                "en": "Good reasoning: independent instruments can test the explanation.",
+                "ar": "استدلال جيد: تستطيع الأجهزة المستقلة اختبار التفسير."
+              },
+              "effects": {}
+            },
+            {
+              "id": "other",
+              "label": {
+                "en": "Announce that the spots prove life",
+                "ar": "أعلن أن البقع تثبت وجود حياة"
+              },
+              "result": {
+                "en": "The appearance alone cannot prove life. More evidence is needed.",
+                "ar": "لا يثبت المظهر وحده وجود حياة. نحتاج إلى مزيد من الأدلة."
+              },
+              "effects": {}
+            }
+          ]
+        },
+        {
+          "id": "power",
+          "title": {
+            "en": "Power and protection",
+            "ar": "الطاقة والحماية"
+          },
+          "prompt": {
+            "en": "An added instrument needs power and mass. Which design check matters?",
+            "ar": "يحتاج جهاز إضافي إلى طاقة ويزيد الكتلة. أي فحص مهم؟"
+          },
+          "learn": {
+            "en": "A rover is a complete system. Instruments, power, thermal control, communication and landing capacity must fit together. Your launch review checks the simplified limits of the design you selected.",
+            "ar": "المركبة الجوالة منظومة متكاملة. يجب أن تتوافق الأجهزة والطاقة والتحكم الحراري والاتصال وقدرة الهبوط. يفحص تقييم الإطلاق الحدود المبسطة للتصميم الذي اخترته."
+          },
+          "sourceId": "legacy-game-model",
+          "options": [
+            {
+              "id": "best",
+              "label": {
+                "en": "Check the complete spacecraft design",
+                "ar": "افحص تصميم المركبة كاملًا"
+              },
+              "result": {
+                "en": "Yes. The whole system must stay within its limits.",
+                "ar": "صحيح. يجب أن تبقى المنظومة كلها ضمن حدودها."
+              },
+              "effects": {}
+            },
+            {
+              "id": "other",
+              "label": {
+                "en": "Check only the camera resolution",
+                "ar": "افحص دقة الكاميرا فقط"
+              },
+              "result": {
+                "en": "Resolution cannot tell you whether power and mass limits are met.",
+                "ar": "لا تخبرك الدقة إن كانت حدود الطاقة والكتلة متحققة."
+              },
+              "effects": {}
+            }
+          ]
+        },
+        {
+          "id": "data",
+          "title": {
+            "en": "Data and the Earth link",
+            "ar": "البيانات والاتصال بالأرض"
+          },
+          "prompt": {
+            "en": "You collected more measurements than fit in one transmission. What helps?",
+            "ar": "جمعت قياسات أكثر مما تتسع له رسالة واحدة. ما الذي يساعد؟"
+          },
+          "learn": {
+            "en": "A rover stores data before sending it to Earth. Storage and communication capacity are different limits. Prioritizing useful measurements helps scientists receive the evidence behind a report.",
+            "ar": "تخزّن المركبة البيانات قبل إرسالها إلى الأرض. سعة التخزين وقدرة الاتصال حدّان مختلفان. يساعد ترتيب القياسات حسب أهميتها العلماء على استلام أدلة التقرير."
+          },
+          "sourceId": "nasa-perseverance-instruments",
+          "options": [
+            {
+              "id": "best",
+              "label": {
+                "en": "Prioritize evidence and plan the downlink",
+                "ar": "رتّب الأدلة وخطّط للإرسال"
+              },
+              "result": {
+                "en": "Yes. Reports need the supporting measurements to reach Earth.",
+                "ar": "صحيح. تحتاج التقارير إلى وصول القياسات الداعمة إلى الأرض."
+              },
+              "effects": {}
+            },
+            {
+              "id": "other",
+              "label": {
+                "en": "Assume every stored image is already on Earth",
+                "ar": "افترض أن كل صورة مخزنة وصلت إلى الأرض"
+              },
+              "result": {
+                "en": "Stored data has not necessarily been transmitted.",
+                "ar": "لم تُرسل البيانات بالضرورة لمجرد تخزينها."
+              },
+              "effects": {}
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "missionId": "m3-lost-rover",
+      "destination": "mars",
+      "topics": [
+        {
+          "id": "power",
+          "title": {
+            "en": "Solar energy and dust",
+            "ar": "الطاقة الشمسية والغبار"
+          },
+          "prompt": {
+            "en": "A dust storm dims the sunlight. What happens to a solar-powered rover?",
+            "ar": "تُضعف عاصفة غبارية ضوء الشمس. ماذا يحدث لمركبة تعمل بالطاقة الشمسية؟"
+          },
+          "learn": {
+            "en": "Dust in the Martian sky reduces sunlight reaching solar panels. A planet-wide storm ended Opportunity's mission in 2018. The game lets you compare how different power systems respond to this hazard.",
+            "ar": "يقلّل الغبار في سماء المريخ ضوء الشمس الذي يصل إلى الألواح. أنهت عاصفة شملت الكوكب مهمة أوبورتشونيتي عام 2018. تتيح اللعبة مقارنة استجابة مصادر طاقة مختلفة لهذا الخطر."
+          },
+          "sourceId": "nasa-opportunity-end",
+          "options": [
+            {
+              "id": "best",
+              "label": {
+                "en": "Solar generation falls; protect the energy reserve",
+                "ar": "ينخفض توليد الطاقة؛ احمِ الاحتياطي"
+              },
+              "result": {
+                "en": "Correct. A reduced schedule can protect the battery.",
+                "ar": "صحيح. قد يحمي تقليل العمل البطارية."
+              },
+              "effects": {}
+            },
+            {
+              "id": "other",
+              "label": {
+                "en": "Solar power increases because dust is warm",
+                "ar": "تزداد الطاقة الشمسية لأن الغبار دافئ"
+              },
+              "result": {
+                "en": "Solar panels need light; warm dust does not replace sunlight.",
+                "ar": "تحتاج الألواح إلى الضوء؛ ولا يعوّض الغبار الدافئ ضوء الشمس."
+              },
+              "effects": {}
+            }
+          ]
+        },
+        {
+          "id": "instruments",
+          "title": {
+            "en": "Opportunity's long journey",
+            "ar": "رحلة أوبورتشونيتي الطويلة"
+          },
+          "prompt": {
+            "en": "Opportunity was planned for about ninety Martian days. How long did it explore?",
+            "ar": "خُطّط لأوبورتشونيتي أن تعمل نحو تسعين يومًا مريخيًا. كم دامت رحلتها؟"
+          },
+          "learn": {
+            "en": "Opportunity explored Mars for almost fifteen years instead of its planned ninety Martian days. Its images and instruments revealed a history of water. Documenting its final site preserves a scientific legacy without disturbing the hardware.",
+            "ar": "استكشفت أوبورتشونيتي المريخ قرابة خمسة عشر عامًا بدل تسعين يومًا مريخيًا. كشفت صورها وأجهزتها تاريخًا للماء. يحفظ توثيق موقعها الأخير إرثًا علميًا دون المساس بالمعدات."
+          },
+          "sourceId": "nasa-opportunity",
+          "options": [
+            {
+              "id": "best",
+              "label": {
+                "en": "Almost fifteen years",
+                "ar": "قرابة خمسة عشر عامًا"
+              },
+              "result": {
+                "en": "Yes. Its long exploration far exceeded the original plan.",
+                "ar": "صحيح. تجاوز استكشافها الطويل الخطة الأصلية بكثير."
+              },
+              "effects": {}
+            },
+            {
+              "id": "other",
+              "label": {
+                "en": "Only ninety Earth days",
+                "ar": "تسعون يومًا أرضيًا فقط"
+              },
+              "result": {
+                "en": "That was close to the original plan, not the actual duration.",
+                "ar": "هذه مدة قريبة من الخطة الأصلية، وليست المدة الفعلية."
+              },
+              "effects": {}
+            }
+          ]
+        },
+        {
+          "id": "data",
+          "title": {
+            "en": "Protect the scientific record",
+            "ar": "احمِ السجل العلمي"
+          },
+          "prompt": {
+            "en": "Your rover reaches historic Opportunity. How should you investigate?",
+            "ar": "تصل مركبتك إلى أوبورتشونيتي التاريخية. كيف تفحصها؟"
+          },
+          "learn": {
+            "en": "Photographs and remote measurements can document Opportunity and its surroundings without touching the rover. Preserve the hardware and tracks. A careful report separates observations from conclusions that the instruments cannot support.",
+            "ar": "توثّق الصور والقياسات عن بُعد أوبورتشونيتي ومحيطها دون لمسها. احفظ المعدات والآثار. يفصل التقرير الدقيق الملاحظات عن الاستنتاجات التي لا تدعمها الأجهزة."
+          },
+          "sourceId": "nasa-opportunity-end",
+          "options": [
+            {
+              "id": "best",
+              "label": {
+                "en": "Photograph it from outside the protected zone",
+                "ar": "صوّرها من خارج المنطقة المحمية"
+              },
+              "result": {
+                "en": "Yes. Remote documentation preserves the site.",
+                "ar": "صحيح. يحفظ التوثيق عن بُعد الموقع."
+              },
+              "effects": {}
+            },
+            {
+              "id": "other",
+              "label": {
+                "en": "Drive across its tracks and move the rover",
+                "ar": "اعبر آثارها وانقل المركبة"
+              },
+              "result": {
+                "en": "That would disturb the evidence you came to document.",
+                "ar": "سيُفسد ذلك الأدلة التي جئت لتوثيقها."
+              },
+              "effects": {}
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "missionId": "m4-cosmic-photographer",
+      "destination": "orbit",
+      "topics": [
+        {
+          "id": "instruments",
+          "title": {
+            "en": "Imaging a changing sky",
+            "ar": "تصوير سماء متغيرة"
+          },
+          "prompt": {
+            "en": "One image captures a supernova. What reveals how its brightness changes?",
+            "ar": "تلتقط صورة واحدة مستعرًا أعظم. ما الذي يكشف تغير سطوعه؟"
+          },
+          "learn": {
+            "en": "Repeated telescope measurements record brightness over time as a light curve. Different filters collect different parts of the light. This observatory stays near Earth in the game; viewing a distant galaxy does not mean traveling to it.",
+            "ar": "تسجّل قياسات التلسكوب المتكررة السطوع مع الزمن في منحنى ضوئي. تجمع المرشحات أجزاء مختلفة من الضوء. يبقى هذا المرصد قرب الأرض في اللعبة؛ فرؤية مجرة بعيدة لا تعني السفر إليها."
+          },
+          "sourceId": "gsfc-swift-faq",
+          "options": [
+            {
+              "id": "best",
+              "label": {
+                "en": "Observe on several different nights",
+                "ar": "ارصد في عدة ليالٍ مختلفة"
+              },
+              "result": {
+                "en": "Correct. Repeated observations reveal changes over time.",
+                "ar": "صحيح. تكشف الأرصاد المتكررة التغيرات مع الزمن."
+              },
+              "effects": {}
+            },
+            {
+              "id": "other",
+              "label": {
+                "en": "Take many copies of the same image",
+                "ar": "انسخ الصورة نفسها مرات كثيرة"
+              },
+              "result": {
+                "en": "Copies do not add observations from later times.",
+                "ar": "لا تضيف النسخ أرصادًا من أوقات لاحقة."
+              },
+              "effects": {}
+            }
+          ]
+        },
+        {
+          "id": "power",
+          "title": {
+            "en": "Detector power and safety",
+            "ar": "طاقة الكاشف وسلامته"
+          },
+          "prompt": {
+            "en": "A solar-particle warning arrives. What protects the telescope?",
+            "ar": "يصل تحذير من جسيمات شمسية. ما الذي يحمي التلسكوب؟"
+          },
+          "learn": {
+            "en": "Energetic particles can damage spacecraft electronics and detectors. A protective pause can preserve later observations. The game models this tradeoff between observing time and instrument safety; there are no astronauts aboard this mission.",
+            "ar": "قد تضر الجسيمات النشطة بإلكترونيات المركبة وكواشفها. قد يحفظ التوقف الوقائي الأرصاد اللاحقة. تحاكي اللعبة المفاضلة بين وقت الرصد وسلامة الجهاز؛ ولا يوجد رواد فضاء على متن هذه المهمة."
+          },
+          "sourceId": "legacy-game-model",
+          "options": [
+            {
+              "id": "best",
+              "label": {
+                "en": "Use the protective response and resume later",
+                "ar": "استخدم الاستجابة الوقائية واستأنف لاحقًا"
+              },
+              "result": {
+                "en": "Yes. Protecting the instrument keeps future science possible.",
+                "ar": "صحيح. تحمي سلامة الجهاز فرص العلم لاحقًا."
+              },
+              "effects": {}
+            },
+            {
+              "id": "other",
+              "label": {
+                "en": "Keep observing because robotic instruments cannot be damaged",
+                "ar": "واصل الرصد لأن الأجهزة الآلية لا تتضرر"
+              },
+              "result": {
+                "en": "Robotic electronics also need protection from space hazards.",
+                "ar": "تحتاج الإلكترونيات الآلية أيضًا إلى الحماية من أخطار الفضاء."
+              },
+              "effects": {}
+            }
+          ]
+        },
+        {
+          "id": "data",
+          "title": {
+            "en": "From photons to evidence",
+            "ar": "من الفوتونات إلى الأدلة"
+          },
+          "prompt": {
+            "en": "Why collect both images and a spectrum when the instruments allow it?",
+            "ar": "لماذا نجمع الصور والطيف عندما تسمح الأجهزة بذلك؟"
+          },
+          "learn": {
+            "en": "Images and spectra answer different questions. Images can track brightness; a spectrum separates light by wavelength and helps identify material. In this mission's simplified model, the recorded spectrum can support a hydrogen-rich Type Two classification.",
+            "ar": "تجيب الصور والأطياف عن أسئلة مختلفة. تتبع الصور السطوع، ويفصل الطيف الضوء بحسب الطول الموجي ويساعد على تحديد المواد. في نموذج المهمة المبسط، قد يدعم الطيف المسجل تصنيفًا غنيًا بالهيدروجين من النوع الثاني."
+          },
+          "sourceId": "legacy-game-model",
+          "options": [
+            {
+              "id": "best",
+              "label": {
+                "en": "They provide complementary evidence",
+                "ar": "لأنها تقدّم أدلة متكاملة"
+              },
+              "result": {
+                "en": "Correct. Complementary instruments test different aspects of an event.",
+                "ar": "صحيح. تفحص الأجهزة المتكاملة جوانب مختلفة للحدث."
+              },
+              "effects": {}
+            },
+            {
+              "id": "other",
+              "label": {
+                "en": "A spectrum is just a brighter photograph",
+                "ar": "الطيف مجرد صورة أشد سطوعًا"
+              },
+              "result": {
+                "en": "A spectrum measures light by wavelength, not just image brightness.",
+                "ar": "يقيس الطيف الضوء حسب الطول الموجي، وليس سطوع الصورة فقط."
+              },
+              "effects": {}
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "missionId": "m1-apollo",
+      "destination": "moon",
+      "topics": [
+        {
+          "id": "instruments",
+          "title": {
+            "en": "Apollo exploration equipment",
+            "ar": "معدات استكشاف أبولو"
+          },
+          "prompt": {
+            "en": "What did the Apollo 15 lunar rover help astronauts do?",
+            "ar": "كيف ساعدت المركبة القمرية رواد أبولو 15؟"
+          },
+          "learn": {
+            "en": "Apollo 15 brought the first Lunar Roving Vehicle to the Moon. It let astronauts travel farther with tools and samples. This cabin is an illustrative training environment, while the later life-aboard choices still determine your crew health.",
+            "ar": "جلبت أبولو 15 أول مركبة جوالة قمرية إلى القمر. أتاحت للرواد قطع مسافات أطول مع الأدوات والعينات. هذه المقصورة بيئة تدريب توضيحية، وتظل قرارات الحياة على المتن لاحقًا هي التي تحدد صحة طاقمك."
+          },
+          "sourceId": "nasa-apollo15",
+          "options": [
+            {
+              "id": "best",
+              "label": {
+                "en": "Explore farther while carrying equipment",
+                "ar": "الاستكشاف لمسافة أبعد مع حمل المعدات"
+              },
+              "result": {
+                "en": "Yes. Mobility expanded what the crew could explore.",
+                "ar": "صحيح. وسّعت القدرة على التنقل نطاق استكشاف الطاقم."
+              },
+              "effects": {}
+            },
+            {
+              "id": "other",
+              "label": {
+                "en": "Drive back to Earth",
+                "ar": "القيادة للعودة إلى الأرض"
+              },
+              "result": {
+                "en": "The rover was a surface vehicle, not a return spacecraft.",
+                "ar": "كانت المركبة مخصصة للسطح، وليست مركبة عودة إلى الأرض."
+              },
+              "effects": {}
+            }
+          ]
+        },
+        {
+          "id": "power",
+          "title": {
+            "en": "Life support and suit limits",
+            "ar": "دعم الحياة وحدود البدلة"
+          },
+          "prompt": {
+            "en": "Before a moonwalk, which supplies need checking?",
+            "ar": "ما الإمدادات التي يجب فحصها قبل المشي على القمر؟"
+          },
+          "learn": {
+            "en": "Astronauts need oxygen, water, thermal control and a safe return plan. A spacesuit has limited consumables. Your lunar mission keeps its existing suit-time and crew-fatigue model; this short orientation does not change those resources.",
+            "ar": "يحتاج الرواد إلى الأكسجين والماء والتحكم الحراري وخطة عودة آمنة. مستهلكات البدلة محدودة. تحتفظ مهمتك القمرية بنموذج وقت البدلة وتعب الطاقم؛ ولا يغيّر هذا التدريب القصير تلك الموارد."
+          },
+          "sourceId": "nasa-hrp-hazards",
+          "options": [
+            {
+              "id": "best",
+              "label": {
+                "en": "Oxygen, water, power and the return plan",
+                "ar": "الأكسجين والماء والطاقة وخطة العودة"
+              },
+              "result": {
+                "en": "Correct. Check the whole support system before leaving.",
+                "ar": "صحيح. افحص منظومة الدعم كاملة قبل الخروج."
+              },
+              "effects": {}
+            },
+            {
+              "id": "other",
+              "label": {
+                "en": "Only the camera battery",
+                "ar": "بطارية الكاميرا فقط"
+              },
+              "result": {
+                "en": "Science equipment cannot replace the supplies that keep people safe.",
+                "ar": "لا تعوّض الأجهزة العلمية الإمدادات التي تحافظ على سلامة البشر."
+              },
+              "effects": {}
+            }
+          ]
+        },
+        {
+          "id": "data",
+          "title": {
+            "en": "Crew radiation safety",
+            "ar": "سلامة الطاقم من الإشعاع"
+          },
+          "prompt": {
+            "en": "Mission Control warns of energetic solar particles. What is the safe response?",
+            "ar": "يحذّر مركز التحكم من جسيمات شمسية نشطة. ما الاستجابة الآمنة؟"
+          },
+          "learn": {
+            "en": "Space radiation is a hazard for astronauts. Shielding and careful timing help reduce exposure. During the existing crew journey, shelter choices have real consequences in the game model; this practice question is separate from that decision.",
+            "ar": "إشعاع الفضاء خطر على الرواد. يساعد التدريع والتوقيت المدروس على تقليل التعرض. لخيارات الاحتماء في رحلة الطاقم الأصلية عواقب فعلية في نموذج اللعبة؛ وهذا السؤال التدريبي منفصل عن ذلك القرار."
+          },
+          "sourceId": "nasa-hrp-hazards",
+          "options": [
+            {
+              "id": "best",
+              "label": {
+                "en": "Follow the shielding and shelter plan",
+                "ar": "اتبع خطة التدريع والاحتماء"
+              },
+              "result": {
+                "en": "Yes. Protect the crew before continuing the experiment.",
+                "ar": "صحيح. احمِ الطاقم قبل متابعة التجربة."
+              },
+              "effects": {}
+            },
+            {
+              "id": "other",
+              "label": {
+                "en": "Stay at the window to finish an experiment",
+                "ar": "ابقَ عند النافذة لإكمال التجربة"
+              },
+              "result": {
+                "en": "The experiment can wait while the crew follows the hazard plan.",
+                "ar": "يمكن تأجيل التجربة بينما يتبع الطاقم خطة مواجهة الخطر."
+              },
+              "effects": {}
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
