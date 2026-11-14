@@ -35,6 +35,7 @@ async function workshop(page: Page, id: MissionId) {
   // The launch button performs this mission's real review and CONFIRM_LAUNCH.
   await page.getByRole('button', { name: /LAUNCH MISSION/ }).click();
   await expect(page.locator('.lx-hud')).toBeVisible();
+  await expect(page.locator('.story-card')).toHaveAttribute('data-story-id', 'mission-launch');
   expect((await snapshot(page)).state.launched).toBe(true);
   await expect(page.locator('canvas')).toHaveCount(1);
 }
@@ -68,17 +69,17 @@ for (const mission of MISSIONS) {
       };
       requestAnimationFrame(sample);
     });
-    const progress = page.getByRole('progressbar');
+    const progress = page.locator('.lx-hud').getByRole('progressbar');
     for (const [phase, time] of [['pad', 1], ['countdown', 4], ['ignition', 8], ['liftoff', 12], ['ascent', 19]] as const) {
       await expect.poll(async () => Number(await progress.getAttribute('aria-valuenow')), { timeout: 30_000 }).toBeGreaterThanOrEqual(time);
       if (phase === 'ignition') {
-        await page.getByRole('button', { name: 'Pause', exact: true }).click();
+        await page.locator('.lx-hud').getByRole('button', { name: 'Pause', exact: true }).click();
         const paused = await progress.getAttribute('aria-valuenow');
         await page.waitForTimeout(700);
         await expect(progress).toHaveAttribute('aria-valuenow', paused!);
       }
       await page.screenshot({ path: info.outputPath(`${phase}.png`) });
-      if (phase === 'ignition') await page.getByRole('button', { name: 'Resume', exact: true }).click();
+      if (phase === 'ignition') await page.locator('.lx-hud').getByRole('button', { name: 'Resume', exact: true }).click();
     }
     await handoff(page, before, mission.id);
     const frames = await page.evaluate(() => (window as any).__launchFrames as number[]);
@@ -102,7 +103,7 @@ for (const mission of MISSIONS) {
     await page.evaluate((id) => (window as any).__legacy.useGame.getState().continueMission(id), mission.id);
     await expect(page.locator('.lx-hud')).toBeVisible();
     expect(await snapshot(page)).toEqual(before);
-    await page.getByRole('button', { name: 'Pause', exact: true }).click();
+    await page.locator('.lx-hud').getByRole('button', { name: 'Pause', exact: true }).click();
     await page.getByRole('button', { name: 'التبديل إلى العربية' }).click();
     await expect(page.locator('html')).toHaveAttribute('dir', 'rtl');
     await expect(page.locator('.lx-title h1')).toHaveText(mission.title.ar ?? ar(mission.title.en));

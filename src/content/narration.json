@@ -1,0 +1,272 @@
+{
+  "stories": [
+    {
+      "siteId": "m1-intro",
+      "missionId": "m1-apollo",
+      "title": {
+        "en": "Echoes of Apollo",
+        "ar": "أصداء أبولو"
+      },
+      "sourceIds": [
+        "nasa-apollo15",
+        "nasa-lunar-heritage",
+        "nasa-hrp-hazards"
+      ],
+      "en": "Your mission revisits the lunar heritage of Apollo 15. Plan your equipment, care for your crew, and explore the Moon. Historic hardware and tracks are evidence too: document them from a distance and leave them undisturbed.",
+      "ar": "تعود مهمتك إلى التراث القمري لأبولو 15. خطّط لمعداتك، واعتنِ بطاقمك، واستكشف القمر. المعدات التاريخية وآثار العجلات أدلة أيضًا: وثّقها من بعيد واتركها دون مساس."
+    },
+    {
+      "siteId": "m2-intro",
+      "missionId": "m2-martian-mystery",
+      "title": {
+        "en": "The Martian Mystery",
+        "ar": "اللغز المريخي"
+      },
+      "sourceIds": [
+        "nasa-perseverance",
+        "nasa-biosignature-2025"
+      ],
+      "en": "Jezero Crater holds clues to Mars's watery past. Your rover will investigate an unusual rock using cameras and scientific instruments. Choose tools that can test your question. A promising pattern is a reason to investigate, not proof of ancient life.",
+      "ar": "تحتفظ فوهة جيزيرو بأدلة على ماضي المريخ المائي. ستفحص مركبتك صخرة غير مألوفة بالكاميرات والأجهزة العلمية. اختر أدوات تختبر سؤالك. النمط الواعد سبب للتحقيق، وليس دليلًا قاطعًا على حياة قديمة."
+    },
+    {
+      "siteId": "m3-intro",
+      "missionId": "m3-lost-rover",
+      "title": {
+        "en": "The Lost Rover",
+        "ar": "المركبة الجوالة المفقودة"
+      },
+      "sourceIds": [
+        "nasa-opportunity",
+        "nasa-opportunity-end"
+      ],
+      "en": "Opportunity was planned for about ninety Martian days, but explored for almost fifteen years. Your mission follows its legacy around Endeavour Crater. Build a rover that can document the landscape and historic hardware without disturbing the evidence.",
+      "ar": "خُطّط لأوبورتشونيتي أن تعمل نحو تسعين يومًا مريخيًا، لكنها استكشفت قرابة خمسة عشر عامًا. تتبع مهمتك إرثها حول فوهة إنديفور. صمّم مركبة توثّق المناظر والمعدات التاريخية دون إفساد الأدلة."
+    },
+    {
+      "siteId": "m4-intro",
+      "missionId": "m4-cosmic-photographer",
+      "title": {
+        "en": "The Cosmic Photographer",
+        "ar": "المصوّر الكوني"
+      },
+      "sourceIds": [
+        "gsfc-swift-faq",
+        "legacy-game-model"
+      ],
+      "en": "Build a compact observatory and investigate a simulated supernova. Your instruments determine which light you can collect. Repeated observations reveal changes that a single image cannot explain. Plan your observing time, protect the detector, and let the evidence guide your report.",
+      "ar": "صمّم مرصدًا صغيرًا وافحص مستعرًا أعظم مُحاكى. تحدّد أجهزتك أنواع الضوء التي تستطيع جمعها. تكشف الأرصاد المتكررة تغيرات لا تفسّرها صورة واحدة. خطّط لوقت الرصد، واحمِ الكاشف، ودع الأدلة توجّه تقريرك."
+    },
+    {
+      "siteId": "mission-launch",
+      "title": {
+        "en": "Cleared for launch",
+        "ar": "مصرّح بالإطلاق"
+      },
+      "sourceIds": [
+        "legacy-game-model"
+      ],
+      "en": "Your spacecraft has passed the game's modeled readiness checks. The design is now locked. Follow the countdown, engine ignition, and ascent. The mission ahead will use the equipment and resources you chose on Earth.",
+      "ar": "اجتازت مركبتك فحوص الجاهزية التي يحاكيها النموذج في اللعبة. أصبح التصميم ثابتًا الآن. تابع العدّ التنازلي وإشعال المحركات والصعود. ستستخدم المهمة المعدات والموارد التي اخترتها على الأرض."
+    },
+    {
+      "siteId": "engineering-check",
+      "title": {
+        "en": "Engineering choices matter",
+        "ar": "القرارات الهندسية مهمة"
+      },
+      "sourceIds": [
+        "legacy-game-model"
+      ],
+      "en": "A spacecraft is a complete system. Launch capacity, mass, power, storage, and budget must work together. The readiness review shows which modeled limits your design meets. A more expensive component is useful only when it serves the mission.",
+      "ar": "المركبة الفضائية منظومة متكاملة. يجب أن تتوافق قدرة الإطلاق والكتلة والطاقة والتخزين والميزانية. يوضّح فحص الجاهزية حدود النموذج التي يحققها تصميمك. لا تفيد القطعة الأعلى ثمنًا إلا عندما تخدم المهمة."
+    },
+    {
+      "siteId": "m1-discovery",
+      "missionId": "m1-apollo",
+      "title": {
+        "en": "A record of lunar exploration",
+        "ar": "سجلّ للاستكشاف القمري"
+      },
+      "sourceIds": [
+        "nasa-apollo15",
+        "nasa-lunar-heritage"
+      ],
+      "en": "You have recorded a lunar observation. Check the finding in your journal and separate what you measured from what you infer. Photographs, samples, and historic tracks tell different parts of the Moon's story. Crew safety and careful preservation remain part of the mission.",
+      "ar": "سجّلتَ ملاحظة قمرية. راجع النتيجة في سجلك وافصل ما قسته عما تستنتجه. الصور والعينات والآثار التاريخية تروي أجزاء مختلفة من قصة القمر. وتظل سلامة الطاقم وحماية التراث جزءًا من المهمة."
+    },
+    {
+      "siteId": "m2-discovery",
+      "missionId": "m2-martian-mystery",
+      "title": {
+        "en": "Evidence before conclusions",
+        "ar": "الأدلة قبل الاستنتاجات"
+      },
+      "sourceIds": [
+        "nasa-biosignature-2025",
+        "nasa-perseverance-instruments"
+      ],
+      "en": "Your rover has recorded evidence. A photograph shows context; independent measurements can test the chemistry. Potential biosignatures deserve follow-up because non-biological processes can produce similar features. Read the actual finding before choosing what to tell Earth.",
+      "ar": "سجّلت مركبتك أدلة. تُظهر الصورة السياق، وتستطيع القياسات المستقلة اختبار الكيمياء. تستحق البصمات الحيوية المحتملة المتابعة لأن عمليات غير حيوية قد تنتج سمات مشابهة. اقرأ النتيجة الفعلية قبل اختيار ما ستخبر به الأرض."
+    },
+    {
+      "siteId": "m3-discovery",
+      "missionId": "m3-lost-rover",
+      "title": {
+        "en": "Documenting a scientific legacy",
+        "ar": "توثيق إرث علمي"
+      },
+      "sourceIds": [
+        "nasa-opportunity",
+        "nasa-opportunity-end"
+      ],
+      "en": "Your observation adds a record of this landscape. Compare the finding with the story of Opportunity's long exploration. Documenting a historic rover does not require touching it. Preserve the hardware and tracks while gathering the evidence your instruments can actually support.",
+      "ar": "تضيف ملاحظتك سجلًا لهذا المنظر. قارن النتيجة بقصة استكشاف أوبورتشونيتي الطويلة. لا يتطلب توثيق مركبة تاريخية لمسها. احفظ المعدات والآثار، واجمع الأدلة التي تستطيع أجهزتك دعمها فعلًا."
+    },
+    {
+      "siteId": "m4-discovery",
+      "missionId": "m4-cosmic-photographer",
+      "title": {
+        "en": "An image is a measurement",
+        "ar": "الصورة قياس"
+      },
+      "sourceIds": [
+        "legacy-game-model",
+        "gsfc-swift-faq"
+      ],
+      "en": "You have recorded an observation with your telescope. Image quality depends on the chosen instruments, pointing, and exposure. Compare repeated measurements rather than treating one picture as a complete explanation. Your journal records the evidence collected in this simulated mission.",
+      "ar": "سجّلت رصدًا بتلسكوبك. تعتمد جودة الصورة على الأجهزة المختارة والتوجيه ومدة التعريض. قارن القياسات المتكررة بدل اعتبار صورة واحدة تفسيرًا كاملًا. يسجّل دفترك الأدلة التي جمعتها في هذه المهمة المُحاكاة."
+    },
+    {
+      "siteId": "m1-ending",
+      "missionId": "m1-apollo",
+      "title": {
+        "en": "The lunar mission report",
+        "ar": "تقرير المهمة القمرية"
+      },
+      "sourceIds": [
+        "nasa-lunar-heritage",
+        "legacy-game-model"
+      ],
+      "en": "Your mission report has been sent. The debrief shows what your observations support and how your decisions affected the crew. Lunar exploration includes learning from the surface, caring for people, and protecting the history left behind.",
+      "ar": "أُرسل تقرير مهمتك. يوضّح التقييم ما تدعمه ملاحظاتك وكيف أثّرت قراراتك في الطاقم. يشمل استكشاف القمر التعلّم من السطح، ورعاية البشر، وحماية التاريخ الذي تركوه وراءهم."
+    },
+    {
+      "siteId": "m2-ending",
+      "missionId": "m2-martian-mystery",
+      "title": {
+        "en": "Report what the evidence supports",
+        "ar": "أبلغ بما تدعمه الأدلة"
+      },
+      "sourceIds": [
+        "nasa-biosignature-2025",
+        "legacy-game-model"
+      ],
+      "en": "Your report has reached the mission debrief. Review what was measured, what reached Earth, and which questions remain open. A potential biosignature is not proof of life. Careful reporting explains both the evidence and its limits.",
+      "ar": "وصل تقريرك إلى مرحلة تقييم المهمة. راجع ما قيس، وما وصل إلى الأرض، والأسئلة التي ما زالت مفتوحة. البصمة الحيوية المحتملة ليست دليلًا قاطعًا على الحياة. يشرح التقرير الدقيق الأدلة وحدودها معًا."
+    },
+    {
+      "siteId": "m3-ending",
+      "missionId": "m3-lost-rover",
+      "title": {
+        "en": "Every mission leaves a story",
+        "ar": "كل مهمة تترك قصة"
+      },
+      "sourceIds": [
+        "nasa-opportunity",
+        "legacy-game-model"
+      ],
+      "en": "Your report records what the expedition observed around Endeavour Crater. Review the evidence and the choices in your debrief. Opportunity's legacy lives in its discoveries and the questions it left for future explorers. Protecting that record is part of good exploration.",
+      "ar": "يسجّل تقريرك ما رصدته البعثة حول فوهة إنديفور. راجع الأدلة والقرارات في تقييمك. يستمر إرث أوبورتشونيتي في اكتشافاتها والأسئلة التي تركتها للمستكشفين المقبلين. وحماية ذلك السجل جزء من الاستكشاف الجيد."
+    },
+    {
+      "siteId": "m4-ending",
+      "missionId": "m4-cosmic-photographer",
+      "title": {
+        "en": "A changing sky",
+        "ar": "سماء متغيّرة"
+      },
+      "sourceIds": [
+        "gsfc-swift-faq",
+        "legacy-game-model"
+      ],
+      "en": "Your observatory report has been sent. The debrief distinguishes the observations you collected from claims that need more evidence. A supernova changes over time. Additional nights and complementary instruments can reveal parts of the story that one image misses.",
+      "ar": "أُرسل تقرير مرصدك. يميّز التقييم بين الأرصاد التي جمعتها والادعاءات التي تحتاج إلى أدلة إضافية. يتغير المستعر الأعظم مع الزمن. وقد تكشف ليالٍ إضافية وأجهزة متكاملة أجزاء من القصة لا تُظهرها صورة واحدة."
+    },
+    {
+      "siteId": "m4-supernova",
+      "missionId": "m4-cosmic-photographer",
+      "title": {
+        "en": "A supernova in the Pinwheel Galaxy",
+        "ar": "مستعر أعظم في مجرة الدولاب"
+      },
+      "sourceIds": [
+        "legacy-game-model"
+      ],
+      "en": "The telescope is pointed at the simulated supernova. This scene is inspired by SN 2023ixf in the Pinwheel Galaxy, observed by NASA telescopes in 2023. Your mission uses a simplified observing model: choose a filter and exposure, then collect a measurement.",
+      "ar": "وُجّه التلسكوب نحو المستعر الأعظم المُحاكى. هذا المشهد مستوحى من المستعر SN 2023ixf في مجرة الدولاب، الذي رصدته تلسكوبات ناسا عام 2023. تستخدم مهمتك نموذج رصد مبسّطًا: اختر مرشحًا ومدة تعريض، ثم اجمع قياسًا."
+    },
+    {
+      "siteId": "m4-light-curve",
+      "missionId": "m4-cosmic-photographer",
+      "title": {
+        "en": "Three nights, one light curve",
+        "ar": "ثلاث ليالٍ ومنحنى ضوئي واحد"
+      },
+      "sourceIds": [
+        "legacy-game-model"
+      ],
+      "en": "You have observed on three different nights. Compare the plotted brightness measurements to see how the simulated event changed. A light curve is a record of brightness over time. More observations over weeks would help explain the explosion more fully.",
+      "ar": "رصدتَ في ثلاث ليالٍ مختلفة. قارن قياسات السطوع المرسومة لترى كيف تغير الحدث المُحاكى. المنحنى الضوئي سجلّ للسطوع مع الزمن. وتساعد أرصاد إضافية على مدى أسابيع في تفسير الانفجار بصورة أكمل."
+    },
+    {
+      "siteId": "m4-spectrum",
+      "missionId": "m4-cosmic-photographer",
+      "title": {
+        "en": "Reading a spectrum",
+        "ar": "قراءة الطيف"
+      },
+      "sourceIds": [
+        "legacy-game-model"
+      ],
+      "en": "You have taken a spectrum. In this mission's model, the finding shows hydrogen, pointing to a Type Two supernova. Read the recorded result and its quality before reporting. A spectrum and a light curve answer different questions about the same event.",
+      "ar": "التقطتَ طيفًا. تُظهر النتيجة الهيدروجين في نموذج هذه المهمة، ما يشير إلى مستعر أعظم من النوع الثاني. اقرأ النتيجة المسجّلة وجودتها قبل إعداد التقرير. يجيب الطيف والمنحنى الضوئي عن سؤالين مختلفين حول الحدث نفسه."
+    },
+    {
+      "siteId": "control-safety",
+      "title": {
+        "en": "Mission Control — safety decision",
+        "ar": "مركز التحكم — قرار السلامة"
+      },
+      "sourceIds": [
+        "legacy-game-model"
+      ],
+      "en": "You chose a protective response to the mission warning. Check the specific effects shown on screen. A delay or a change of plan can preserve the crew or instruments needed for the rest of the mission.",
+      "ar": "اخترتَ استجابة وقائية لتحذير المهمة. راجع الآثار المحددة المعروضة على الشاشة. قد يحافظ التأخير أو تغيير الخطة على الطاقم أو الأجهزة اللازمة لإكمال المهمة."
+    },
+    {
+      "siteId": "control-risk",
+      "title": {
+        "en": "Mission Control — review the consequences",
+        "ar": "مركز التحكم — راجع العواقب"
+      },
+      "sourceIds": [
+        "legacy-game-model"
+      ],
+      "en": "This decision carries a safety cost in the mission model. Read the recorded consequences before continuing. Scientific goals do not remove the need to protect people and equipment. Your debrief will include the choices you made.",
+      "ar": "لهذا القرار كلفة تتعلق بالسلامة في نموذج المهمة. اقرأ العواقب المسجّلة قبل المتابعة. لا تلغي الأهداف العلمية ضرورة حماية البشر والمعدات. سيشمل التقييم القرارات التي اتخذتها."
+    },
+    {
+      "siteId": "control-warning",
+      "title": {
+        "en": "Mission Control — hazard warning",
+        "ar": "مركز التحكم — تحذير من خطر"
+      },
+      "sourceIds": [
+        "legacy-game-model"
+      ],
+      "en": "Mission Control has sent an important warning. Read the specific hazard and the available responses. Protect the crew or instruments before continuing. A careful change of plan can preserve the science still ahead.",
+      "ar": "أرسل مركز التحكم تحذيرًا مهمًا. اقرأ الخطر المحدد والاستجابات المتاحة. احمِ الطاقم أو الأجهزة قبل المتابعة. قد يحفظ تغيير مدروس للخطة فرص البحث العلمي القادمة."
+    }
+  ]
+}

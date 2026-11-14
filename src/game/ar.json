@@ -1688,5 +1688,15 @@
  "walk / drive": "مشي أو قيادة",
  "rest at lander": "الراحة عند مركبة الهبوط",
  "Illustrative lunar terrain — not to scale.": "تضاريس قمرية توضيحية — ليست بمقياس حقيقي.",
- "Touchdown confirmed. Explore the Moon on foot or aboard your lunar rover. Protect the Apollo 15 site and watch your suit oxygen.": "تم تأكيد الهبوط. استكشف القمر سيرًا أو بمركبتك الجوالة. احمِ موقع أبولو 15 وراقب أكسجين البدلة."
+ "Touchdown confirmed. Explore the Moon on foot or aboard your lunar rover. Protect the Apollo 15 site and watch your suit oxygen.": "تم تأكيد الهبوط. استكشف القمر سيرًا أو بمركبتك الجوالة. احمِ موقع أبولو 15 وراقب أكسجين البدلة.",
+ "Mission story": "قصة المهمة",
+ "Replay story": "إعادة القصة",
+ "Skip narration": "تخطّي السرد",
+ "Mute narration": "كتم السرد",
+ "Unmute narration": "إلغاء كتم السرد",
+ "Narration volume": "مستوى صوت السرد",
+ "Narration options": "خيارات السرد",
+ "Narration progress": "تقدّم السرد",
+ "Narration unavailable. You can still read the verified story and continue playing.": "السرد الصوتي غير متاح. يمكنك قراءة القصة الموثّقة ومواصلة اللعب.",
+ "Gemini story recordings in the selected language. Verified text remains available when audio cannot play.": "قصص مسجّلة بصوت Gemini باللغة المختارة. يبقى النص الموثّق متاحًا إذا تعذّر تشغيل الصوت."
 }

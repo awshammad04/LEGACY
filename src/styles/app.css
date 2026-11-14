@@ -443,7 +443,23 @@ details summary { cursor: pointer; }
 .story-card { position: absolute; top: 250px; inset-inline-start: 16px; width: min(380px, calc(100vw - 32px)); max-height: calc(100% - 400px); min-height: 180px; overflow: auto; padding: 14px 16px; display: flex; flex-direction: column; gap: 10px; background: rgba(6, 11, 22, 0.86); backdrop-filter: blur(10px); border-top: 2px solid var(--amber); z-index: 3; }
 .story-card h3 { font-size: 17px; }
 .story-text { margin: 0; font-size: 14px; line-height: 1.6; color: var(--text); }
-.story-bar { flex: 1; height: 4px; border-radius: 99px; background: rgba(255, 255, 255, 0.1); overflow: hidden; }
+.story-bar { flex: none; height: 4px; border-radius: 99px; background: rgba(255, 255, 255, 0.1); overflow: hidden; }
 .story-bar span { display: block; height: 100%; background: var(--amber); transition: width 0.25s linear; }
-@media (max-width: 760px) { .story-card { top: auto; bottom: 90px; max-height: 45vh; } }
+.story-card { position: fixed; top: 300px; max-height: calc(100% - 365px); }
+.story-milestone { top: 68px; inset-inline-start: auto; inset-inline-end: 16px; width: 314px; min-height: 0; max-height: calc(100% - 92px); padding: 12px; gap: 8px; }
+/* Reserve space for narration in menu-like stages so it cannot obscure a question or control. */
+.app:has(.story-milestone:not(.story-launch):not(.story-surface)) .overlay > main { margin-inline-end: 330px; }
+.story-surface { top: 300px; inset-inline-start: 16px; inset-inline-end: auto; width: min(380px,calc(100vw - 32px)); max-height: calc(100% - 365px); }
+.story-milestone .story-text { font-size: 13px; line-height: 1.5; }
+.story-options { font-size: 12px; }
+.story-options summary { cursor: pointer; color: var(--text-2); }
+.story-options[open] { display: grid; gap: 7px; }
+.story-volume { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.story-volume input { width: 135px; }
+.story-launch { width: min(314px,calc(100vw - 32px)); max-height: calc(100% - 290px); }
+@media (max-width: 1000px) {
+  .app:has(.story-milestone:not(.story-launch):not(.story-surface)) .overlay > main { margin-inline-end: 0; margin-bottom: 248px; }
+  .story-milestone:not(.story-launch):not(.story-surface) { top: auto; bottom: 16px; inset-inline: 16px; width: auto; max-height: 232px; }
+}
+@media (max-width: 760px) { .story-card.story-surface, .story-card:not(.story-milestone) { top: auto; bottom: 90px; max-height: 45vh; } }
 .choice-card { max-width: 440px; display: flex; flex-direction: column; gap: 6px; }

@@ -21,6 +21,7 @@ import { CinematicLaunch, type LaunchController } from './launch';
 import { useMissionLaunch } from './launch/legacyHost';
 import { LAUNCH_MISSIONS } from './launch/missions';
 import { tierOf } from './core/evaluate';
+import { StorytellingHost } from './storytelling/StorytellingHost';
 
 /** Keeps a 3D scene error from taking down the whole game; resets when the stage changes. */
 class SceneBoundary extends Component<{ children: ReactNode; resetKey: string }, { failed: boolean }> {
@@ -118,6 +119,7 @@ export function App() {
         {view === 'credits' && <CreditsScreen />}
       </div>
       <Subtitles />
+      <StorytellingHost />
       <LearnCardModal />
       <SettingsModal />
       <MissionPreviewModal />

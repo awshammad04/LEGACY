@@ -2,6 +2,7 @@ import { create } from 'zustand';
 import type { LText } from '../core/types';
 import { localize } from './i18n';
 import { useGame } from './store';
+import { narration } from '../storytelling/player';
 
 /* ------------------------------------------------------------------ */
 /* Synthesized sound effects (Web Audio) — no third-party audio files  */
@@ -85,8 +86,8 @@ let lineId = 0;
 let clearTimer: ReturnType<typeof setTimeout> | undefined;
 
 /**
- * Say a line as the fictional Mission Control narrator (synthetic voice, clearly labeled).
- * Subtitles always come from the same text.
+ * Display a verified, localized Mission Control line. Spoken milestones use the shared
+ * Gemini recording player, keeping routine guidance available without competing voices.
  */
 export function say(text: LText, from: LText = { en: 'Mission Control' }) {
   const { settings } = useGame.getState();
@@ -99,29 +100,15 @@ export function say(text: LText, from: LText = { en: 'Mission Control' }) {
     if (useSubtitles.getState().line?.id === id) useSubtitles.getState().set({ line: undefined });
   }, Math.min(14000, 2500 + str.length * 55));
 
-  if (settings.narration && typeof window !== 'undefined' && 'speechSynthesis' in window) {
-    try {
-      window.speechSynthesis.cancel();
-      const u = new SpeechSynthesisUtterance(str);
-      u.lang = settings.lang === 'ar' ? 'ar' : 'en-US';
-      const voice = window.speechSynthesis.getVoices().find((v) => v.lang.toLowerCase().startsWith(settings.lang));
-      if (voice) u.voice = voice;
-      u.rate = 1;
-      window.speechSynthesis.speak(u);
-    } catch {
-      /* speech unavailable */
-    }
-  }
+  // Spoken stories use the shared Gemini recording player; routine control lines remain captions.
 }
 
-export function stopNarration() {
-  try {
-    window.speechSynthesis?.cancel();
-  } catch {
-    /* ignore */
-  }
+export function clearControlSubtitles() {
+  if(clearTimer)clearTimeout(clearTimer);
+  clearTimer=undefined;
   useSubtitles.getState().set({ line: undefined });
 }
+export function stopNarration() {narration.stop();clearControlSubtitles();}
 
 /* ------------------------------------------------------------------ */
 /* Ambient menu soundscape — synthesized drone, no audio files          */

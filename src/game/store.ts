@@ -23,6 +23,8 @@ export interface Settings {
   lang: Lang;
   subtitles: boolean;
   narration: boolean;
+  storyNarration: boolean;
+  storyVolume: number;
   sfx: boolean;
   reducedMotion: boolean;
   quality: 'high' | 'low';
@@ -57,7 +59,8 @@ const remove = (k: string) => {
 };
 
 const prefersReducedMotion = () => typeof window !== 'undefined' && !!window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
-const DEFAULT_SETTINGS: Settings = { lang: 'en', subtitles: true, narration: false, sfx: true, reducedMotion: prefersReducedMotion(), quality: 'high' };
+const DEFAULT_SETTINGS: Settings = { lang: 'en', subtitles: true, narration: false, storyNarration: true, storyVolume: 0.8, sfx: true, reducedMotion: prefersReducedMotion(), quality: 'high' };
+const savedSettings=read<Partial<Settings>>('settings',{});
 
 function loadSaves(): Partial<Record<MissionId, SaveSlot>> {
   const out: Partial<Record<MissionId, SaveSlot>> = {};
@@ -97,7 +100,7 @@ interface GameStore {
 
 export const useGame = create<GameStore>((set, get) => ({
   view: 'home',
-  settings: { ...DEFAULT_SETTINGS, ...read<Partial<Settings>>('settings', {}) },
+  settings: { ...DEFAULT_SETTINGS, ...savedSettings, storyNarration:savedSettings.storyNarration??savedSettings.sfx??true },
   profile: read<Profile>('profile', { archive: [], completed: {}, discoveries: [] }),
   saves: loadSaves(),
   seed: 0,

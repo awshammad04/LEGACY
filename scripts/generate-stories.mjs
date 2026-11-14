@@ -1,62 +1,27 @@
-// Generates the narrated site stories (English + Arabic) with Gemini text-to-speech.
-// Run once, offline from the game:  node scripts/generate-stories.mjs [--force]
-// The API key is read from GEMINI_API_KEY in .env.local (git-ignored) and is NEVER shipped to the browser:
-// the game only loads the resulting MP3 files from public/assets/stories/.
+// Generate verified English/Arabic recordings ahead of time. The browser never calls Gemini.
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { createHash } from 'node:crypto';
 import { Mp3Encoder } from '@breezystack/lamejs';
+import { existingKey, geminiVoice } from './gemini-tts.mjs';
 
-const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
-const env = fs.existsSync(path.join(root, '.env.local')) ? fs.readFileSync(path.join(root, '.env.local'), 'utf8') : '';
-const KEY = process.env.GEMINI_API_KEY || (env.match(/^GEMINI_API_KEY=(.+)$/m) || [])[1]?.trim();
-if (!KEY) throw new Error('Set GEMINI_API_KEY in .env.local');
-
-const { stories, voice, model } = JSON.parse(fs.readFileSync(path.join(root, 'src/content/stories.json'), 'utf8'));
-const outDir = path.join(root, 'public/assets/stories');
-fs.mkdirSync(outDir, { recursive: true });
-const force = process.argv.includes('--force');
-
-const STYLE = {
-  en: 'Read this aloud as a warm, calm documentary narrator for curious teenagers. Unhurried, clear, with gentle wonder:\n\n',
-  ar: 'اقرأ النص التالي بالعربية الفصحى بصوت راوٍ وثائقي دافئ وهادئ لجمهور من الشباب، بإيقاع غير متعجّل ونطق واضح:\n\n',
-};
-
-// Free-tier quotas are per model and per day, so fall back through the available voice models.
-const MODELS = [model, 'gemini-3.8-flash-lite-tts', 'gemini-3.1-flash-tts-preview', 'gemini-2.5-flash-preview-tts', 'gemini-2.5-pro-preview-tts'];
-const exhausted = new Set();
-
-async function tts(text, lang) {
-  for (let attempt = 1; attempt <= 6; attempt++) {
-    const m = MODELS.find((x) => !exhausted.has(x));
-    if (!m) throw new Error('every voice model has used its daily quota — try again tomorrow');
-    try {
-      const r = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${m}:generateContent`, {
-        method: 'POST',
-        headers: { 'x-goog-api-key': KEY, 'content-type': 'application/json' },
-        body: JSON.stringify({
-          contents: [{ parts: [{ text: STYLE[lang] + text }] }],
-          generationConfig: { responseModalities: ['AUDIO'], speechConfig: { voiceConfig: { prebuiltVoiceConfig: { voiceName: voice } } } },
-        }),
-      });
-      const j = await r.json();
-      if (r.status === 429 && /PerDay/.test(JSON.stringify(j))) {
-        console.warn(`  ${m}: daily quota used — switching model`);
-        exhausted.add(m);
-        attempt--;
-        continue;
-      }
-      if (!r.ok) throw new Error(`HTTP ${r.status}: ${JSON.stringify(j).slice(0, 200)}`);
-      const part = j.candidates?.[0]?.content?.parts?.find((p) => p.inlineData);
-      if (!part) throw new Error('no audio in response');
-      return { buf: Buffer.from(part.inlineData.data, 'base64'), mime: part.inlineData.mimeType, model: m };
-    } catch (e) {
-      console.warn(`  attempt ${attempt} (${m}) failed: ${e.message}`);
-      await new Promise((res) => setTimeout(res, 4000 * attempt));
-    }
-  }
-  throw new Error('giving up');
-}
+const root=path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
+const original=JSON.parse(fs.readFileSync(path.join(root,'src/content/stories.json'),'utf8'));
+const added=JSON.parse(fs.readFileSync(path.join(root,'src/content/narration.json'),'utf8'));
+const {voice,model}=original;
+const stories=[...original.stories,...added.stories];
+const outDir=path.join(root,'public/assets/stories');
+fs.mkdirSync(outDir,{recursive:true});
+const manifestFile=path.join(root,'src/content/story-recordings.json');
+const manifest=fs.existsSync(manifestFile)?JSON.parse(fs.readFileSync(manifestFile,'utf8')):{version:1,voice,assets:{}};
+const arg=(name,fallback)=>{const i=process.argv.indexOf(name);return i<0?fallback:process.argv[i+1];};
+const force=process.argv.includes('--force');
+const only=arg('--only','').split(',').filter(Boolean);
+const maxRequests=Math.max(0,Math.min(100,Number(arg('--max-requests','64'))));
+const hash=value=>createHash('sha256').update(value).digest('hex');
+let client,generated=0,cached=0,failed=0;
+const save=()=>fs.writeFileSync(manifestFile,JSON.stringify(manifest,null,2)+'\n');
 
 /** WAV (or raw 16-bit PCM) → mono MP3 at 48 kbps (~6 KB per second of speech). */
 function toMp3({ buf, mime }) {
@@ -86,18 +51,26 @@ function toMp3({ buf, mime }) {
   return { mp3: Buffer.concat(chunks), seconds: samples.length / rate };
 }
 
-for (const s of stories) {
-  for (const lang of ['en', 'ar']) {
-    const file = path.join(outDir, `${s.siteId}-${lang}.mp3`);
-    if (fs.existsSync(file) && !force) {
-      console.log(`skip ${path.basename(file)}`);
-      continue;
-    }
-    const t0 = Date.now();
-    const res = await tts(s[lang], lang);
-    const { mp3, seconds } = toMp3(res);
-    fs.writeFileSync(file, mp3);
-    console.log(`${path.basename(file)}  [${res.model}]  ${seconds.toFixed(1)} s  ${(mp3.length / 1024).toFixed(0)} KB  (${((Date.now() - t0) / 1000).toFixed(1)} s)`);
+for(const s of stories)for(const lang of ['en','ar']) {
+  const id=s.siteId+'-'+lang,file=path.join(outDir,id+'.mp3');
+  const entry=manifest.assets[id];
+  if(!force&&fs.existsSync(file)&&(!entry||(entry.text===s[lang]&&entry.sha256===hash(fs.readFileSync(file))))) {
+    if(!entry)manifest.assets[id]={text:s[lang],sha256:hash(fs.readFileSync(file)),model:'existing-recording',voice};
+    cached++;continue;
+  }
+  if(only.length&&!only.includes(s.siteId))continue;
+  try {
+    client??=geminiVoice({key:existingKey(root),model,voice,maxRequests});
+    const result=await client.synthesize(s[lang],lang);
+    const {mp3,seconds}=toMp3(result);
+    if(seconds<0.25||mp3.length<512)throw Error('Empty voice response.');
+    const temporary=file+'.tmp';fs.writeFileSync(temporary,mp3);fs.renameSync(temporary,file);
+    manifest.assets[id]={text:s[lang],sha256:hash(mp3),seconds,model:result.model,voice};
+    generated++;save();console.log(id+': generated '+seconds.toFixed(1)+' seconds ('+result.model+').');
+  } catch {
+    failed++;console.warn(id+': audio unavailable; verified text remains available.');
+    if(client&&client.requests>=maxRequests)break;
   }
 }
-console.log('done');
+save();console.log(JSON.stringify({generated,cached,failed,requests:client?.requests??0}));
+if(failed)process.exitCode=2;

@@ -14,7 +14,7 @@ import { Figure } from '../Figure';
 import { EvidenceBoard } from './EvidenceScreens';
 import { EquipmentPanel } from './SurfaceScreen';
 import { CrewPanel, StatusChip } from '../CrewPanel';
-import { SiteStories, hasStory, replayStory } from './StoryCard';
+import { hasStory, replayStory } from './StoryCard';
 import type { MissionState, MissionDefinition as MDef, Objective as Obj } from '../../core/types';
 
 function objectiveDone(o: Obj, state: MissionState, mission: MDef) {
@@ -879,7 +879,6 @@ export function ExploreHud() {
       <div className="hud-br">
         <Minimap />
       </div>
-      <SiteStories />
       <TouchControls />
       {panel === 'journal' && <Journal onClose={() => setLive({ panel: 'none' })} onReport={() => setLive({ panel: 'report' })} />}
       {panel === 'report' && <ReportCard onClose={() => setLive({ panel: 'none' })} />}

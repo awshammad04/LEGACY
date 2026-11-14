@@ -9,6 +9,7 @@
     "build": "tsc --noEmit && vite build",
     "preview": "vite preview",
     "typecheck": "tsc --noEmit",
+    "check:stories": "node scripts/check-stories.mjs",
     "test": "vitest run",
     "test:watch": "vitest",
     "e2e": "playwright test"

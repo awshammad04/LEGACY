@@ -36,7 +36,8 @@ export function SettingsModal() {
             </div>
           </div>
           <Toggle label={t('Subtitles')} hint={t('Show text for every spoken line.')} checked={settings.subtitles} onChange={(v) => setSettings({ subtitles: v })} />
-          <Toggle label={t('Voice narration')} hint={t('Synthetic narrator voice from your browser. The narrator is a fictional Mission Control character.')} checked={settings.narration} onChange={(v) => setSettings({ narration: v })} />
+          <Toggle label={t('Voice narration')} hint={t('Gemini story recordings in the selected language. Verified text remains available when audio cannot play.')} checked={settings.storyNarration} onChange={(v) => setSettings({ storyNarration: v })} />
+          <label className="toggle">{t('Narration volume')}<input aria-label={t('Narration volume')} type="range" min={0} max={1} step={0.05} value={settings.storyVolume} onChange={e=>setSettings({storyVolume:Number(e.target.value)})} /></label>
           <Toggle label={t('Sound effects')} checked={settings.sfx} onChange={(v) => setSettings({ sfx: v })} />
           <Toggle label={t('Reduce motion')} hint={t('Shortens cinematics and stops camera movement.')} checked={settings.reducedMotion} onChange={(v) => setSettings({ reducedMotion: v })} />
           <div className="toggle">
