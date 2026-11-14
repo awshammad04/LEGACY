@@ -28,7 +28,7 @@ export function CreditsScreen() {
             </div>
           ))}
           <h3>{t('Created for LEGACY')}</h3>
-          <p className="small muted">{t('3D rover, launchers, satellites and terrain are procedural reconstructions made in code. Sound effects are synthesized in the browser. Narration uses your browser\'s synthetic voice. Fonts: Space Grotesk, Inter and IBM Plex Sans Arabic (SIL Open Font License).')} {t('3D engine: Three.js (MIT License).')}</p>
+          <p className="small muted">{t('3D rover, launchers, satellites and terrain are procedural reconstructions made in code. Sound effects are synthesized in the browser. Narration uses your browser\'s synthetic voice. Fonts: Space Grotesk, Inter and IBM Plex Sans Arabic (SIL Open Font License).')}</p>
         </section>
         <section className="panel panel-pad stack" aria-labelledby="src-credits">
           <h3 id="src-credits">{t('Facts and references')}</h3>

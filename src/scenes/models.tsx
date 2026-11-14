@@ -1,5 +1,4 @@
 import { useMemo, useRef } from 'react';
-import { RoundedBox } from '@react-three/drei';
 import type { MutableRefObject } from 'react';
 import { RockerBogie, type VehicleMotion } from './roverfx';
 import * as THREE from 'three';
@@ -40,31 +39,10 @@ export function RoverModel({ mission, design, scale = 1, motion }: { mission: Mi
     <group scale={scale}>
       {/* Wheels + rocker-bogie (rolls and follows terrain when driven) */}
       <RockerBogie bodyL={bodyL} bodyW={bodyW} wheelR={wheelR} size={size} motion={motion} />
-      {/* Body: rounded warm-electronics box with a darker equipment deck */}
-      <RoundedBox args={[bodyL, 0.42 * size, bodyW]} radius={0.06 * size} smoothness={3} position={[0, wheelR + 0.45 * size, 0]} castShadow>
-        <meshPhysicalMaterial color={WHITE} roughness={0.42} metalness={0.05} clearcoat={0.4} clearcoatRoughness={0.5} />
-      </RoundedBox>
-      <mesh position={[0, wheelR + 0.665 * size, 0]}>
-        <boxGeometry args={[bodyL * 0.9, 0.02, bodyW * 0.86]} />
-        <meshStandardMaterial color="#5a6170" roughness={0.6} metalness={0.4} />
-      </mesh>
-      {/* Deck equipment: avionics boxes and the sample-handling bay */}
-      {[[-0.28, 0.2], [-0.05, -0.25], [0.18, 0.22]].map(([x, z], i) => (
-        <RoundedBox key={i} args={[0.32 * size, 0.12 * size, 0.26 * size]} radius={0.02} position={[bodyL * x, wheelR + 0.73 * size, bodyW * z]} castShadow>
-          <meshStandardMaterial color={i === 1 ? GOLD : '#d9dce2'} metalness={i === 1 ? 0.85 : 0.2} roughness={i === 1 ? 0.3 : 0.5} />
-        </RoundedBox>
-      ))}
-      {/* Front hazard-avoidance cameras */}
-      {[-1, 1].map((sd) => (
-        <mesh key={sd} position={[bodyL / 2 + 0.01, wheelR + 0.36 * size, sd * 0.16 * size]} rotation={[0, 0, Math.PI / 2]}>
-          <cylinderGeometry args={[0.035 * size, 0.035 * size, 0.04, 12]} />
-          <meshStandardMaterial color="#0c0f14" metalness={0.6} roughness={0.15} />
-        </mesh>
-      ))}
-      {/* UHF relay antenna */}
-      <mesh position={[-bodyL * 0.38, wheelR + 0.78 * size, -bodyW * 0.1]} castShadow>
-        <cylinderGeometry args={[0.06 * size, 0.07 * size, 0.2 * size, 12]} />
-        <meshStandardMaterial color="#e8e8e2" roughness={0.5} />
+      {/* Body */}
+      <mesh position={[0, wheelR + 0.45 * size, 0]} castShadow>
+        <boxGeometry args={[bodyL, 0.42 * size, bodyW]} />
+        <meshStandardMaterial color={WHITE} roughness={0.55} metalness={0.15} />
       </mesh>
       <mesh position={[0, wheelR + 0.24 * size, 0]}>
         <boxGeometry args={[bodyL * 0.92, 0.06, bodyW * 0.92]} />
@@ -154,21 +132,10 @@ export function RoverModel({ mission, design, scale = 1, motion }: { mission: Mi
             <boxGeometry args={[0.5, 0.06, 0.06]} />
             <meshStandardMaterial color={WHITE} />
           </mesh>
-          {[[0, 0], [0.5, 0.25], [0.8, -0.13]].map(([x, y], i) => (
-            <mesh key={i} position={[x, y, 0]} rotation={[Math.PI / 2, 0, 0]}>
-              <cylinderGeometry args={[0.06, 0.06, 0.12, 14]} />
-              <meshStandardMaterial color={GREY} metalness={0.7} roughness={0.3} />
-            </mesh>
-          ))}
-          <RoundedBox args={[0.24, 0.24, 0.24]} radius={0.04} position={[0.8, -0.26, 0]} castShadow>
+          <mesh position={[0.8, -0.22, 0]}>
+            <boxGeometry args={[0.22, 0.22, 0.22]} />
             <meshStandardMaterial color={has('inst-abrasion') ? GOLD : GREY} metalness={0.6} roughness={0.35} />
-          </RoundedBox>
-          {has('inst-abrasion') && (
-            <mesh position={[0.8, -0.45, 0]}>
-              <cylinderGeometry args={[0.025, 0.012, 0.18, 10]} />
-              <meshStandardMaterial color="#9aa0a8" metalness={0.9} roughness={0.2} />
-            </mesh>
-          )}
+          </mesh>
         </group>
       )}
       {has('inst-radar') && (

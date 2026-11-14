@@ -1611,13 +1611,5 @@
  "Climb aboard the lunar rover": "اصعد إلى المركبة القمرية الجوالة",
  "Step off and walk": "انزل وامشِ",
  "Parked lunar rover": "المركبة القمرية الجوالة المتوقفة",
- "On foot — walking is slower and uses more suit oxygen. Walk back to the rover (yellow on the map) to drive again.": "سيرًا على الأقدام — المشي أبطأ ويستهلك أكسجين البدلة أكثر. عُد إلى المركبة (باللون الأصفر على الخريطة) لتقودها من جديد.",
- "Apollo Lunar Module (3D model)": "وحدة أبولو القمرية (نموذج ثلاثي الأبعاد)",
- "Mars Exploration Rover — Opportunity (MER-B) (3D model)": "مركبة استكشاف المريخ — أوبورتيونيتي (MER-B) (نموذج ثلاثي الأبعاد)",
- "Only the descent stage is shown (the ascent stage left the Moon)": "تظهر مرحلة الهبوط فقط (فقد غادرت مرحلة الصعود القمر)",
- "3D engine: Three.js (MIT License).": "محرّك ثلاثي الأبعاد: Three.js (رخصة MIT).",
- "Aerial Sand (diffuse, normal and roughness maps, 1K)": "رمال جوية (خرائط اللون والانحناء والخشونة، 1K)",
- "Rock Boulder Dry (diffuse, normal and roughness maps, 1K)": "صخرة جافة (خرائط اللون والانحناء والخشونة، 1K)",
- "Earth material scan used artistically for fictional Mars terrain": "مسح لمادة أرضية استُخدم فنيًا لتضاريس مريخية خيالية",
- "Earth material scan used artistically for fictional Mars rocks": "مسح لمادة أرضية استُخدم فنيًا لصخور مريخية خيالية"
+ "On foot — walking is slower and uses more suit oxygen. Walk back to the rover (yellow on the map) to drive again.": "سيرًا على الأقدام — المشي أبطأ ويستهلك أكسجين البدلة أكثر. عُد إلى المركبة (باللون الأصفر على الخريطة) لتقودها من جديد."
 }
