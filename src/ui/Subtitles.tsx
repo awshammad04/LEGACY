@@ -6,8 +6,8 @@ export function Subtitles() {
   const t = useT();
   const line = useSubtitles((s) => s.line);
   const on = useGame((s) => s.settings.subtitles);
-  // The Mission 03 launch cinematic shows its own Mission Control captions
-  const cinematic = useGame((s) => s.view === 'mission' && s.missionId === 'm3-lost-rover' && s.state?.stage === 'launch');
+  // The shared launch cinematic shows its own Mission Control captions.
+  const cinematic = useGame((s) => s.view === 'mission' && s.state?.stage === 'launch');
   if (!line || !on || cinematic) return null;
   return (
     <div className="subtitles" role="status" aria-live="polite">

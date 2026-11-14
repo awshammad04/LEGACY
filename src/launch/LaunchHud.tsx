@@ -1,20 +1,22 @@
 import { useRef, useState, useSyncExternalStore } from 'react';
 import { marks, phaseAt, type CameraView, type LaunchController, type Phase, type Quality } from './controller';
 import { useLaunchAudio } from './audio';
+import { LAUNCH_MISSIONS, type LaunchIdentity } from './missions';
 import './launch.css';
 
-const labels: Record<Phase, [string, string]> = {
-  establish: ['Pad operations', 'Control to Pioneer. The rover is secured. We’re standing by for terminal count.'],
-  countdown: ['Terminal count', 'Pioneer, you are go for launch. Stand by for engine start.'],
-  ignition: ['Engine ignition', 'Main engines are up. Hold the vehicle on the mount.'],
-  liftoff: ['Liftoff', 'Liftoff. Pioneer is clear of the tower and climbing.'],
-  ascent: ['Atmospheric ascent', 'Pioneer is climbing away from the range. Stand by for flight handoff.'],
+const labels: Record<Phase, string> = {
+  establish: 'Pad operations',
+  countdown: 'Terminal count',
+  ignition: 'Engine ignition',
+  liftoff: 'Liftoff',
+  ascent: 'Atmospheric ascent',
 };
 const views: CameraView[] = ['Director', 'Pad', 'Vehicle', 'Engines', 'Inspect'];
 type Translate = (value: string) => string;
 
-export function LaunchHud({ launch, demo = false, subtitles: initialCaptions = true, translate = (value) => value, allowSkip = true, onRecover }: {
+export function LaunchHud({ launch, identity = LAUNCH_MISSIONS['m3-lost-rover'], demo = false, subtitles: initialCaptions = true, translate = (value) => value, allowSkip = true, onRecover }: {
   launch: LaunchController;
+  identity?: LaunchIdentity;
   demo?: boolean;
   subtitles?: boolean;
   translate?: Translate;
@@ -31,7 +33,7 @@ export function LaunchHud({ launch, demo = false, subtitles: initialCaptions = t
   const flight = Math.floor(time - marks.liftoff);
   const clock = `T${flight < 0 ? '−' : '+'}${String(Math.abs(flight)).padStart(2, '0')}`;
   const active = status === 'playing' || status === 'paused';
-  const label = status === 'complete' ? 'Flight handoff' : status === 'error' ? 'Cinematic unavailable' : labels[phase][0];
+  const label = status === 'complete' ? 'Flight handoff' : status === 'error' ? 'Cinematic unavailable' : labels[phase];
   return <main className="lx-hud" id="main">
     {demo && <header className="lx-header">
       <div className="lx-wordmark"><span className="lx-emblem" aria-hidden="true" /> LEGACY</div>
@@ -43,20 +45,20 @@ export function LaunchHud({ launch, demo = false, subtitles: initialCaptions = t
       onLostPointerCapture={() => { drag.current = null; }}
     />}
     <div className={`lx-title ${demo && status === 'ready' ? 'lx-expanded' : ''}`}>
-      <div className="lx-kicker"><i />{translate('MISSION 03')} <span /> {translate('ROBOTIC MARS EXPEDITION')}</div>
-      <h1>{translate('The Lost Rover')}</h1>
-      {demo && status === 'ready' && <p>{translate('Send an uncrewed expedition to document Opportunity’s final site on Mars.')}</p>}
+      <div className="lx-kicker"><i />{translate(identity.missionLabel)} <span /> {translate(identity.expedition)}</div>
+      <h1>{translate(identity.title)}</h1>
+      {demo && status === 'ready' && <p>{translate(identity.description)}</p>}
     </div>
     {(captions ?? initialCaptions) && active && <div className="lx-caption" aria-live="polite">
       <strong>{translate('MISSION CONTROL')}</strong>
-      <span>{translate(labels[phase][1])}</span>
+      <span>{translate(identity.captions[phase])}</span>
     </div>}
     <div className="lx-console">
       <div className="lx-readout">
         <div className="lx-clock" aria-label={translate('Mission clock')}>{clock}</div>
         <div className="lx-status">
           <span>{translate(label)}</span>
-          <small>{translate(status === 'error' ? 'Rendering interrupted' : status === 'paused' ? 'Sequence paused' : 'Pioneer 03 · Readiness cleared')}</small>
+          <small>{translate(status === 'error' ? 'Rendering interrupted' : status === 'paused' ? 'Sequence paused' : identity.readiness)}</small>
         </div>
       </div>
       <div className="lx-track" role="progressbar" aria-label={translate('Launch sequence progress')} aria-valuemin={0} aria-valuemax={25} aria-valuenow={status === 'complete' ? 25 : Math.floor(time)}>

@@ -7,8 +7,12 @@ import type { LaunchController } from './controller';
 import { ExhaustCloud, Jets } from './Exhaust';
 import { Facility } from './Facility';
 import { Vehicle } from './Vehicle';
+import type { Tier } from '../core/types';
+import { LAUNCH_MISSIONS, type LaunchIdentity } from './missions';
 
-function World({ launch }: { launch: LaunchController }) {
+interface CinematicProps { launch: LaunchController; identity?: LaunchIdentity; tier?: Tier }
+
+function World({ launch, identity, tier }: CinematicProps) {
   const rocket = useRef<T.Group>(null);
   const glow = useRef<T.PointLight>(null);
   const first = useRef<T.Group>(null), second = useRef<T.Group>(null), third = useRef<T.Group>(null);
@@ -49,7 +53,7 @@ function World({ launch }: { launch: LaunchController }) {
     <directionalLight position={[20,9,-38]} intensity={1.35} color="#93b5e5" />
     <Facility arms={[first,second,third]} />
     <group ref={rocket} position={[0,2.49,0]}>
-      <Vehicle />
+      <Vehicle identity={identity} tier={tier} />
       <Jets launch={launch} />
       <pointLight ref={glow} position={[0,-1.1,0]} color="#ff9a48" distance={34} decay={2} intensity={0} />
     </group>
@@ -64,7 +68,7 @@ class LaunchBoundary extends Component<{ launch: LaunchController; children: Rea
   render() { return this.state.failed ? null : this.props.children; }
 }
 
-export function CinematicLaunch({ launch }: { launch: LaunchController }) {
+export function CinematicLaunch({ launch, identity = LAUNCH_MISSIONS['m3-lost-rover'], tier = 'basic' }: CinematicProps) {
   const camera = useThree((state) => state.camera);
   const gl = useThree((state) => state.gl);
   useLayoutEffect(() => {
@@ -91,5 +95,5 @@ export function CinematicLaunch({ launch }: { launch: LaunchController }) {
       }
     };
   }, [camera, gl, launch]);
-  return <LaunchBoundary launch={launch}><World launch={launch} /></LaunchBoundary>;
+  return <LaunchBoundary launch={launch}><World launch={launch} identity={identity} tier={tier} /></LaunchBoundary>;
 }

@@ -1,0 +1,30 @@
+{
+  "headed": {
+    "checkpoint": {
+      "medianMs": 11.199999999999818,
+      "p95Ms": 33.5,
+      "samples": 1281,
+      "renderer": "ANGLE (Intel, Intel(R) Iris(R) Xe Graphics (0x00009A49) Direct3D11 vs_5_0 ps_5_0, D3D11)"
+    },
+    "shared": {
+      "medianMs": 33.30000000000109,
+      "p95Ms": 33.600000000000364,
+      "samples": 696,
+      "renderer": "ANGLE (Intel, Intel(R) Iris(R) Xe Graphics (0x00009A49) Direct3D11 vs_5_0 ps_5_0, D3D11)"
+    }
+  },
+  "headlessReversedOrder": {
+    "shared": {
+      "medianMs": 33.30000000000291,
+      "p95Ms": 33.600000000000364,
+      "samples": 697,
+      "renderer": "ANGLE (Intel, Intel(R) Iris(R) Xe Graphics (0x00009A49) Direct3D11 vs_5_0 ps_5_0, D3D11)"
+    },
+    "checkpoint": {
+      "medianMs": 33.30000000000109,
+      "p95Ms": 33.69999999999709,
+      "samples": 700,
+      "renderer": "ANGLE (Intel, Intel(R) Iris(R) Xe Graphics (0x00009A49) Direct3D11 vs_5_0 ps_5_0, D3D11)"
+    }
+  }
+}

@@ -1,66 +1,12 @@
 import { useEffect, useMemo, useState } from 'react';
 import { getMission } from '../../content/missions';
-import { computeMetrics, tierOf } from '../../core/evaluate';
-import { isTestMode, useGame, useT } from '../../game/store';
+import { computeMetrics } from '../../core/evaluate';
+import { useGame, useT } from '../../game/store';
 import { say, sfx } from '../../game/audio';
-import { launchClock } from '../../scenes/scenes';
 import { ProvenanceBadge } from '../common';
 import { Figure } from '../Figure';
 import { asset } from '../../scenes/models';
 import { assetCredit } from '../../content/assets';
-
-export function LaunchScreen() {
-  const t = useT();
-  const dispatch = useGame((s) => s.dispatch);
-  const reduced = useGame((s) => s.settings.reducedMotion);
-  const state = useGame((s) => s.state)!;
-  const missionId = useGame((s) => s.missionId)!;
-  const mission = getMission(missionId);
-  const tier = tierOf(mission, state.design, 'launcher') ?? 'basic';
-  const next = mission.stages[mission.stages.indexOf('launch') + 1] ?? 'orbit';
-  const [now, setNow] = useState(0);
-  const duration = isTestMode() ? 0.5 : reduced ? 3 : launchClock.duration;
-
-  useEffect(() => {
-    launchClock.start = performance.now();
-    let raf = 0;
-    let launched = false;
-    const tick = () => {
-      const tt = (performance.now() - launchClock.start) / 1000;
-      setNow(tt);
-      if (!launched && tt > 3 && !reduced) {
-        launched = true;
-        sfx('launch');
-      }
-      if (tt >= duration) {
-        dispatch({ type: 'ADVANCE', to: next });
-        return;
-      }
-      raf = requestAnimationFrame(tick);
-    };
-    raf = requestAnimationFrame(tick);
-    say({ en: 'All systems are go. Launch in three… two… one…' });
-    return () => cancelAnimationFrame(raf);
-  }, [dispatch, duration, reduced, next]);
-
-  const countdown = Math.max(0, Math.ceil(3 - now));
-  const phase = now < 3 ? t('Countdown') : now < 9.5 ? t('Liftoff — first stage burning') : now < 11 ? t('Stage separation') : t('Fairing separation — reaching parking orbit');
-  return (
-    <main className="stage-body" id="main" style={{ alignItems: 'flex-end' }}>
-      <div className="panel panel-pad stack-sm fade-in" style={{ width: 360 }} role="status" aria-live="polite">
-        <span className="eyebrow">{t('Launch')}</span>
-        <h2 className="mono" style={{ fontSize: 34 }}>
-          {now < 3 ? `T−${countdown}` : `T+${Math.floor(now - 3)}s`}
-        </h2>
-        <span className="muted">{phase}</span>
-        <span className="tiny dim">{t('Launcher: fictional {tier} vehicle sized by your workshop choice.', { tier: t(tier) })}</span>
-        <button className="btn btn-sm btn-ghost" style={{ alignSelf: 'flex-start' }} onClick={() => dispatch({ type: 'ADVANCE', to: next })}>
-          {t('Skip cinematic')} ⏭
-        </button>
-      </div>
-    </main>
-  );
-}
 
 export function OrbitScreen() {
   const t = useT();

@@ -1661,5 +1661,22 @@
  "Audio unavailable": "الصوت غير متاح",
  "Continue mission": "متابعة المهمة",
  "Resume listening": "متابعة الاستماع",
- "Reduced motion": "تقليل الحركة"
+ "Reduced motion": "تقليل الحركة",
+ "MISSION 01": "المهمة 01",
+ "MISSION 02": "المهمة 02",
+ "MISSION 04": "المهمة 04",
+ "CREWED LUNAR EXPEDITION": "بعثة مأهولة إلى القمر",
+ "ORBITAL OBSERVATORY": "مرصد مداري",
+ "Pioneer 01 · Readiness cleared": "بايونير 01 · اجتاز فحص الجاهزية",
+ "Pioneer 02 · Readiness cleared": "بايونير 02 · اجتاز فحص الجاهزية",
+ "Pioneer 04 · Readiness cleared": "بايونير 04 · اجتاز فحص الجاهزية",
+ "Control to Pioneer. Crew and lunar cargo are secured. Standing by for terminal count.": "من مركز التحكم إلى بايونير. الطاقم والمعدات القمرية مؤمّنون. بانتظار العدّ النهائي.",
+ "Pioneer is climbing toward Earth orbit. Next stop: the Moon.": "بايونير يصعد نحو مدار الأرض. المحطة التالية: القمر.",
+ "Pioneer is climbing toward Earth orbit. Next stop: Mars and Jezero Crater.": "بايونير يصعد نحو مدار الأرض. المحطة التالية: المريخ وفوهة جيزيرو.",
+ "Control to Pioneer. The observatory is secured. Standing by for terminal count.": "من مركز التحكم إلى بايونير. المرصد مثبّت. بانتظار العدّ النهائي.",
+ "Pioneer is climbing toward Earth orbit. Stand by for observatory handoff.": "بايونير يصعد نحو مدار الأرض. استعدّوا لتسليم التحكم بالمرصد.",
+ "Send your crew and lunar equipment toward the Moon.": "أرسل طاقمك والمعدات القمرية نحو القمر.",
+ "Send your rover to investigate Jezero Crater on Mars.": "أرسل مركبتك الجوالة لاستكشاف فوهة جيزيرو على المريخ.",
+ "Place your compact observatory in Earth orbit to capture a supernova.": "ضع مرصدك الصغير في مدار الأرض لتصوير مستعر أعظم.",
+ "Send an uncrewed expedition to document Opportunity’s final site on Mars.": "أرسل بعثة غير مأهولة لتوثيق الموقع الأخير لأوبورتشونيتي على المريخ."
 }

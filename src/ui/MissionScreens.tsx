@@ -1,10 +1,11 @@
 import { useGame, useT } from '../game/store';
 import { LaunchHud, type LaunchController } from '../launch';
 import { proceedFromLaunch } from '../launch/legacyHost';
+import { LAUNCH_MISSIONS } from '../launch/missions';
 import { QuizScreen } from './screens/QuizScreen';
 import { BriefingScreen } from './screens/BriefingScreen';
 import { ReviewScreen, WorkshopScreen } from './screens/WorkshopScreen';
-import { LandingSiteScreen, LaunchScreen, OrbitScreen } from './screens/FlightScreens';
+import { LandingSiteScreen, OrbitScreen } from './screens/FlightScreens';
 import { SurfaceScreen } from './screens/SurfaceScreen';
 import { EvidenceScreen, ReportScreen } from './screens/EvidenceScreens';
 import { DebriefScreen, ResultsScreen } from './screens/DebriefScreens';
@@ -19,6 +20,7 @@ export function MissionScreens({ launch }: { launch: LaunchController | null }) 
   const subtitles = useGame((s) => s.settings.subtitles);
   const stage = useGame((s) => s.state?.stage);
   const missionId = useGame((s) => s.missionId);
+  const seed = useGame((s) => s.seed);
   switch (stage) {
     case 'quizPre':
       return <QuizScreen key="pre" mode="pre" />;
@@ -29,7 +31,8 @@ export function MissionScreens({ launch }: { launch: LaunchController | null }) 
     case 'review':
       return <ReviewScreen />;
     case 'launch':
-      return missionId === 'm3-lost-rover' ? launch && <LaunchHud launch={launch} subtitles={subtitles} translate={t} onRecover={proceedFromLaunch} /> : <LaunchScreen />;
+      return launch && missionId && <LaunchHud key={`${missionId}:${seed}`} launch={launch} identity={LAUNCH_MISSIONS[missionId]}
+        subtitles={subtitles} translate={t} onRecover={() => proceedFromLaunch(missionId, seed)} />;
     case 'orbit':
       return <OrbitScreen />;
     case 'landingSite':

@@ -4,10 +4,9 @@ import { useFrame, useThree } from '@react-three/fiber';
 import { Html, OrbitControls, Stars } from '@react-three/drei';
 import { getMission } from '../content/missions';
 import { ORBIT_LEARN_CARDS, SKY_CARDS } from '../content/learn';
-import { tierOf } from '../core/evaluate';
 import { useGame, useT, useUi } from '../game/store';
 import { openLearnCard } from '../ui/common';
-import { Earth, Exhaust, JEZERO, MarsGlobe, Rocket, RoverModel, Satellite, latLonToVec3, rocketHeight } from './models';
+import { Earth, JEZERO, MarsGlobe, RoverModel, Satellite, latLonToVec3 } from './models';
 import { LanderModel, TelescopeModel } from './craft';
 import { Astronaut } from './astronaut';
 import { KitRoverPreview, kitVisualsEnabled } from '../legacy-visuals/MarsKit';
@@ -124,76 +123,6 @@ export function WorkshopScene() {
       )}
       <OrbitControls enablePan={false} minDistance={4} maxDistance={11} maxPolarAngle={Math.PI / 2.1} target={[0, 0.9, 0]} />
       <CameraRigOnce position={[6.8, 3.4, 6.8]} />
-    </>
-  );
-}
-
-/* ------------------------------------------------------------------ */
-/* Launch cinematic                                                    */
-/* ------------------------------------------------------------------ */
-
-export const launchClock = { start: 0, duration: 10 };
-
-export function LaunchScene() {
-  const state = useGame((s) => s.state);
-  const missionId = useGame((s) => s.missionId);
-  const rocket = useRef<THREE.Group>(null);
-  const lower = useRef<THREE.Group>(null);
-  const exhaust = useRef<THREE.Group>(null);
-  const sky = useRef<THREE.Color>(new THREE.Color('#6d93c4'));
-  const { camera, scene } = useThree();
-  const tier = state && missionId ? tierOf(getMission(missionId), state.design, 'launcher') ?? 'basic' : 'basic';
-  const h = rocketHeight(tier);
-  useFrame(() => {
-    const t = (performance.now() - launchClock.start) / 1000;
-    const ignite = 3;
-    const tt = Math.max(0, t - ignite);
-    const y = 0.35 * tt * tt * 1.6;
-    if (rocket.current) {
-      rocket.current.position.y = y;
-      rocket.current.rotation.z = -Math.min(0.5, tt * 0.04);
-      rocket.current.position.x = Math.min(30, tt * tt * 0.08);
-    }
-    if (exhaust.current) exhaust.current.visible = t > ignite - 0.3;
-    if (lower.current) {
-      const sep = t > 9.5;
-      lower.current.visible = !sep || t < 13;
-      if (sep) lower.current.position.y -= 0.15;
-    }
-    const k = Math.min(1, Math.max(0, (t - 6) / 6));
-    sky.current.set('#6d93c4').lerp(new THREE.Color('#02040a'), k);
-    scene.background = sky.current;
-    const target = new THREE.Vector3(rocket.current?.position.x ?? 0, (rocket.current?.position.y ?? 0) + h * 0.5, 0);
-    const camPos = new THREE.Vector3(target.x + 16, Math.max(3, target.y - 4 + (t < ignite ? 0 : 2)), 22);
-    camera.position.lerp(camPos, 0.06);
-    camera.lookAt(target);
-  });
-  return (
-    <>
-      <ambientLight intensity={0.5} />
-      <directionalLight position={[10, 20, 8]} intensity={2.4} castShadow />
-      <mesh rotation={[-Math.PI / 2, 0, 0]} receiveShadow>
-        <planeGeometry args={[400, 400]} />
-        <meshStandardMaterial color="#5c6b4a" roughness={1} />
-      </mesh>
-      <mesh position={[0, 0.25, 0]} receiveShadow>
-        <boxGeometry args={[8, 0.5, 8]} />
-        <meshStandardMaterial color="#7d8591" roughness={0.9} />
-      </mesh>
-      <mesh position={[-2.4, h * 0.55, 0]} castShadow>
-        <boxGeometry args={[0.8, h * 1.1, 0.8]} />
-        <meshStandardMaterial color="#9a4b2e" roughness={0.8} wireframe />
-      </mesh>
-      <group ref={rocket} position={[0, 0.5, 0]}>
-        <group ref={lower}>
-          <Rocket tier={tier} />
-        </group>
-        <group ref={exhaust} visible={false}>
-          <Exhaust length={h * 0.55} radius={tier === 'advanced' ? 1 : 0.6} />
-        </group>
-      </group>
-      <Smoke />
-      <Stars radius={200} depth={60} count={3000} factor={4} fade />
     </>
   );
 }
@@ -379,40 +308,6 @@ function SkyObjects() {
           </group>
         );
       })}
-    </group>
-  );
-}
-
-/** Exhaust smoke: puffs released at the rocket's base along its (deterministic) ascent path. */
-function Smoke() {
-  const N = 40;
-  const refs = useRef<(THREE.Mesh | null)[]>([]);
-  const mats = useMemo(() => Array.from({ length: N }, () => new THREE.MeshStandardMaterial({ color: '#d9d4cc', transparent: true, opacity: 0, depthWrite: false, roughness: 1 })), []);
-  useFrame(() => {
-    const t = (performance.now() - launchClock.start) / 1000;
-    for (let i = 0; i < N; i++) {
-      const m = refs.current[i];
-      if (!m) continue;
-      const born = 3 + i * 0.16;
-      const age = t - born;
-      if (age < 0) { mats[i].opacity = 0; continue; }
-      const tt = Math.max(0, born - 3);
-      const y = 0.35 * tt * tt * 1.6;
-      const x = Math.min(30, tt * tt * 0.08);
-      const spread = (i % 2 ? 1 : -1) * age * 1.2;
-      m.position.set(x + spread, Math.max(0.6, y + 0.4 - age * 0.3), (i % 3 - 1) * age);
-      const r = 0.8 + age * 1.6;
-      m.scale.setScalar(r);
-      mats[i].opacity = Math.max(0, 0.55 - age * 0.12);
-    }
-  });
-  return (
-    <group>
-      {mats.map((mat, i) => (
-        <mesh key={i} ref={(el) => { refs.current[i] = el; }} material={mat}>
-          <sphereGeometry args={[1, 12, 10]} />
-        </mesh>
-      ))}
     </group>
   );
 }

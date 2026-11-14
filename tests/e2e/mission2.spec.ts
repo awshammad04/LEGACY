@@ -45,6 +45,7 @@ test('Mission 2 can be played end to end with real recomputed results', async ({
   await page.locator('.pkg-card', { hasText: 'Balanced Explorer' }).click();
   await expect(page.getByText('Ready to launch ✓')).toBeVisible();
   await btn(page, /LAUNCH MISSION/).click();
+  await btn(page, 'Skip cinematic').click();
 
   // Orbit + puzzle hint
   await expect(page.getByText('In orbit around Earth')).toBeVisible();
@@ -145,6 +146,7 @@ test('Mission 04: build a telescope, launch, observe the supernova over 3 nights
   await page.locator('.pkg-card', { hasText: 'UV Hunter' }).click();
   await expect(page.getByText('Ready to launch ✓')).toBeVisible();
   await btn(page, /LAUNCH MISSION/).click();
+  await btn(page, 'Skip cinematic').click();
   await expect(page.getByRole('heading', { name: 'Catch the supernova' })).toBeVisible();
   await btn(page, /Point at the Pinwheel Galaxy/).click();
   await btn(page, /3. Take image/).click();
@@ -168,6 +170,7 @@ test('Mission 01: life aboard with crew health, then a safe moonwalk', async ({ 
   await page.getByRole('radio', { name: /Document Apollo 15 heritage/ }).click();
   await page.locator('.pkg-card', { hasText: 'Apollo-style Rover Team' }).click();
   await btn(page, /LAUNCH MISSION/).click();
+  await btn(page, 'Skip cinematic').click();
   await btn(page, /Continue to the Moon/).click();
   // Life aboard: five quick choices with live crew health
   await expect(page.getByRole('heading', { name: 'A day in space' })).toBeVisible();
@@ -209,6 +212,7 @@ test('Mission 03: find Opportunity and document it without entering the protecte
   await page.getByRole('radio', { name: /High-resolution photography/ }).click();
   await page.locator('.pkg-card', { hasText: 'Heritage Documenter' }).click();
   await btn(page, /LAUNCH MISSION/).click();
+  await btn(page, 'Skip cinematic').click();
   await btn(page, /Continue to Mars/).click();
   await btn(page, "Let's go!").click();
   await page.evaluate(() => (window as any).__legacy.useGame.getState().dispatch({ type: 'DRIVE', dist: 300, slopeAvg: 3, boostFrac: 0, bumps: 0, pos: [50, -250], heading: 0 }));

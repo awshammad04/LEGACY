@@ -1,44 +1,46 @@
 import { useEffect, useState } from 'react';
 import { getMission } from '../content/missions';
+import type { MissionId } from '../core/types';
 import { useGame } from '../game/store';
 import { LaunchController } from './controller';
 
-const missionId = 'm3-lost-rover';
-
-function authorized() {
+function authorized(missionId: MissionId, seed: number) {
   const { view, state, missionId: current } = useGame.getState();
-  return view === 'mission' && current === missionId && state?.stage === 'launch' && state.launched;
+  return view === 'mission' && current === missionId && state?.seed === seed && state.stage === 'launch' && state.launched;
 }
 
-export function proceedFromLaunch() {
-  if (!authorized()) return;
+export function proceedFromLaunch(missionId: MissionId, seed: number) {
+  if (!authorized(missionId, seed)) return;
   const { stages } = getMission(missionId);
   useGame.getState().dispatch({ type: 'ADVANCE', to: stages[stages.indexOf('launch') + 1] ?? 'orbit' });
 }
 
-export function useMission03Launch() {
-  const active = useGame((s) => s.view === 'mission' && s.missionId === missionId && s.state?.stage === 'launch' && s.state.launched);
+export function useMissionLaunch() {
+  const missionId = useGame((s) => s.missionId);
+  const seed = useGame((s) => s.seed);
+  const active = useGame((s) => s.view === 'mission' && s.state?.stage === 'launch' && s.state.launched);
   const reduced = useGame((s) => s.settings.reducedMotion);
   const quality = useGame((s) => s.settings.quality);
-  const [controller, setController] = useState<LaunchController | null>(null);
+  const [session, setSession] = useState<{ missionId: MissionId; seed: number; controller: LaunchController } | null>(null);
   useEffect(() => {
-    if (!active) {
-      setController(null);
+    if (!active || !missionId) {
+      setSession(null);
       return;
     }
     const settings = useGame.getState().settings;
     const launch = new LaunchController({
-      authorize: authorized,
+      authorize: () => authorized(missionId, seed),
       reduced: settings.reducedMotion,
       quality: settings.quality === 'low' ? 'low' : 'balanced',
-      onComplete: proceedFromLaunch,
+      onComplete: () => proceedFromLaunch(missionId, seed),
       onError: (error) => console.warn('[LEGACY launch]', error),
     });
-    setController(launch);
+    setSession({ missionId, seed, controller: launch });
     launch.start();
     return () => launch.dispose();
-  }, [active]);
+  }, [active, missionId, seed]);
+  const controller = active && session && session.missionId === missionId && session.seed === seed ? session.controller : null;
   useEffect(() => { controller?.setReduced(reduced); }, [controller, reduced]);
   useEffect(() => { controller?.setQuality(quality === 'low' ? 'low' : 'balanced'); }, [controller, quality]);
-  return active ? controller : null;
+  return controller;
 }

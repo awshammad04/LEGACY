@@ -1,5 +1,7 @@
 # Teammate launch cinematic: Mission 03 integration (branch `launch-integration`)
 
+This page records the original integration. The cinematic is now shared across all four missions; see [Shared cinematic launch](../shared-launch/README.md) for the current implementation and verification.
+
 ## What was integrated
 
 The teammate's `src/launch/` package is copied **unchanged** into `src/launch/`. It contains:

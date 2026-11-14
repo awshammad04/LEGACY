@@ -2,7 +2,7 @@ import { Component, Suspense, useEffect, type ReactNode } from 'react';
 import { Canvas } from '@react-three/fiber';
 import { Bloom, EffectComposer, Vignette } from '@react-three/postprocessing';
 import { useGame } from './game/store';
-import { HQScene, LaunchScene, MarsOrbitScene, ObserveScene, OrbitScene, WorkshopScene } from './scenes/scenes';
+import { HQScene, MarsOrbitScene, ObserveScene, OrbitScene, WorkshopScene } from './scenes/scenes';
 import { SurfaceScene } from './scenes/surface';
 import { ExploreScene } from './scenes/explore';
 import { getMission } from './content/missions';
@@ -18,7 +18,9 @@ import { MissionScreens } from './ui/MissionScreens';
 import { ArchiveScreen, ArchiveMemoryModal } from './ui/ArchiveScreen';
 import { CreditsScreen } from './ui/CreditsScreen';
 import { CinematicLaunch, type LaunchController } from './launch';
-import { useMission03Launch } from './launch/legacyHost';
+import { useMissionLaunch } from './launch/legacyHost';
+import { LAUNCH_MISSIONS } from './launch/missions';
+import { tierOf } from './core/evaluate';
 
 /** Keeps a 3D scene error from taking down the whole game; resets when the stage changes. */
 class SceneBoundary extends Component<{ children: ReactNode; resetKey: string }, { failed: boolean }> {
@@ -41,6 +43,7 @@ function SceneRouter({ launch }: { launch: LaunchController | null }) {
   const view = useGame((s) => s.view);
   const stage = useGame((s) => s.state?.stage);
   const missionId = useGame((s) => s.missionId);
+  const design = useGame((s) => s.state?.design);
   if (view === 'home') return <MenuScene />;
   if (view !== 'mission' || !stage) return <HQScene />;
   switch (stage) {
@@ -52,8 +55,8 @@ function SceneRouter({ launch }: { launch: LaunchController | null }) {
     case 'review':
       return <WorkshopScene />;
     case 'launch':
-      // Mission 03: teammate's Pioneer 03 cinematic (starts only after the host authorised launch)
-      return missionId === 'm3-lost-rover' ? launch && <CinematicLaunch launch={launch} /> : <LaunchScene />;
+      return launch && missionId && design && <CinematicLaunch launch={launch} identity={LAUNCH_MISSIONS[missionId]}
+        tier={tierOf(getMission(missionId), design, 'launcher') ?? 'basic'} />;
     case 'orbit':
       return <OrbitScene />;
     case 'landingSite':
@@ -75,7 +78,7 @@ function SceneRouter({ launch }: { launch: LaunchController | null }) {
 }
 
 export function App() {
-  const launch = useMission03Launch();
+  const launch = useMissionLaunch();
   const view = useGame((s) => s.view);
   const quality = useGame((s) => s.settings.quality);
   const reduced = useGame((s) => s.settings.reducedMotion);
