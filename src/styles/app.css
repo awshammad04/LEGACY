@@ -419,3 +419,4 @@ details summary { cursor: pointer; }
   .menu-tag { margin-bottom: 18px; }
   .mtab-name { display: none; }
 }
+.prompt-hint { max-width: 460px; text-align: center; color: var(--text-2); }

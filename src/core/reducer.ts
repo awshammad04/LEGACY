@@ -6,7 +6,7 @@ import { observationAvailability, observationDataMb, observationPowerW, observat
 import { computeOutcome } from './outcome';
 import { PUZZLE_CLUES } from '../content/puzzle';
 import { round } from './rng';
-import { DISCOVER_RADIUS, SOL_HOURS, batteryFloor, driveCost, netPerSol, siteDistance } from './explore';
+import { BOARD_RADIUS, DISCOVER_RADIUS, SOL_HOURS, batteryFloor, driveCost, hasBuggy, mobilityMetrics, netPerSol, siteDistance, stepOffPoint } from './explore';
 import { OBS_VALUE } from './science';
 
 /**
@@ -490,14 +490,14 @@ export function step(mission: MissionDefinition, prev: MissionState, action: Act
     case 'DRIVE': {
       if (s.stage !== 'surface' || s.pendingEvent) return prev;
       const dist = Math.max(0, Math.min(action.dist, 400));
-      const cost = driveCost(metrics, dist, action.slopeAvg, action.boostFrac);
+      const cost = driveCost(mobilityMetrics(mission, metrics, s.ops), dist, action.slopeAvg, action.boostFrac);
       const floor = batteryFloor(s.ops);
       if (mission.type === 'crewed') {
         s.ops.distanceU += dist;
         s.ops.pos = [action.pos[0], action.pos[1]];
         s.ops.heading = action.heading;
         s.ops.sol += cost.hours / 24;
-        const wk = 1.2 - metrics.wheelDurability;
+        const wk = s.ops.onFoot ? 0 : 1.2 - metrics.wheelDurability;
         s.ops.wheelHealth = Math.max(0, s.ops.wheelHealth - dist * 0.01 * wk - action.bumps * 2 * wk);
         s.ops.bumps += action.bumps;
         spendEva(mission, s, idx, cost.hours);
@@ -546,6 +546,23 @@ export function step(mission: MissionDefinition, prev: MissionState, action: Act
         if (rock.kind === 'rock') unlock(s, 'arch-cheyava');
       }
       triggerNextEvent(mission, s);
+      return s;
+    }
+    case 'BUGGY': {
+      if (s.stage !== 'surface' || s.pendingEvent || !hasBuggy(mission, s.design)) return prev;
+      if (action.board) {
+        const at = s.ops.buggyPos;
+        if (!s.ops.onFoot || !at || Math.hypot(at[0] - s.ops.pos[0], at[1] - s.ops.pos[1]) > BOARD_RADIUS) return prev;
+        s.ops.pos = [at[0], at[1]];
+        s.ops.heading = s.ops.buggyHeading ?? s.ops.heading;
+        s.ops.onFoot = false;
+      } else {
+        if (s.ops.onFoot) return prev;
+        s.ops.onFoot = true;
+        s.ops.buggyPos = [s.ops.pos[0], s.ops.pos[1]];
+        s.ops.buggyHeading = s.ops.heading;
+        s.ops.pos = stepOffPoint(s.ops.pos, s.ops.heading);
+      }
       return s;
     }
     case 'REST': {

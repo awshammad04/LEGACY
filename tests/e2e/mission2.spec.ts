@@ -172,13 +172,24 @@ test('Mission 01: life aboard with crew health, then a safe moonwalk', async ({ 
   // Life aboard: five quick choices with live crew health
   await expect(page.getByRole('heading', { name: 'A day in space' })).toBeVisible();
   await expect(page.getByText('Crew health').first()).toBeVisible();
+  // Five quick choices; wait for each to register (robust on slow machines)
+  const crewStep = () => page.evaluate(() => (window as any).__legacy.useGame.getState().state.crew.step as number);
   for (let i = 0; i < 5; i++) {
-    await page.keyboard.press('1');
-    await page.waitForTimeout(1900);
+    for (let tries = 0; tries < 6 && (await crewStep()) === i; tries++) {
+      await page.keyboard.press('1');
+      await page.waitForTimeout(2500);
+    }
+    expect(await crewStep()).toBe(i + 1);
   }
   await btn(page, /Land on the Moon/).click();
   await btn(page, "Let's go!").click();
   await expect(page.getByText('Suit oxygen')).toBeVisible();
+  // Park the lunar rover, walk, and climb back aboard
+  const ops = () => page.evaluate(() => (window as any).__legacy.useGame.getState().state.ops.onFoot ?? false);
+  await btn(page, /Step off and walk/).click();
+  await expect.poll(ops).toBe(true);
+  await btn(page, /Climb aboard the lunar rover/).click();
+  await expect.poll(ops).toBe(false);
   // Test hook: drive to the boundary of the Apollo 15 site
   await page.evaluate(() => (window as any).__legacy.useGame.getState().dispatch({ type: 'DRIVE', dist: 200, slopeAvg: 3, boostFrac: 0, bumps: 0, pos: [-161, 45], heading: 0 }));
   await expect(page.locator('.prompt', { hasText: 'Apollo 15 Site' })).toBeVisible();

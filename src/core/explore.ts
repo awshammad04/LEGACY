@@ -1,5 +1,5 @@
-import type { DesignMetrics, ExploreSite, MissionDefinition, OpsState } from './types';
-import { MODEL } from './evaluate';
+import type { Design, DesignMetrics, ExploreSite, MissionDefinition, OpsState } from './types';
+import { MODEL, tierOf } from './evaluate';
 import { mulberry32 } from './rng';
 import { TERRAIN_SIZE, heightAt } from './terrain';
 
@@ -23,6 +23,26 @@ export function roverTopSpeed(m: DesignMetrics, wheelHealth: number) {
       ? m.maxSpeedMPerH >= 12000 ? 16 : m.maxSpeedMPerH >= 10000 ? 13 : 6
       : m.maxSpeedMPerH >= 110 ? 17 : m.maxSpeedMPerH >= 80 ? 14 : 11;
   return base * (wheelHealth < 40 ? 0.6 : 1);
+}
+
+/** How close (world units) the crew must be to the parked rover to climb aboard. */
+export const BOARD_RADIUS = 7;
+
+/** Crewed Moon missions that brought a lunar rover can park it and walk. */
+export function hasBuggy(mission: MissionDefinition, design: Design) {
+  return mission.type === 'crewed' && mission.world?.vehicle === 'lrv' && (tierOf(mission, design, 'chassis') ?? 'basic') !== 'basic';
+}
+
+/** Mobility in effect right now: on foot the crew moves at walking pace, whatever rover they brought. */
+export function mobilityMetrics(mission: MissionDefinition, m: DesignMetrics, ops: OpsState): DesignMetrics {
+  if (!ops.onFoot) return m;
+  const walk = mission.slots.find((x) => x.id === 'chassis')?.options.find((o) => o.tier === 'basic');
+  return { ...m, maxSpeedMPerH: walk?.maxSpeedMPerH ?? 3000, slopeLimitDeg: Math.max(m.slopeLimitDeg, walk?.slopeLimitDeg ?? 15), drivePowerW: 0 };
+}
+
+/** Where the walking crew stands after stepping off the rover (beside it, not inside it). */
+export function stepOffPoint(pos: [number, number], heading: number): [number, number] {
+  return [pos[0] + Math.sin(heading) * 3, pos[1] + Math.cos(heading) * 3];
 }
 
 export function effectiveSpeedMPerH(m: DesignMetrics) {

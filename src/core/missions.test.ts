@@ -75,6 +75,33 @@ describe('Mission 01 — life aboard and Moon EVA', () => {
     expect(s.evidence.observations.map((o) => o.id)).toContain('obs-heritage-photo');
     expect(s.ops.rests).toBe(0);
   });
+
+  it('the crew can park the rover, walk (slower, more suit time) and climb back aboard only beside it', () => {
+    const base = cruise({});
+    const out = replay(M1, 1, [...base, { type: 'BUGGY', board: false }]);
+    expect(out.ops.onFoot).toBe(true);
+    expect(out.ops.buggyPos).toEqual([-54, -164]);
+    // Same distance on foot costs more suit oxygen than driving
+    const p0 = out.ops.pos;
+    const walked = replay(M1, 1, [...base, { type: 'BUGGY', board: false }, drive([p0[0] + 40, p0[1]], 40)]);
+    const drove = replay(M1, 1, [...base, drive([-14, -164], 40)]);
+    expect(walked.ops.evaUsedH).toBeGreaterThan(drove.ops.evaUsedH * 2);
+    expect(walked.ops.wheelHealth).toBe(100);
+    // Too far from the rover: boarding is refused
+    const far = replay(M1, 1, [...base, { type: 'BUGGY', board: false }, drive([p0[0] + 40, p0[1]], 40), { type: 'BUGGY', board: true }]);
+    expect(far.ops.onFoot).toBe(true);
+    // Walk back beside it: boarding works and the crew is in the rover's seat
+    const back = replay(M1, 1, [...base, { type: 'BUGGY', board: false }, drive([p0[0] + 40, p0[1]], 40), drive([-52, -162], 40), { type: 'BUGGY', board: true }]);
+    expect(back.ops.onFoot).toBe(false);
+    expect(back.ops.pos).toEqual([-54, -164]);
+  });
+
+  it('missions without a rover cannot park one', () => {
+    const walkers = [...toLaunch(M1, 'walkers'), { type: 'ADVANCE', to: 'orbit' }, { type: 'ADVANCE', to: 'cruise' }, ...M1.cruise!.map((st) => ({ type: 'CREW_CHOICE', stepId: st.id, optionId: st.options[0].id }) as Action), { type: 'ADVANCE', to: 'surface' }] as Action[];
+    const s = replay(M1, 1, [...walkers, { type: 'BUGGY', board: false }]);
+    expect(s.stage).toBe('surface');
+    expect(s.ops.onFoot).toBeFalsy();
+  });
 });
 
 describe('Mission 03 — Opportunity', () => {

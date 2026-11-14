@@ -2,7 +2,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import type { ExploreSite, ObservationDef } from '../../core/types';
 import { getMission } from '../../content/missions';
 import { computeMetrics } from '../../core/evaluate';
-import { batteryFloor, WORLD_LIMIT } from '../../core/explore';
+import { batteryFloor, hasBuggy, WORLD_LIMIT } from '../../core/explore';
 import { downlinkCapacityMb, observationAvailability, observationDataMb, observationPowerW, pointsFor, sciencePoints } from '../../core/science';
 import { heightAt, TERRAIN_SIZE } from '../../core/terrain';
 import { useGame, useT, useUi } from '../../game/store';
@@ -229,6 +229,7 @@ function Minimap() {
   const { state, mission } = useMissionBits();
   const pos = useLive((s) => s.pos);
   const heading = useLive((s) => s.heading);
+  const buggyAt = useGame((s) => (s.state?.ops.onFoot ? s.state.ops.buggyPos : undefined));
   const bg = useTerrainImage(mission.world?.theme === 'moon');
   const S = 168;
   const toMap = (x: number, z: number) => [((x / TERRAIN_SIZE) + 0.5) * S, ((z / TERRAIN_SIZE) + 0.5) * S];
@@ -254,6 +255,11 @@ function Minimap() {
             </g>
           );
         })}
+        {buggyAt && (
+          <rect x={toMap(buggyAt[0], buggyAt[1])[0] - 4} y={toMap(buggyAt[0], buggyAt[1])[1] - 3} width={8} height={6} rx={1.5} fill="#ffd166" stroke="#000" strokeWidth={1}>
+            <title>{t('Parked lunar rover')}</title>
+          </rect>
+        )}
         <g transform={`translate(${rx} ${rz}) rotate(${(-heading * 180) / Math.PI})`}>
           <polygon points="7,0 -5,-4.5 -3,0 -5,4.5" fill="#ffffff" stroke="#000" strokeWidth={1} />
         </g>
@@ -799,11 +805,17 @@ export function ExploreHud() {
         {panel === 'actions' && nearSite && !busy ? (
           <ActionPanel site={nearSite} onClose={() => setLive({ panel: 'none' })} />
         ) : nearSite && !busy ? (
-          <button className="hud-card prompt fade-in" onClick={() => setLive({ panel: 'actions' })}>
-            <kbd>E</kbd> {t('Investigate {site}', { site: nearSite.name })}
-          </button>
+          <div className="row-wrap" style={{ justifyContent: 'center' }}>
+            <button className="hud-card prompt fade-in" onClick={() => setLive({ panel: 'actions' })}>
+              <kbd>E</kbd> {t('Investigate {site}', { site: nearSite.name })}
+            </button>
+            <BuggyPrompt keyLabel="B" />
+          </div>
         ) : (
-          <ControlsHint />
+          <>
+            {!busy && <BuggyPrompt />}
+            <ControlsHint />
+          </>
         )}
       </div>
       <div className="hud-br">
@@ -818,3 +830,31 @@ export function ExploreHud() {
   );
 }
 
+
+/** "E" prompt to step off the lunar rover, or to climb back aboard when standing beside it. */
+function BuggyPrompt({ keyLabel = 'E' }: { keyLabel?: string }) {
+  const t = useT();
+  const missionId = useGame((s) => s.missionId);
+  const design = useGame((s) => s.state?.design);
+  const onFoot = useGame((s) => !!s.state?.ops.onFoot);
+  const near = useLive((s) => !!s.buggyNear);
+  const stopped = useLive((s) => s.speed < 0.3);
+  const moved = useLive((s) => s.moved);
+  if (!missionId || !design || !hasBuggy(getMission(missionId), design)) return null;
+  const go = () => window.dispatchEvent(new Event('legacy:buggy'));
+  if (onFoot && near)
+    return (
+      <button className="hud-card prompt fade-in" onClick={go}>
+        <kbd>{keyLabel}</kbd> {t('Climb aboard the lunar rover')}
+      </button>
+    );
+  if (onFoot && keyLabel === 'E')
+    return <div className="hud-card prompt-hint small">{t('On foot — walking is slower and uses more suit oxygen. Walk back to the rover (yellow on the map) to drive again.')}</div>;
+  if (stopped && (moved || keyLabel === 'B'))
+    return (
+      <button className="hud-card prompt fade-in" onClick={go}>
+        <kbd>{keyLabel}</kbd> {t('Step off and walk')}
+      </button>
+    );
+  return null;
+}

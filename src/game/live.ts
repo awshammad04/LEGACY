@@ -7,6 +7,8 @@ interface LiveStore {
   speed: number;
   pendingWh: number;
   nearSiteId?: string;
+  /** Crew on foot and close enough to climb back aboard the parked rover. */
+  buggyNear?: boolean;
   blocked?: 'slope' | 'battery' | null;
   moved: boolean;
   /** Visual scan beam: site id + start time */

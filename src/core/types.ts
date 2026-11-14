@@ -398,6 +398,10 @@ export interface OpsState {
   evaUsedH: number;
   inKeepOut: boolean;
   keepOutViolations: number;
+  /** Crewed missions with a lunar rover: the crew is walking, and the rover is parked here. */
+  onFoot?: boolean;
+  buggyPos?: [number, number];
+  buggyHeading?: number;
 }
 
 export interface ObservationResult {
@@ -471,6 +475,7 @@ export type Action =
   | { type: 'ANSWER_POST_QUIZ'; answers: Record<string, string> }
   | { type: 'DRIVE'; dist: number; slopeAvg: number; boostFrac: number; bumps: number; pos: [number, number]; heading: number }
   | { type: 'REST' }
+  | { type: 'BUGGY'; board: boolean }
   | { type: 'DISCOVER'; siteId: string }
   | { type: 'INVESTIGATE'; siteId: string; observationId: string }
   | { type: 'SEND_REPORT'; conclusion: 'proven' | 'potential' | 'untested' | 'nothing' | 'summary' }

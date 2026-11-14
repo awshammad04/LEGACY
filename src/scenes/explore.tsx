@@ -5,7 +5,7 @@ import { Environment, Lightformer, OrbitControls } from '@react-three/drei';
 import { TextSprite } from './TextSprite';
 import { getMission } from '../content/missions';
 import { computeMetrics } from '../core/evaluate';
-import { batteryFloor, driveCost, isObstacle, rockField, roverTopSpeed, siteDistance, WORLD_LIMIT, type Rock } from '../core/explore';
+import { BOARD_RADIUS, batteryFloor, driveCost, hasBuggy, isObstacle, mobilityMetrics, rockField, roverTopSpeed, siteDistance, WORLD_LIMIT, type Rock } from '../core/explore';
 import { heightAt } from '../core/terrain';
 import type { ExploreSite, MissionDefinition } from '../core/types';
 import { useGame, useT, useUi } from '../game/store';
@@ -342,10 +342,11 @@ function DrivableRover({ mission, rocks }: { mission: MissionDefinition; rocks: 
     const brake = keys.has('Space');
 
     // Battery check (reducer battery minus energy not yet committed)
-    const pendingWh = driveCost(m, s.pending.dist, s.pending.dist ? s.pending.slope / s.pending.dist : 0, s.pending.dist ? s.pending.boost / s.pending.dist : 0).energyWh;
+    const mob = mobilityMetrics(mission, m, st.ops);
+    const pendingWh = driveCost(mob, s.pending.dist, s.pending.dist ? s.pending.slope / s.pending.dist : 0, s.pending.dist ? s.pending.boost / s.pending.dist : 0).energyWh;
     const empty = mission.type !== 'crewed' && st.ops.batteryWh - pendingWh <= batteryFloor(st.ops) + 1;
 
-    const top = roverTopSpeed(m, st.ops.wheelHealth) * (boost ? 1.5 : 1);
+    const top = roverTopSpeed(mob, st.ops.wheelHealth) * (boost ? 1.5 : 1);
     const throttle = empty ? 0 : (fwd ? 1 : 0) - (back ? 0.6 : 0);
     if (throttle !== 0) s.v += throttle * (Math.sign(throttle) !== Math.sign(s.v) && s.v !== 0 ? 30 : 16) * dt;
     else s.v *= Math.pow(0.04, dt);
@@ -364,7 +365,7 @@ function DrivableRover({ mission, rocks }: { mission: MissionDefinition; rocks: 
       const step = Math.hypot(dx, dz);
       const rise = heightAt(nx, nz) - heightAt(s.x, s.z);
       const slope = (Math.atan2(Math.abs(rise), Math.max(step, 1e-4)) * 180) / Math.PI;
-      if (rise > 0 && slope > m.slopeLimitDeg) {
+      if (rise > 0 && slope > mob.slopeLimitDeg) {
         s.v = 0;
         blocked = 'slope';
       } else {
@@ -449,16 +450,54 @@ function DrivableRover({ mission, rocks }: { mission: MissionDefinition; rocks: 
       let nearSiteId: string | undefined;
       for (const site of mission.sites ?? []) if (siteDistance(site, [s.x, s.z]) <= site.radius + 5) nearSiteId = site.id;
       if (blocked && now - s.lastWarn > 1500) s.lastWarn = now;
-      useLive.getState().set({ pos: [s.x, s.z], heading: s.h, speed: Math.abs(s.v), pendingWh, nearSiteId, blocked, moved: live.moved || s.pending.dist > 0 || st.ops.distanceU > 0 });
+      const bp = st.ops.buggyPos;
+      const buggyNear = !!st.ops.onFoot && !!bp && Math.hypot(bp[0] - s.x, bp[1] - s.z) <= BOARD_RADIUS;
+      useLive.getState().set({ pos: [s.x, s.z], heading: s.h, speed: Math.abs(s.v), pendingWh, nearSiteId, buggyNear, blocked, moved: live.moved || s.pending.dist > 0 || st.ops.distanceU > 0 });
     }
   });
+
+  // E (or the HUD prompt): step off the lunar rover, or climb back aboard beside it.
+  const buggy = hasBuggy(mission, state.design);
+  useEffect(() => {
+    if (!buggy) return;
+    const toggle = () => {
+      const st = useGame.getState().state!;
+      const live = useLive.getState();
+      const ui = useUi.getState();
+      if (st.pendingEvent || live.panel !== 'none' || ui.settingsOpen || ui.learnCard) return;
+      const s = sim.current;
+      if (!st.ops.onFoot) {
+        if (Math.abs(s.v) > 0.8) return;
+        s.v = 0;
+        commit();
+        if (dispatch({ type: 'BUGGY', board: false })) sfx('click');
+      } else {
+        commit();
+        if (dispatch({ type: 'BUGGY', board: true })) sfx('confirm');
+      }
+    };
+    const onKey = (e: KeyboardEvent) => {
+      if (e.repeat) return;
+      const k = e.key.toLowerCase();
+      // E away from a site, or B anywhere (near a site E opens the site actions)
+      if (k === 'b' || (k === 'e' && !useLive.getState().nearSiteId)) toggle();
+    };
+    window.addEventListener('keydown', onKey);
+    window.addEventListener('legacy:buggy', toggle);
+    return () => {
+      window.removeEventListener('keydown', onKey);
+      window.removeEventListener('legacy:buggy', toggle);
+    };
+  }, [buggy]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Commit anything pending when leaving the stage
   useEffect(() => () => commit(), []); // eslint-disable-line react-hooks/exhaustive-deps
 
   const lrv = mission.world?.vehicle === 'lrv';
-  const walking = lrv && tierOf(mission, state.design, 'chassis') === 'basic';
+  const walking = lrv && (tierOf(mission, state.design, 'chassis') === 'basic' || !!state.ops.onFoot);
   return (
+    <>
+    {buggy && state.ops.onFoot && state.ops.buggyPos && <ParkedBuggy pos={state.ops.buggyPos} heading={state.ops.buggyHeading ?? 0} />}
     <group ref={g}>
       {lrv ? (
         walking ? (
@@ -469,6 +508,23 @@ function DrivableRover({ mission, rocks }: { mission: MissionDefinition; rocks: 
       ) : (
         <RoverModel mission={mission} design={state.design} scale={1.4} motion={vehicleMotion} />
       )}
+    </group>
+    </>
+  );
+}
+
+/** The lunar rover waiting where the crew parked it, settled on the terrain. */
+function ParkedBuggy({ pos, heading }: { pos: [number, number]; heading: number }) {
+  const q = useMemo(() => {
+    const e = 1.5;
+    const [x, z] = pos;
+    const n = new THREE.Vector3(heightAt(x - e, z) - heightAt(x + e, z), 2 * e, heightAt(x, z - e) - heightAt(x, z + e)).normalize();
+    const up = new THREE.Vector3(0, 1, 0);
+    return new THREE.Quaternion().setFromUnitVectors(up, n).multiply(new THREE.Quaternion().setFromAxisAngle(up, heading));
+  }, [pos, heading]);
+  return (
+    <group position={[pos[0], heightAt(pos[0], pos[1]), pos[1]]} quaternion={q}>
+      <LrvModel />
     </group>
   );
 }
