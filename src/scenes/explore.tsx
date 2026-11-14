@@ -15,6 +15,9 @@ import { MarsSky, Terrain, TargetRock } from './surface';
 import { Earth, RoverModel } from './models';
 import { DescentStageModel, LanderModel, LrvModel, MerModel } from './craft';
 import { CraterRim, DustMotes, Pebbles, VariedRocks } from './terrainfx';
+import { KitGravel, KitLighting, KitRocks, KitSky, createLegacyRover, kitHeading, kitVisualsEnabled, useKitMaterials } from '../legacy-visuals/MarsKit';
+import type { RoverVisual } from '../legacy-visuals/portable/rover.js';
+import { TERRAIN_SIZE } from '../core/terrain';
 import { Astronaut, type AstroMotion } from './astronaut';
 import type { VehicleMotion } from './roverfx';
 import { Stars } from '@react-three/drei';
@@ -265,6 +268,22 @@ function DrivableRover({ mission, rocks }: { mission: MissionDefinition; rocks: 
   const { camera } = useThree();
   const up = useMemo(() => new THREE.Vector3(0, 1, 0), []);
   const vehicleMotion = useRef<VehicleMotion>({ v: 0 });
+  const { scene } = useThree();
+  const useKitRover = mission.world?.vehicle !== 'lrv' && mission.world?.theme !== 'moon' && kitVisualsEnabled();
+  const kitRover = useRef<RoverVisual | null>(null);
+  const kitLast = useRef<[number, number] | null>(null);
+  const designKey = JSON.stringify(state.design);
+  useEffect(() => {
+    if (!useKitRover) return;
+    const v = createLegacyRover(mission, state.design);
+    scene.add(v.root);
+    kitRover.current = v;
+    kitLast.current = null;
+    return () => {
+      kitRover.current = null;
+      v.dispose();
+    };
+  }, [useKitRover, designKey, scene]); // eslint-disable-line react-hooks/exhaustive-deps
   const astroMotion = useRef<AstroMotion>({ pose: 'idle', speed: 0, lowGravity: true });
 
   const sim = useRef({
@@ -408,6 +427,15 @@ function DrivableRover({ mission, rocks }: { mission: MissionDefinition; rocks: 
 
     // Rover pose
     vehicleMotion.current.v = s.v;
+    const kv = kitRover.current;
+    if (kv) {
+      // Pose adapter: our (x, z, h: 0 = +X, counter-clockwise) → kit (heading 0 = -Z, positive toward +X).
+      const pose = { x: s.x, z: s.z, heading: kitHeading(s.h), speed: s.v, steer: -steer, paused };
+      const last = kitLast.current;
+      if (!last || Math.hypot(last[0] - s.x, last[1] - s.z) > 4) kv.reset(pose); // spawn, rest, save restore
+      else kv.update(pose, dt);
+      kitLast.current = [s.x, s.z];
+    }
     astroMotion.current.speed = Math.abs(s.v) / 3;
     astroMotion.current.pose = Math.abs(s.v) > 0.4 ? 'walk' : 'idle';
     if (g.current) {
@@ -425,7 +453,8 @@ function DrivableRover({ mission, rocks }: { mission: MissionDefinition; rocks: 
       const target = new THREE.Vector3(s.x, heightAt(s.x, s.z) + 2.2, s.z);
       if (!s.initialized) {
         controls.target.copy(target);
-        camera.position.set(s.x - Math.cos(s.h) * 20, target.y + 6.5, s.z + Math.sin(s.h) * 20);
+        const camD = useKitRover ? 12 : 20;
+        camera.position.set(s.x - Math.cos(s.h) * camD, target.y + (useKitRover ? 3.6 : 6.5), s.z + Math.sin(s.h) * camD);
         s.initialized = true;
       }
       const delta = target.clone().sub(controls.target);
@@ -506,7 +535,7 @@ function DrivableRover({ mission, rocks }: { mission: MissionDefinition; rocks: 
           <LrvModel crew motion={vehicleMotion} />
         )
       ) : (
-        <RoverModel mission={mission} design={state.design} scale={1.4} motion={vehicleMotion} />
+        !useKitRover && <RoverModel mission={mission} design={state.design} scale={1.4} motion={vehicleMotion} />
       )}
     </group>
     </>
@@ -542,6 +571,8 @@ export function ExploreScene() {
   const sun = useMemo(() => new THREE.Vector3(-0.6, 0.55, -0.4), []);
   const storm = state.ops.sol < state.ops.dustUntil;
   const moon = mission.world?.theme === 'moon';
+  const kit = !moon && kitVisualsEnabled();
+  const kitMats = useKitMaterials(kit, TERRAIN_SIZE);
   const shadowTarget = useRef<THREE.Object3D>(new THREE.Object3D());
   const light = useRef<THREE.DirectionalLight>(null);
   useFrame(() => {
@@ -554,6 +585,44 @@ export function ExploreScene() {
     }
   });
   const done = (site: ExploreSite) => site.observations.every((id) => state.evidence.observations.some((o) => o.id === id));
+  return (
+    <>
+      {kit && kitMats ? (
+        <>
+          {/* Teammate graphics kit: sky, lighting/haze, PBR sand + rocks, gravel (visual only; our heights and colliders) */}
+          <KitSky />
+          <KitLighting storm={storm} />
+          <Terrain onPick={() => undefined} theme="mars" material={kitMats.ground} />
+          <KitRocks rocks={rocks} materials={kitMats} />
+          <KitGravel materials={kitMats} perTile={quality === 'high' ? 900 : 400} />
+          <CraterRim theme="mars" />
+          {quality === 'high' && storm && <DustMotes storm />}
+        </>
+      ) : (
+        <ClassicEnvironment moon={moon} storm={storm} quality={quality} sun={sun} light={light} shadowTarget={shadowTarget} rocks={rocks} />
+      )}
+      {(mission.sites ?? []).map((site) => (
+        <group key={site.id}>
+          <Beacon site={site} found={state.ops.sitesFound.includes(site.id)} done={done(site)} />
+          {site.kind === 'rock' && <TargetRock pos={site.pos} focus />}
+          {site.kind === 'layers' && <LayersProp site={site} />}
+          {site.kind === 'weather' && <DustDevil site={site} />}
+          {site.kind === 'depot' && <DepotProp site={site} placed={state.evidence.observations.some((o) => o.id === 'obs-depot')} />}
+          {site.kind === 'heritage' && <HeritageProp site={site} mission={mission} />}
+          {site.kind === 'lander' && <LanderProp site={site} mission={mission} />}
+          {site.kind === 'crater' && <CraterProp site={site} />}
+          {site.kind === 'ripples' && <RipplesProp site={site} />}
+        </group>
+      ))}
+      <ScanBeam mission={mission} />
+      <DrivableRover mission={mission} rocks={rocks} />
+      <OrbitControls makeDefault enablePan={false} minDistance={kit ? 6 : 10} maxDistance={70} maxPolarAngle={Math.PI / 2.08} minPolarAngle={0.25} enableDamping dampingFactor={0.12} />
+    </>
+  );
+}
+
+/** The previous Mars/Moon environment, kept for the Moon and as the ?visuals=classic fallback. */
+function ClassicEnvironment({ moon, storm, quality, sun, light, shadowTarget, rocks }: { moon: boolean; storm: boolean; quality: string; sun: THREE.Vector3; light: React.RefObject<THREE.DirectionalLight | null>; shadowTarget: React.MutableRefObject<THREE.Object3D>; rocks: Rock[] }) {
   return (
     <>
       {moon ? <MoonSky /> : <MarsSky sun={sun} />}
@@ -583,22 +652,6 @@ export function ExploreScene() {
       <Pebbles theme={moon ? 'moon' : 'mars'} count={quality === 'high' ? 3200 : 1200} />
       <CraterRim theme={moon ? 'moon' : 'mars'} />
       {!moon && quality === 'high' && <DustMotes storm={storm} />}
-      {(mission.sites ?? []).map((site) => (
-        <group key={site.id}>
-          <Beacon site={site} found={state.ops.sitesFound.includes(site.id)} done={done(site)} />
-          {site.kind === 'rock' && <TargetRock pos={site.pos} focus />}
-          {site.kind === 'layers' && <LayersProp site={site} />}
-          {site.kind === 'weather' && <DustDevil site={site} />}
-          {site.kind === 'depot' && <DepotProp site={site} placed={state.evidence.observations.some((o) => o.id === 'obs-depot')} />}
-          {site.kind === 'heritage' && <HeritageProp site={site} mission={mission} />}
-          {site.kind === 'lander' && <LanderProp site={site} mission={mission} />}
-          {site.kind === 'crater' && <CraterProp site={site} />}
-          {site.kind === 'ripples' && <RipplesProp site={site} />}
-        </group>
-      ))}
-      <ScanBeam mission={mission} />
-      <DrivableRover mission={mission} rocks={rocks} />
-      <OrbitControls makeDefault enablePan={false} minDistance={10} maxDistance={70} maxPolarAngle={Math.PI / 2.08} minPolarAngle={0.25} enableDamping dampingFactor={0.12} />
     </>
   );
 }

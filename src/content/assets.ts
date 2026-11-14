@@ -18,6 +18,8 @@ export const ASSETS: AssetCredit[] = [
   { file: 'assets/img/pixl-mineral-map.jpg', title: "Perseverance's PIXL Finds Vivianite, Greigite in Cheyava Falls Sample (PIA26640)", credit: 'NASA/JPL-Caltech', url: 'https://science.nasa.gov/photojournal/perseverances-pixl-finds-vivianite-greigite-in-cheyava-falls-sample', license: 'NASA media — not copyrighted' },
   { file: 'assets/img/perseverance.jpg', title: "Perseverance's Selfie with Cheyava Falls (PIA26344)", credit: 'NASA/JPL-Caltech/MSSS', url: 'https://science.nasa.gov/resource/perseverances-selfie-with-cheyava-falls/', license: 'NASA media — not copyrighted' },
   { file: 'assets/models/astronaut.glb', title: 'Rigged Astronaut (3D model)', credit: 'J-Toastie, via Poly Pizza', url: 'https://poly.pizza/m/0oBRDJ9Zl9', license: 'CC-BY 3.0', modified: 'Materials retuned (gold visor, suit roughness); poses animated procedurally in code' },
+  { file: 'legacy-visuals/assets/sand-color.jpg', title: 'Aerial Sand (diffuse, normal, roughness — 1K)', credit: 'Rob Tuytel / Poly Haven', url: 'https://polyhaven.com/a/aerial_sand', license: 'CC0', modified: 'Used on fictional Mars terrain via the LEGACY graphics kit' },
+  { file: 'legacy-visuals/assets/rock-color.jpg', title: 'Rock Boulder Dry (diffuse, normal, roughness — 1K)', credit: 'Dimitrios Savva, Rico Cilliers / Poly Haven', url: 'https://polyhaven.com/a/rock_boulder_dry', license: 'CC0', modified: 'Used on fictional Mars rocks via the LEGACY graphics kit' },
 ];
 
 export const assetCredit = (file: string | undefined) => ASSETS.find((a) => a.file === file);

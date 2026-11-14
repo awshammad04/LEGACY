@@ -10,6 +10,7 @@ import { openLearnCard } from '../ui/common';
 import { Earth, Exhaust, JEZERO, MarsGlobe, Rocket, RoverModel, Satellite, latLonToVec3, rocketHeight } from './models';
 import { LanderModel, TelescopeModel } from './craft';
 import { Astronaut } from './astronaut';
+import { KitRoverPreview, kitVisualsEnabled } from '../legacy-visuals/MarsKit';
 
 /* ------------------------------------------------------------------ */
 /* Shared                                                              */
@@ -107,6 +108,10 @@ export function WorkshopScene() {
           <TelescopeModel mission={mission} design={state.design} />
         ) : mission.model === 'lunar' ? (
           <LanderModel mission={mission} design={state.design} />
+        ) : kitVisualsEnabled() ? (
+          <group scale={0.62}>
+            <KitRoverPreview mission={mission} design={state.design} />
+          </group>
         ) : (
           <RoverModel mission={mission} design={state.design} />
         )}

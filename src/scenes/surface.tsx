@@ -57,12 +57,15 @@ export function spotsTexture() {
   return tex;
 }
 
+const KIT_ROUGH = new THREE.Color('#83634f');
+
 const PALETTES = {
   mars: ['#6a341d', '#c98c5a', '#47261a', '#d9a273'],
   moon: ['#55575c', '#a7a8ac', '#3a3b3f', '#c4c5c8'],
 } as const;
 
-export function Terrain({ onPick, theme = 'mars' }: { onPick: (p: [number, number]) => void; theme?: 'mars' | 'moon' }) {
+export function Terrain({ onPick, theme = 'mars', material }: { onPick: (p: [number, number]) => void; theme?: 'mars' | 'moon'; material?: THREE.Material }) {
+  const kit = !!material;
   const geo = useMemo(() => {
     const g = new THREE.PlaneGeometry(TERRAIN_SIZE, TERRAIN_SIZE, SEG, SEG);
     g.rotateX(-Math.PI / 2);
@@ -86,6 +89,16 @@ export function Terrain({ onPick, theme = 'mars' }: { onPick: (p: [number, numbe
       const h = pos.getY(i);
       const x = pos.getX(i);
       const z = pos.getZ(i);
+      if (kit) {
+        // Graphics-kit palette (createMarsLandscape): firm sand vs darker rough ground, low-frequency variation
+        const steepK = 1 - nrm.getY(i);
+        const patchK = Math.sin(x * 0.021 + Math.sin(z * 0.013) * 2) * Math.cos(z * 0.017 - x * 0.006);
+        const rough = THREE.MathUtils.clamp(steepK * 6 + (h < -3 ? 0.45 : 0) + (patchK < -0.6 ? (-0.6 - patchK) * 2 : 0), 0, 1);
+        c.set('#bc9273').lerp(KIT_ROUGH, rough);
+        c.multiplyScalar(0.83 + 0.1 * Math.sin(x * 0.035 + z * 0.029) + 0.07 * Math.cos(z * 0.08) + 0.04 * Math.sin(x * 0.7 + z * 0.5));
+        colors.set([c.r, c.g, c.b], i * 3);
+        continue;
+      }
       const k = THREE.MathUtils.clamp((h + 6) / 22, 0, 1);
       c.copy(low).lerp(high, k);
       // dusty patches + darker steep slopes (exposed rock) + pale bedrock streaks
@@ -99,7 +112,7 @@ export function Terrain({ onPick, theme = 'mars' }: { onPick: (p: [number, numbe
     }
     g.setAttribute('color', new THREE.BufferAttribute(colors, 3));
     return g;
-  }, [theme]);
+  }, [theme, kit]);
   const ground = useMemo(() => groundTextures(theme), [theme]);
   const click = (e: ThreeEvent<MouseEvent>) => {
     if (e.delta > 6) return;
@@ -107,8 +120,8 @@ export function Terrain({ onPick, theme = 'mars' }: { onPick: (p: [number, numbe
     onPick([e.point.x, e.point.z]);
   };
   return (
-    <mesh geometry={geo} receiveShadow onClick={click}>
-      <meshStandardMaterial vertexColors map={ground.map} normalMap={ground.normal} normalScale={new THREE.Vector2(0.85, 0.85)} roughness={0.96} metalness={0} />
+    <mesh geometry={geo} receiveShadow onClick={click} material={material}>
+      {!material && <meshStandardMaterial vertexColors map={ground.map} normalMap={ground.normal} normalScale={new THREE.Vector2(0.85, 0.85)} roughness={0.96} metalness={0} />}
     </mesh>
   );
 }
