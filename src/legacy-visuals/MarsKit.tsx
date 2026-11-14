@@ -28,8 +28,14 @@ export { kitVisualsEnabled };
 const ASSET_BASE = () => new URL(`${import.meta.env.BASE_URL}legacy-visuals/assets/`, location.href);
 
 /** Kit sand/rock PBR materials for one scene lifetime. Ground repeat matches the kit's ~15 m tile. */
+/**
+ * Returns the materials only once all six maps have loaded, so a slow connection never shows
+ * untextured (black) ground; until then the caller keeps the previous environment. If the maps
+ * fail to load, the previous environment simply stays.
+ */
 export function useKitMaterials(enabled: boolean, terrainSize: number): MarsMaterials | null {
   const gl = useThree((s) => s.gl);
+  const [ready, setReady] = useState(false);
   const mats = useMemo(() => {
     if (!enabled) return null;
     const m = createMarsMaterials(THREE, { assetBaseURL: ASSET_BASE(), vertexColors: true, anisotropy: Math.min(8, gl.capabilities.getMaxAnisotropy()) });
@@ -37,8 +43,31 @@ export function useKitMaterials(enabled: boolean, terrainSize: number): MarsMate
     for (const t of [m.ground.map, m.ground.normalMap, m.ground.roughnessMap]) t?.repeat.set(repeat, repeat);
     return m;
   }, [enabled, terrainSize, gl]);
-  useEffect(() => () => mats?.dispose(), [mats]);
-  return mats;
+  useEffect(() => {
+    if (!mats) return;
+    let live = true;
+    mats.ready.then(
+      () => live && setReady(true),
+      () => console.warn('[LEGACY] graphics kit textures failed to load; keeping the classic surface'),
+    );
+    return () => {
+      live = false;
+      setReady(false);
+      mats.dispose();
+    };
+  }, [mats]);
+  return ready ? mats : null;
+}
+
+/** Start downloading the kit's texture maps early (e.g. in the workshop) so the surface is ready on arrival. */
+let preloaded = false;
+export function preloadKitTextures() {
+  if (preloaded || !kitVisualsEnabled()) return;
+  preloaded = true;
+  for (const n of ['sand-color', 'sand-normal', 'sand-roughness', 'rock-color', 'rock-normal', 'rock-roughness']) {
+    const img = new Image();
+    img.src = new URL(`${n}.jpg`, ASSET_BASE()).href;
+  }
 }
 
 /** Kit lighting (warm sun 3.0, hemisphere fill 1.5, exponential haze, 2048² shadows) following the rover. */
@@ -327,6 +356,7 @@ function mergeStatic(parent: THREE.Object3D, keep: Set<THREE.Object3D>) {
 export function KitRoverPreview({ mission, design }: { mission: MissionDefinition; design: Design }) {
   const key = JSON.stringify(design);
   const [v, setV] = useState<RoverVisual | null>(null);
+  useEffect(() => preloadKitTextures(), []);
   useEffect(() => {
     const r = createLegacyRover(mission, design, () => 0);
     r.reset({ x: 0, z: 0, heading: kitHeading(0) });
