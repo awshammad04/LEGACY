@@ -36,7 +36,8 @@ export function geminiVoice({key, model, voice, maxRequests = 64, minIntervalMs 
           input: [{type:'user_input', content:[{type:'text', text, annotations:[{type:'speech_metadata', style:STYLE[lang]}]}]}],
           response_format:{type:'audio'}, generation_config:{speech_config:[{voice}]},
         } : {
-          contents:[{parts:[{text:STYLE[lang]+'\n\n'+text}]}],
+          // Transcript only: these models may read any instruction aloud, so no style text is sent with the story.
+          contents:[{parts:[{text}]}],
           generationConfig:{responseModalities:['AUDIO'],speechConfig:{voiceConfig:{prebuiltVoiceConfig:{voiceName:voice}}}},
         };
         try {

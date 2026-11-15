@@ -4,146 +4,170 @@
   "assets": {
     "m1-heritage-en": {
       "text": "July 1971. Apollo 15's lunar module, Falcon, set down on a plain at the foot of the Apennine Mountains, close to a winding canyon called Hadley Rille. Commander David Scott and pilot James Irwin stayed three days on the Moon, while Al Worden circled above. For the first time, astronauts brought a car: the Lunar Roving Vehicle. They drove almost twenty-eight kilometres, farther than any crew before them. Near Spur crater they found a pale, ancient rock that became known as the Genesis Rock, a piece of the Moon's early crust. Their descent stage and rover are still here, surrounded by footprints and tyre tracks. That is why we photograph this place from outside the boundary, and never drive across the tracks.",
-      "sha256": "555a1e744b71bb105d57206d9cc9cecd81ed751e54cb71192befd5a80d92660e",
-      "model": "existing-recording",
+      "sha256": "898d84812c4d47128ad4fb5f260b65f856fec17d36e9f45bebdad7ef25d08c86",
+      "seconds": 47.8,
+      "model": "gemini-3.8-flash-tts",
       "voice": "Charon"
     },
     "m1-heritage-ar": {
       "text": "يوليو 1971. هبطت الوحدة القمرية لأبولو 15، واسمها فالكون، على سهل عند سفح جبال الأبينيني، قرب وادٍ متعرّج يُدعى أخدود هادلي. بقي القائد ديفيد سكوت والطيار جيمس إروين ثلاثة أيام على القمر، بينما كان آل وردن يدور فوقهما. ولأول مرة، أحضر روّاد الفضاء معهم سيارة: المركبة القمرية الجوالة. قطعوا بها نحو ثمانية وعشرين كيلومترًا، أبعد من أي طاقم قبلهم. وقرب فوهة سبير وجدوا صخرة فاتحة اللون قديمة جدًا عُرفت باسم صخرة التكوين، وهي قطعة من القشرة الأولى للقمر. ما زالت المرحلة السفلية لمركبتهم ومركبتهم الجوالة هنا، تحيط بهما آثار الأقدام والعجلات. لهذا نصوّر هذا المكان من خارج الحدود، ولا نعبر فوق تلك الآثار أبدًا.",
-      "sha256": "71d9d565a1bf836708f024048d1ff412837ca8019062d4700054550c96a5d081",
-      "model": "existing-recording",
+      "sha256": "ed98e4bb4874395d1f2782dd54288acbeab096a809ad5e2446ef51eae77e2d56",
+      "seconds": 60.6,
+      "model": "gemini-3.8-flash-tts",
       "voice": "Charon"
     },
     "m1-rille-en": {
       "text": "This winding valley is Hadley Rille. It is about a kilometre and a half wide and, in places, around three hundred metres deep, snaking for roughly eighty kilometres across the plain. Scientists think it was carved more than three billion years ago by a river of molten lava, or by the roof of a lava tube collapsing. In 1971, the Apollo 15 astronauts drove to its edge and photographed layers in its walls, clues that this plain was built by one lava flow after another. Look along the far wall: every layer is a page in the Moon's volcanic history.",
-      "sha256": "7d76762f19628dee242dbf5a8d38b4ecd2fbede1f5359bbda56936829509d995",
-      "model": "existing-recording",
+      "sha256": "018032f3bccecf036faad4c96fbb9ad5244201c1aa7d43bed8d746d5e09cdb5b",
+      "seconds": 41.8,
+      "model": "gemini-3.8-flash-tts",
       "voice": "Charon"
     },
     "m1-rille-ar": {
       "text": "هذا الوادي المتعرّج هو أخدود هادلي. يبلغ عرضه نحو كيلومتر ونصف، ويصل عمقه في بعض المواضع إلى نحو ثلاثمئة متر، ويمتد قرابة ثمانين كيلومترًا عبر السهل. يعتقد العلماء أنه نُحت قبل أكثر من ثلاثة مليارات سنة بفعل نهر من الحمم المنصهرة، أو بانهيار سقف نفق من الحمم. وفي عام 1971 قاد روّاد أبولو 15 مركبتهم إلى حافته، وصوّروا طبقات في جدرانه، وهي أدلة على أن هذا السهل تكوّن من تدفّق حمم تلو الآخر. انظر إلى الجدار البعيد: كل طبقة صفحة من تاريخ القمر البركاني.",
-      "sha256": "c62d1da913bccea830acf5691be13f17f576ec02b5e9b82c8445ef02cc9235a8",
-      "model": "existing-recording",
+      "sha256": "d2eeb150eca172272f0d2a39b2d936a18a2f92a70f98006f577e26cad873692b",
+      "seconds": 49.88,
+      "model": "gemini-3.8-flash-tts",
       "voice": "Charon"
     },
     "m1-view-en": {
       "text": "On Christmas Eve 1968, the crew of Apollo 8 became the first people to watch Earth rise over the Moon's horizon, and Bill Anders took the famous photograph called Earthrise. Standing on the surface is different. Because the Moon always turns the same face toward us, Earth hangs almost still in the sky, changing from full to new and back again over about a month. Every ocean, every city and every person you have ever known is on that small blue world. Many astronauts say this view changed how they see our planet: no borders, just one fragile home.",
-      "sha256": "df2c828a9a9a3656b79071b77e2897f1e6a3dd270b144359a091168986435a42",
-      "model": "existing-recording",
+      "sha256": "ea536c4de1fa81cc95fb425c4cf6632d562ee7bf88fb0324d83832f7c862a04b",
+      "seconds": 37.08,
+      "model": "gemini-3.8-flash-tts",
       "voice": "Charon"
     },
     "m1-view-ar": {
       "text": "في ليلة عيد الميلاد عام 1968، أصبح طاقم أبولو 8 أول بشر يشاهدون الأرض وهي تشرق فوق أفق القمر، والتقط بيل أندرز الصورة الشهيرة المسمّاة شروق الأرض. أما الوقوف على السطح فمختلف. فلأن القمر يوجّه إلينا دائمًا الوجه نفسه، تبدو الأرض شبه ثابتة في السماء، وتتغيّر من بدر إلى محاق ثم تعود خلال نحو شهر. كل محيط، وكل مدينة، وكل إنسان عرفته يومًا، موجود على ذلك العالم الأزرق الصغير. يقول كثير من روّاد الفضاء إن هذا المنظر غيّر نظرتهم إلى كوكبنا: لا حدود، بل بيت واحد هشّ.",
-      "sha256": "ad8db31f1bc8e5e9d77318926c8332d9592e7b18326d708988e91dfd67cb9fc1",
-      "model": "existing-recording",
+      "sha256": "82502bfca6dce78abd6d890be2bdd99ea0166a76fe47ca064f77d21d21483114",
+      "seconds": 47.4,
+      "model": "gemini-3.8-flash-tts",
       "voice": "Charon"
     },
     "m1-crater-en": {
       "text": "Young craters look bright. Their fresh, pale soil has not yet been darkened by billions of years of sunlight, solar wind and tiny meteorite impacts. Older craters slowly fade into the grey plain. The Moon is not completely silent, either. Apollo astronauts left seismometers on the surface, and until 1977 they recorded thousands of moonquakes and the thuds of meteorites hitting the ground. Those signals let scientists look inside the Moon, much like doctors use sound to look inside the body.",
-      "sha256": "b51843727ef76bf336b78cc589e59e41eea0ea871c482747a668e30d9b5930d9",
-      "model": "existing-recording",
+      "sha256": "b882a730ee2c32e0d307a565d0aecb4ec51744fa805a2d11e62430517767a76a",
+      "seconds": 35.72,
+      "model": "gemini-3.8-flash-tts",
       "voice": "Charon"
     },
     "m1-crater-ar": {
       "text": "تبدو الفوهات الحديثة ساطعة. فتربتها الفاتحة الجديدة لم تُعتّمها بعد مليارات السنين من ضوء الشمس والرياح الشمسية وارتطام النيازك الصغيرة. أما الفوهات الأقدم فتتلاشى ببطء في السهل الرمادي. والقمر ليس صامتًا تمامًا أيضًا. فقد ترك روّاد أبولو أجهزة لرصد الزلازل على سطحه، وسجّلت حتى عام 1977 آلاف الزلازل القمرية وارتطامات النيازك بالأرض. وقد سمحت تلك الإشارات للعلماء بالنظر إلى داخل القمر، كما يستخدم الأطباء الصوت للنظر داخل الجسم.",
-      "sha256": "308cf33ec2b5b17c272c41e26234d5caa6ca5ccc5b8ef7eb98465b210bcc97d1",
-      "model": "existing-recording",
+      "sha256": "b9539a023a3a0674be8b322f54746406e46b17d77cfe7017051058093bed7322",
+      "seconds": 42.72,
+      "model": "gemini-3.8-flash-tts",
       "voice": "Charon"
     },
     "site-rock-en": {
       "text": "In July 2024, Perseverance drilled into an arrowhead-shaped rock nicknamed Cheyava Falls, in an ancient river valley inside Jezero Crater. Its surface was speckled with tiny leopard spots: pale centres with dark rims, rich in iron and phosphate. On Earth, reactions like these can be powered by microbes. In September 2025, NASA announced that the sample, named Sapphire Canyon, contains a potential biosignature, one of the strongest hints so far. But potential is the key word. Chemistry without life might also make these patterns. To be sure, scientists want to study the sample in laboratories on Earth.",
-      "sha256": "a5ba570501299c83f703949dc9471a34727fd4655218e1d7c864ef2af85f5763",
-      "model": "existing-recording",
+      "sha256": "d0ec0b007914456e30e5ce40adbeba70eaa7c8b21b7706c5ddb8af649e5daadc",
+      "seconds": 44.56,
+      "model": "gemini-3.8-flash-tts",
       "voice": "Charon"
     },
     "site-rock-ar": {
       "text": "في يوليو 2024 حفرت المركبة برسيفيرانس في صخرة على شكل رأس سهم أُطلق عليها اسم شيافا فولز، في وادي نهر قديم داخل فوهة جيزيرو. كان سطحها منقّطًا ببقع صغيرة تشبه بقع الفهد: مراكز فاتحة وحواف داكنة غنية بالحديد والفوسفات. على الأرض، يمكن للميكروبات أن تكون مصدر طاقة لتفاعلات كهذه. وفي سبتمبر 2025 أعلنت ناسا أن العيّنة، واسمها سافاير كانيون، تحتوي على بصمة حيوية محتملة، وهي من أقوى الإشارات حتى الآن. لكن كلمة محتملة هي المفتاح. فقد تصنع كيمياء بلا حياة هذه الأنماط أيضًا. ولكي يتأكد العلماء، يريدون دراسة العيّنة في مختبرات على الأرض.",
-      "sha256": "792d149fe11ba87f04200721082910f6f0ee54bf520f6702a1dda5d4fff0dd14",
-      "model": "existing-recording",
+      "sha256": "abf67f218dcab3255ec059cebafcbf400972a6e40c0c5b78b8028928f6951922",
+      "seconds": 51.68,
+      "model": "gemini-3.8-flash-tts",
       "voice": "Charon"
     },
     "site-layers-en": {
       "text": "Billions of years ago, a river flowed into Jezero Crater and filled it with a lake. Where the river slowed down, it dropped sand and mud, building a fan-shaped delta layer upon layer, just like river deltas on Earth. These cliffs are that delta, now dry and frozen in time. Perseverance landed nearby in February 2021 because places where water once pooled are among the best places to search for signs of ancient life. Each layer records a moment when water was here.",
-      "sha256": "9724b2122f4a9faff94d557116350f54b4578d248300e045d24d47883b45b6fd",
-      "model": "existing-recording",
+      "sha256": "f7751673c5d9b86e43438e32c83d27148c573810f9b49afb1d7bb53b5b82413b",
+      "seconds": 33.88,
+      "model": "gemini-3.8-flash-lite-tts",
       "voice": "Charon"
     },
     "site-layers-ar": {
       "text": "قبل مليارات السنين، جرى نهر إلى فوهة جيزيرو فملأها بحيرة. وحيث تباطأ النهر، ترسّبت الرمال والطين، فبنت دلتا على شكل مروحة، طبقة فوق طبقة، تمامًا مثل دلتا الأنهار على الأرض. هذه المنحدرات هي تلك الدلتا، وقد جفّت وتجمّدت في الزمن. هبطت برسيفيرانس بالقرب منها في فبراير 2021، لأن الأماكن التي تجمّعت فيها المياه يومًا من أفضل الأماكن للبحث عن آثار حياة قديمة. كل طبقة تسجّل لحظة كان فيها الماء هنا.",
-      "sha256": "d544f034c2a7d8cccf67263fd0c0b1e25b514bd5fdf93de5cee9b4bfd705d367",
-      "model": "existing-recording",
+      "sha256": "213352ceca3d3815fa8c511d3a01f6d9c94f0e01bd3509cd04816a65c4fcb2f3",
+      "seconds": 42.68,
+      "model": "gemini-3.8-flash-lite-tts",
       "voice": "Charon"
     },
     "site-depot-en": {
       "text": "Perseverance carries sealed tubes about the size of a marker pen. Between December 2022 and January 2023, it set ten of them down on the crater floor at a place called Three Forks, creating the first sample depot on another planet. It is a backup plan: if the rover could no longer deliver its own samples, a future mission could still collect these. Each tube holds a piece of Mars that might one day be opened in a laboratory on Earth. How and when they come home is still being planned.",
-      "sha256": "f24bd81598118fb95d2fc007126f1ee763f3f48f303481460664c34275dc1097",
-      "model": "existing-recording",
+      "sha256": "852bb3240e6485690db44e0a873490e21490d341f0bae6f1ba14b126e3978397",
+      "seconds": 32.12,
+      "model": "gemini-3.8-flash-lite-tts",
       "voice": "Charon"
     },
     "site-depot-ar": {
       "text": "تحمل برسيفيرانس أنابيب محكمة الإغلاق بحجم قلم التحديد تقريبًا. وبين ديسمبر 2022 ويناير 2023 وضعت عشرة منها على أرض الفوهة في مكان يُدعى ثري فوركس، فأنشأت أول مستودع للعيّنات على كوكب آخر. إنها خطة احتياطية: إذا لم تعد المركبة قادرة على تسليم عيّناتها، يمكن لمهمة مستقبلية أن تجمع هذه الأنابيب. يحمل كل أنبوب قطعة من المريخ قد تُفتح يومًا في مختبر على الأرض. أما كيف ومتى تعود، فما زال قيد التخطيط.",
-      "sha256": "3769ca6463f250cb8248d1ca70e2ea77568b42be94961ff6b7888a37de4d80df",
-      "model": "existing-recording",
+      "sha256": "35a56e5f179a7c95523e07d42b67cf4af425b3d0ad1fa9aa84927c9649ec1cf6",
+      "seconds": 37.12,
+      "model": "gemini-3.8-flash-lite-tts",
       "voice": "Charon"
     },
     "site-weather-en": {
       "text": "Mars has whirlwinds called dust devils, some of them many kilometres tall. Perseverance's weather station measures them as they pass, and in 2021 its microphone recorded one: the first time anyone had heard a dust devil on Mars. For solar-powered rovers like Spirit and Opportunity, dust devils were sometimes friends. Their gusts swept dust off the solar panels and gave the rovers a welcome boost of power.",
-      "sha256": "771db48ca2145b8d9e50aec157bda3b7890ab0c0ed1ddba4c9c7d2adb032e3fd",
-      "model": "existing-recording",
+      "sha256": "8ce68f0284940ad458c41f3cde67f404d9f9e77b0ed545f231ca6bae80d012e6",
+      "seconds": 26.88,
+      "model": "gemini-3.8-flash-lite-tts",
       "voice": "Charon"
     },
     "site-weather-ar": {
       "text": "على المريخ زوابع تُسمّى الشياطين الترابية، يبلغ ارتفاع بعضها عدة كيلومترات. تقيسها محطة الطقس في برسيفيرانس عندما تمرّ، وفي عام 2021 سجّل ميكروفونها واحدة منها، فكانت المرة الأولى التي يسمع فيها أحد صوت زوبعة ترابية على المريخ. أما للمركبات التي تعمل بالطاقة الشمسية مثل سبيريت وأوبورتشونيتي، فكانت هذه الزوابع أحيانًا صديقة. فقد كانت هبّاتها تزيل الغبار عن الألواح الشمسية، فتمنح المركبات دفعة من الطاقة.",
-      "sha256": "80c3faa512a5e8c63b56b957d25f608ed448f3085877dd49cd74de6b1b8cfef3",
-      "model": "existing-recording",
+      "sha256": "c127fbd79fccb8a8d2c55f6d61debbf84c623e5a23773ab0727949a2bc7d6eb9",
+      "seconds": 38.56,
+      "model": "gemini-3.8-flash-lite-tts",
       "voice": "Charon"
     },
     "m3-opportunity-en": {
       "text": "Opportunity landed on Mars in January 2004. It was built to work for about ninety Martian days and drive about one kilometre. Instead, it explored for almost fifteen years and drove more than forty-five kilometres, longer than a marathon. It found clear evidence that liquid water once soaked these rocks. In June 2018, a dust storm wrapped the whole planet. The sunlight faded, its solar panels went dark, and Opportunity fell silent. Engineers sent more than a thousand commands, hoping to wake it. In February 2019, the mission was declared complete. It rests here, in Perseverance Valley. We document it from a distance, and leave it exactly as it is.",
-      "sha256": "42756bf2461b8c95daa16f897f7809df4d9cdfee828022e61b27c2ec448ddb1f",
-      "model": "existing-recording",
+      "sha256": "e9639c24b0521e038711f613c43b191a10c26657fc1069cf8539d9a6b7e5e76f",
+      "seconds": 47.24,
+      "model": "gemini-3.8-flash-lite-tts",
       "voice": "Charon"
     },
     "m3-opportunity-ar": {
       "text": "هبطت أوبورتشونيتي على المريخ في يناير 2004. صُمّمت لتعمل نحو تسعين يومًا مريخيًا وتقطع نحو كيلومتر واحد. لكنها استكشفت قرابة خمسة عشر عامًا، وقطعت أكثر من خمسة وأربعين كيلومترًا، أي أطول من سباق الماراثون. وجدت أدلة واضحة على أن الماء السائل غمر هذه الصخور يومًا. وفي يونيو 2018 لفّت عاصفة ترابية الكوكب كله. خفت ضوء الشمس، وأظلمت ألواحها الشمسية، وصمتت أوبورتشونيتي. أرسل المهندسون أكثر من ألف أمر على أمل إيقاظها. وفي فبراير 2019 أُعلن انتهاء المهمة. إنها ترقد هنا، في وادي برسيفيرانس. نوثّقها من بعيد، ونتركها كما هي تمامًا.",
-      "sha256": "2f15319901588bded45f24d2b38c04b71d59ac64998ded5f089149b6f38e8ec3",
-      "model": "existing-recording",
+      "sha256": "d3ea4da0e9a34f0cf006daf9374d69aa425b37cfd390103ed9410bc36cdbb96d",
+      "seconds": 55.56,
+      "model": "gemini-3.8-flash-lite-tts",
       "voice": "Charon"
     },
     "m3-valley-en": {
       "text": "This shallow valley runs down the inner rim of Endeavour Crater. Scientists wondered what carved it: flowing water, wind, or slides of mud and rock. Opportunity was exploring it, driving down from the top, when the dust storm of 2018 arrived. Its final panorama shows this very landscape. And here is a fun fact: this valley was called Perseverance years before NASA gave the same name to its newest rover.",
-      "sha256": "5647c7051704385c5957bc0d5033dbd11f1541ffb888bf5292a2c8328a979888",
-      "model": "existing-recording",
+      "sha256": "838d95395d0cda728ba7bc5ae1913e57ffebd113584545e4ddb499740a588123",
+      "seconds": 29.76,
+      "model": "gemini-3.8-flash-lite-tts",
       "voice": "Charon"
     },
     "m3-valley-ar": {
       "text": "يمتد هذا الوادي الضحل نزولًا على الحافة الداخلية لفوهة إنديفور. تساءل العلماء عمّا نحته: ماء جارٍ، أم رياح، أم انزلاقات من الطين والصخور. كانت أوبورتشونيتي تستكشفه، نازلة من أعلاه، عندما وصلت العاصفة الترابية عام 2018. وتُظهر آخر صورة بانورامية التقطتها هذا المنظر نفسه. وإليك معلومة طريفة: سُمّي هذا الوادي برسيفيرانس قبل سنوات من إطلاق ناسا الاسم نفسه على أحدث مركباتها.",
-      "sha256": "1f46355cc45e7d6503bdc96401b04064bb62200b09c595ac823466ad836e376e",
-      "model": "existing-recording",
+      "sha256": "719f17584057ca27a6ca45c97caa0684055eae2fab332e5bff338bdc234d12c8",
+      "seconds": 38.2,
+      "model": "gemini-3.8-flash-lite-tts",
       "voice": "Charon"
     },
     "m3-rim-en": {
       "text": "Endeavour Crater is about twenty-two kilometres wide. Opportunity spent three years driving across the plains to reach it, arriving in August 2011. Why go so far? Its rim exposes rocks much older than the plains around it. There, Opportunity found bright veins of gypsum, a mineral that forms when water flows through cracks in rock. It was some of the clearest evidence of liquid water that the rover ever found.",
-      "sha256": "f966f852d09c302ed0e645d90a1f2b45ab73c7df84055508fa09cd4798653e71",
-      "model": "existing-recording",
+      "sha256": "2eefa1dd10c3569aeb46c614458c1f966e9836ba6442b2f98c8a8538fe951d85",
+      "seconds": 28.04,
+      "model": "gemini-3.1-flash-tts-preview",
       "voice": "Charon"
     },
     "m3-rim-ar": {
       "text": "يبلغ عرض فوهة إنديفور نحو اثنين وعشرين كيلومترًا. قضت أوبورتشونيتي ثلاث سنوات تقطع السهول لتصل إليها، فبلغتها في أغسطس 2011. لماذا كل هذه المسافة؟ لأن حافتها تكشف صخورًا أقدم بكثير من السهول المحيطة بها. وهناك وجدت أوبورتشونيتي عروقًا لامعة من الجبس، وهو معدن يتكوّن عندما يتدفّق الماء عبر شقوق الصخور. وكانت من أوضح الأدلة على الماء السائل التي وجدتها المركبة على الإطلاق.",
-      "sha256": "dcca31af1f1423302329fa4c71f1124288c8e3bff854fd03006d7bc52f0a90ff",
-      "model": "existing-recording",
+      "sha256": "37fc9c70919b66fa3789b49ef541cd5966d0d5b5042da15d3d1802ea211912e5",
+      "seconds": 35.4,
+      "model": "gemini-3.1-flash-tts-preview",
       "voice": "Charon"
     },
     "m3-ripples-en": {
       "text": "In April 2005, Opportunity drove into a sand ripple only about thirty centimetres tall. Its wheels dug in and spun in place. The ripple was nicknamed Purgatory Dune. For about five weeks, engineers practised escape moves with a test rover in a sandbox on Earth, then reversed Opportunity out a few centimetres at a time. Since then, rover drivers check soft sand very carefully, and strong, wide wheels have become an important design choice.",
-      "sha256": "2204c2d8c9e1f9a703e36618ed77b4f9db28d4d28ea253b6fa78d3060dcd6471",
-      "model": "existing-recording",
+      "sha256": "5f87b7a5fd22f2ecc8705c4342f682c22be5dee20e5930c7580c06529bdfe7e0",
+      "seconds": 32.92,
+      "model": "gemini-3.1-flash-tts-preview",
       "voice": "Charon"
     },
     "m3-ripples-ar": {
       "text": "في أبريل 2005 دخلت أوبورتشونيتي تموّجًا رمليًا لا يتجاوز ارتفاعه نحو ثلاثين سنتيمترًا. غاصت عجلاتها وظلّت تدور في مكانها. أُطلق على هذا التموّج اسم كثيب المطهر. وعلى مدى نحو خمسة أسابيع تدرّب المهندسون على حركات الخروج بمركبة اختبار في صندوق رمل على الأرض، ثم أعادوا أوبورتشونيتي إلى الخلف بضعة سنتيمترات في كل مرة. ومنذ ذلك الحين يفحص سائقو المركبات الرمال الناعمة بعناية شديدة، وأصبحت العجلات القوية العريضة خيارًا مهمًا في التصميم.",
-      "sha256": "e2a55650ea000f73e288fbd883407d020d878c4efa14c28dd892748ac6599aff",
-      "model": "existing-recording",
+      "sha256": "80ccc46eccf56eb0f2a9ae45e825031abea22cb757493d2ddccb445ca746530a",
+      "seconds": 40.16,
+      "model": "gemini-3.1-flash-tts-preview",
       "voice": "Charon"
     },
     "m1-intro-en": {
@@ -316,113 +340,113 @@
     },
     "m3-ending-en": {
       "text": "Your report records what the expedition observed around Endeavour Crater. Review the evidence and the choices in your debrief. Opportunity's legacy lives in its discoveries and the questions it left for future explorers. Protecting that record is part of good exploration.",
-      "sha256": "cbc2a2d65e3906434d5d2f080c4874981a9986ae45b261073da21d2003340685",
-      "seconds": 20,
+      "sha256": "7f06c3b0040a45a69b76c52fba1ff90239c22623b59600ba798d1a1c529a0fa7",
+      "seconds": 17.8,
       "model": "gemini-3.1-flash-tts-preview",
       "voice": "Charon"
     },
     "m3-ending-ar": {
       "text": "يسجّل تقريرك ما رصدته البعثة حول فوهة إنديفور. راجع الأدلة والقرارات في تقييمك. يستمر إرث أوبورتشونيتي في اكتشافاتها والأسئلة التي تركتها للمستكشفين المقبلين. وحماية ذلك السجل جزء من الاستكشاف الجيد.",
-      "sha256": "deee83192da27dd41e2e600a061499d9982302c65c14aec53832430aef22549d",
-      "seconds": 20.6,
+      "sha256": "c187affa6a973a0b3412c5be1d514ff0453af45b9d6110b45af98f934d7463d4",
+      "seconds": 18.52,
       "model": "gemini-3.1-flash-tts-preview",
       "voice": "Charon"
     },
     "m4-ending-en": {
       "text": "Your observatory report has been sent. The debrief distinguishes the observations you collected from claims that need more evidence. A supernova changes over time. Additional nights and complementary instruments can reveal parts of the story that one image misses.",
-      "sha256": "1458d9cb21b094a4502ad1778ba0d6d5a234efec35576a15f2a8919c25fa585d",
-      "seconds": 18.92,
+      "sha256": "753cbe3215f5ea9d941f8729d2081101633ef8f0d6b88c5a6815b8560337e352",
+      "seconds": 17.76,
       "model": "gemini-3.1-flash-tts-preview",
       "voice": "Charon"
     },
     "m4-ending-ar": {
       "text": "أُرسل تقرير مرصدك. يميّز التقييم بين الأرصاد التي جمعتها والادعاءات التي تحتاج إلى أدلة إضافية. يتغير المستعر الأعظم مع الزمن. وقد تكشف ليالٍ إضافية وأجهزة متكاملة أجزاء من القصة لا تُظهرها صورة واحدة.",
-      "sha256": "7b4e519901dd18b4b403be03f93517e7114a839b453accdee3d88b2a9ffbbf66",
-      "seconds": 23.92,
+      "sha256": "a592b9854738ed319b9ee7534423c37a62cadce83f02fe8bbda374704254fa07",
+      "seconds": 19.08,
       "model": "gemini-3.1-flash-tts-preview",
       "voice": "Charon"
     },
     "m4-supernova-en": {
       "text": "The telescope is pointed at the simulated supernova. This scene is inspired by SN 2023ixf in the Pinwheel Galaxy, observed by NASA telescopes in 2023. Your mission uses a simplified observing model: choose a filter and exposure, then collect a measurement.",
-      "sha256": "ce937c9a6edb499a308085224fe4b40f6ff06e62edd4221146c196f2901f03a3",
-      "seconds": 21.04,
+      "sha256": "fe72a0a50fc01b18e02c9d5e2d1755fd9685d3791160b0fffdc2ca697460a0ed",
+      "seconds": 18.48,
       "model": "gemini-3.1-flash-tts-preview",
       "voice": "Charon"
     },
     "m4-supernova-ar": {
       "text": "وُجّه التلسكوب نحو المستعر الأعظم المُحاكى. هذا المشهد مستوحى من المستعر SN 2023ixf في مجرة الدولاب، الذي رصدته تلسكوبات ناسا عام 2023. تستخدم مهمتك نموذج رصد مبسّطًا: اختر مرشحًا ومدة تعريض، ثم اجمع قياسًا.",
-      "sha256": "c0ec4c3e427d90738164aed54704605c1e0af2a1c80d243086ad2ce452d3e246",
-      "seconds": 25.2,
+      "sha256": "609df2f22de4206d6ef3af9f94db83f3263dc0cc41c8aba5e21bab5cbeb73933",
+      "seconds": 21.6,
       "model": "gemini-3.1-flash-tts-preview",
       "voice": "Charon"
     },
     "m4-light-curve-en": {
       "text": "You have observed on three different nights. Compare the plotted brightness measurements to see how the simulated event changed. A light curve is a record of brightness over time. More observations over weeks would help explain the explosion more fully.",
-      "sha256": "928ca33908619071d8716c3ab7d919c386ecb2c4ef781a98a9b4023e85094c9c",
-      "seconds": 17.36,
+      "sha256": "034d38e39060091f29b0637cb82c0e0ac38931c88095ac728f45a6e9d46b505a",
+      "seconds": 16.2,
       "model": "gemini-3.1-flash-tts-preview",
       "voice": "Charon"
     },
     "m4-light-curve-ar": {
       "text": "رصدتَ في ثلاث ليالٍ مختلفة. قارن قياسات السطوع المرسومة لترى كيف تغير الحدث المُحاكى. المنحنى الضوئي سجلّ للسطوع مع الزمن. وتساعد أرصاد إضافية على مدى أسابيع في تفسير الانفجار بصورة أكمل.",
-      "sha256": "0eeb761bc9ec1c67ad05e5c6fe92aad68fd5d4a3b1cd2a2e4fb62d539e1d1997",
-      "seconds": 21.64,
+      "sha256": "c84fd4bfff18703f60403d0e1f39f3df06c73217b686fe56e2545a858da17b17",
+      "seconds": 18.8,
       "model": "gemini-3.1-flash-tts-preview",
       "voice": "Charon"
     },
     "m4-spectrum-en": {
       "text": "You have taken a spectrum. In this mission's model, the finding shows hydrogen, pointing to a Type Two supernova. Read the recorded result and its quality before reporting. A spectrum and a light curve answer different questions about the same event.",
-      "sha256": "194357c638091077c0a2319769dc69d2ef660ed716e3fed00c77a4eca0803e4f",
-      "seconds": 18.48,
+      "sha256": "b89c1ce8c64a106cf7e2d2e46482cba859c6df196669947523f5530108587569",
+      "seconds": 16.4,
       "model": "gemini-3.1-flash-tts-preview",
       "voice": "Charon"
     },
     "m4-spectrum-ar": {
       "text": "التقطتَ طيفًا. تُظهر النتيجة الهيدروجين في نموذج هذه المهمة، ما يشير إلى مستعر أعظم من النوع الثاني. اقرأ النتيجة المسجّلة وجودتها قبل إعداد التقرير. يجيب الطيف والمنحنى الضوئي عن سؤالين مختلفين حول الحدث نفسه.",
-      "sha256": "e35582b45f58a3229189bf42a37c73df4a3e5fdb38ae8b2b7a168c4ff4408523",
-      "seconds": 21.28,
-      "model": "gemini-3.1-flash-tts-preview",
+      "sha256": "393eb7b3858a1212d93b357077bba152499cc7e314a65d681892b2581cf75b82",
+      "seconds": 15.850958333333333,
+      "model": "gemini-2.5-flash-preview-tts",
       "voice": "Charon"
     },
     "control-safety-en": {
       "text": "You chose a protective response to the mission warning. Check the specific effects shown on screen. A delay or a change of plan can preserve the crew or instruments needed for the rest of the mission.",
-      "sha256": "4c0787e96a63c950fb6e69073672eb9a444c66a1b86a613829fc34b6e58c6acb",
-      "seconds": 13.04,
-      "model": "gemini-3.1-flash-tts-preview",
+      "sha256": "7f1ab5d3361a35e75b0f42eff59a96607fb69d7d89a8b371e368592daa96932d",
+      "seconds": 11.890958333333334,
+      "model": "gemini-2.5-flash-preview-tts",
       "voice": "Charon"
     },
     "control-safety-ar": {
       "text": "اخترتَ استجابة وقائية لتحذير المهمة. راجع الآثار المحددة المعروضة على الشاشة. قد يحافظ التأخير أو تغيير الخطة على الطاقم أو الأجهزة اللازمة لإكمال المهمة.",
-      "sha256": "b284da8c67c67e813cf35819e64f142d104f403a98e54ee39c222a5b6b4739d4",
-      "seconds": 14.250958333333333,
+      "sha256": "d127488e38a4a905be7d3ac7a132c37a4e39689e6a1db187a77f772465ee6990",
+      "seconds": 12.770958333333333,
       "model": "gemini-2.5-flash-preview-tts",
       "voice": "Charon"
     },
     "control-risk-en": {
       "text": "This decision carries a safety cost in the mission model. Read the recorded consequences before continuing. Scientific goals do not remove the need to protect people and equipment. Your debrief will include the choices you made.",
-      "sha256": "3fa449768300671ca34a5b4967e86146b460810ae8e47e5ef4445ed0098954c3",
-      "seconds": 16.49095833333333,
+      "sha256": "1050b29c5ead264eede319bb457fbe69ae3076f001914f0f7a407129f47d3bf6",
+      "seconds": 14.290958333333334,
       "model": "gemini-2.5-flash-preview-tts",
       "voice": "Charon"
     },
     "control-risk-ar": {
       "text": "لهذا القرار كلفة تتعلق بالسلامة في نموذج المهمة. اقرأ العواقب المسجّلة قبل المتابعة. لا تلغي الأهداف العلمية ضرورة حماية البشر والمعدات. سيشمل التقييم القرارات التي اتخذتها.",
-      "sha256": "ce53eca3ece9b0d4fca639f7da475d093b8e18fa6f46fbbe6cc05754273ac5fe",
-      "seconds": 18.690958333333334,
+      "sha256": "9abba697f6104c70256188d5ec3b44beb3e588db4661ff454cc09e4e29439020",
+      "seconds": 15.370958333333334,
       "model": "gemini-2.5-flash-preview-tts",
       "voice": "Charon"
     },
     "control-warning-en": {
       "text": "Mission Control has sent an important warning. Read the specific hazard and the available responses. Protect the crew or instruments before continuing. A careful change of plan can preserve the science still ahead.",
-      "sha256": "61c0390c32a6f2f3e1a32be40b6b6b47459472465e0ed29e5358e9ca6eb7e65e",
-      "seconds": 14.84,
-      "model": "gemini-3.1-flash-tts-preview",
+      "sha256": "0da59eb9ccec1176676a9917fe0873ca832563be89d15176f152e57e39ed3f12",
+      "seconds": 14.730958333333334,
+      "model": "gemini-2.5-flash-preview-tts",
       "voice": "Charon"
     },
     "control-warning-ar": {
       "text": "أرسل مركز التحكم تحذيرًا مهمًا. اقرأ الخطر المحدد والاستجابات المتاحة. احمِ الطاقم أو الأجهزة قبل المتابعة. قد يحفظ تغيير مدروس للخطة فرص البحث العلمي القادمة.",
-      "sha256": "8f2a9662936c33e40feae29f1761002c88cada906b52c717aeeb90b91a0811f4",
-      "seconds": 14.170958333333333,
+      "sha256": "22a06c47a3b5c5e1e7f665a49643524495f96db409960635b33d88f03b1dfe18",
+      "seconds": 14.330958333333333,
       "model": "gemini-2.5-flash-preview-tts",
       "voice": "Charon"
     },
@@ -442,29 +466,29 @@
     },
     "m2-interior-power-en": {
       "text": "A rover is a complete system. Instruments, power, thermal control, communication and landing capacity must fit together. Your launch review checks the simplified limits of the design you selected.",
-      "sha256": "99fb36ae09496d9d8fa13b17f545b3da5560fc334a209fca20ce9341a77680e9",
-      "seconds": 14.570958333333333,
+      "sha256": "2f473af2d8cf1b925f2d5979fd70543177e070915001b9d2c9b0d47ce2b1f41d",
+      "seconds": 11.690958333333333,
       "model": "gemini-2.5-flash-preview-tts",
       "voice": "Charon"
     },
     "m2-interior-power-ar": {
       "text": "المركبة الجوالة منظومة متكاملة. يجب أن تتوافق الأجهزة والطاقة والتحكم الحراري والاتصال وقدرة الهبوط. يفحص تقييم الإطلاق الحدود المبسطة للتصميم الذي اخترته.",
-      "sha256": "3e8a9500aa88a9572e64c35d918277ccf5d42162965137031614dde166d194e6",
-      "seconds": 15.490958333333333,
+      "sha256": "2b8bb3ac450ec84b07ed1444a8b8fa2f8fac805760c4fdcf8cd2ef33cc3ec8b3",
+      "seconds": 16.330958333333335,
       "model": "gemini-2.5-flash-preview-tts",
       "voice": "Charon"
     },
     "m2-interior-data-en": {
       "text": "A rover stores data before sending it to Earth. Storage and communication capacity are different limits. Prioritizing useful measurements helps scientists receive the evidence behind a report.",
-      "sha256": "b4a8e2a911244468cb1f781deb5a2f78baf70e3fff3988ff49dbfb4e7cb4dffa",
-      "seconds": 13.250958333333333,
+      "sha256": "1b59fb186aee7ad0557f34451231c73daf98d8565dec587a54d305f9af6dffca",
+      "seconds": 11.690958333333333,
       "model": "gemini-2.5-flash-preview-tts",
       "voice": "Charon"
     },
     "m2-interior-data-ar": {
       "text": "تخزّن المركبة البيانات قبل إرسالها إلى الأرض. سعة التخزين وقدرة الاتصال حدّان مختلفان. يساعد ترتيب القياسات حسب أهميتها العلماء على استلام أدلة التقرير.",
-      "sha256": "64ff7214f4a5020b46a8e7670aa4ae8ef3e1fe83b0ad349879458f331758b754",
-      "seconds": 16.090958333333333,
+      "sha256": "155a9ad4570c2266a10800d1735a7a4d156fb33d32034d0df04d1cf8b9afb4e3",
+      "seconds": 15.290958333333334,
       "model": "gemini-2.5-flash-preview-tts",
       "voice": "Charon"
     },

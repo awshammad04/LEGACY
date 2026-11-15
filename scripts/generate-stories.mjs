@@ -19,6 +19,7 @@ const manifest=fs.existsSync(manifestFile)?JSON.parse(fs.readFileSync(manifestFi
 const arg=(name,fallback)=>{const i=process.argv.indexOf(name);return i<0?fallback:process.argv[i+1];};
 const force=process.argv.includes('--force');
 const only=arg('--only','').split(',').filter(Boolean);
+const ids=arg('--ids','').split(',').filter(Boolean); // exact recordings to (re)generate, e.g. m1-heritage-en
 const maxRequests=Math.max(0,Math.min(100,Number(arg('--max-requests','64'))));
 const hash=value=>createHash('sha256').update(value).digest('hex');
 let client,generated=0,cached=0,failed=0;
@@ -60,6 +61,7 @@ for(const s of stories)for(const lang of ['en','ar']) {
     cached++;continue;
   }
   if(only.length&&!only.includes(s.siteId))continue;
+  if(ids.length&&!ids.includes(id))continue;
   try {
     client??=geminiVoice({key:existingKey(root),model,voice,maxRequests});
     const result=await client.synthesize(s[lang],lang);
