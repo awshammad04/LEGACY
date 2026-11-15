@@ -3,6 +3,13 @@
 **NASA Space Apps Challenge 2026 · Space Mission Design Game**
 *Design the future. Protect the crew. Discover the past.*
 
+**▶ Play now:** https://legacy-mission-game.vercel.app. It runs in any modern desktop browser, with no sign-in or install.
+
+- **Source code:** https://github.com/awshammad04/LEGACY
+- **Languages:** English and Arabic. Use the toggle in the top corner.
+
+**Team LEGACY:** Aws Hammad (team leader), Jalila Rasmi, Amir Al-Rashayda, Anas Nofal and Jinan Hamed.
+
 LEGACY is a 3D browser game in which students (ages 13–18) become mission commanders. In each mission they:
 
 1. Choose a mission and answer a 3-question baseline check.
@@ -69,26 +76,35 @@ Open http://localhost:5173. Production build: `npm run build` writes the output 
 npm test
 ```
 
-25 unit tests cover the deterministic core:
-- the readiness rules and their exact messages;
-- the protected reserve;
-- quiz shuffling and scoring;
-- the mobility model;
-- golden mission scripts;
-- What-If recomputation;
-- source and attribution integrity.
+104 unit tests (Vitest) cover:
+- the deterministic core: readiness rules and their exact messages, the protected reserve, quiz shuffling and scoring, the mobility and battery models, golden mission scripts, What-If recomputation, and source and attribution integrity;
+- the launch controller.
 
 ```bash
 npx playwright test
 ```
 
-The Playwright end-to-end tests cover:
-- a full Mission 2 run;
-- reload and continue;
+34 end-to-end tests (Playwright) cover:
+- full runs of all four missions, plus reload and continue;
+- the launch cinematic for each mission;
+- the spacecraft cabin;
+- the narrated stories;
+- the lunar rover;
 - the right-to-left Arabic layout;
 - axe accessibility checks.
 
 They use the installed Microsoft Edge (`channel: 'msedge'`).
+
+## AI use (Space Apps "Super Intelligence" disclosure)
+
+| What | Tool | How it was used |
+|---|---|---|
+| **Code** | Anthropic Claude (Claude Code) | Used throughout development to help write, refactor and test the game code and content files. 25 of the 29 commits record this with a `Co-Authored-By: Claude` line in their git metadata. The team directed, reviewed and tested all changes. |
+| **Text** | Anthropic Claude | Helped draft the story scripts, interface text and the Arabic translation. The team reviewed them, and facts come from the NASA sources cited in the game. |
+| **Audio** | Google Gemini text-to-speech | The narrated site stories (`public/assets/stories/`) are AI-generated voices. Every story card in the game says "Narration voiced with Gemini text-to-speech (AI voice)", and the Sources & credits screen lists it. |
+| **Images and video** | Not used | All visuals are real-time renders of our own 3D scenes, NASA images, and credited CC0 or CC-BY assets. No AI-generated images are used in the game. |
+
+No AI-generated content uses NASA logos, insignia or other NASA branding.
 
 ## Architecture (short)
 
